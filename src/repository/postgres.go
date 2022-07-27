@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.gwdg.de/fe/digis/database-api/src/model"
 )
 
@@ -27,7 +27,7 @@ type PostgresConnector interface {
 }
 
 type postgresConnector struct {
-	connection *pgx.Conn
+	connection *pgxpool.Pool
 }
 
 // NewPostgresConnector returns a pointer to a new PostgresConnector instance
@@ -36,7 +36,7 @@ func NewPostgresConnector() PostgresConnector {
 }
 
 func (pC *postgresConnector) Connect(connString string) error {
-	connection, err := pgx.Connect(context.Background(), connString)
+	connection, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func (pC *postgresConnector) Connect(connString string) error {
 }
 
 func (pC *postgresConnector) Close() {
-	pC.connection.Close(context.Background())
+	pC.connection.Close()
 }
 
 func (pC *postgresConnector) Ping() (string, error) {
