@@ -6,6 +6,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gitlab.gwdg.de/fe/digis/database-api/src/api"
+	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
 	"gitlab.gwdg.de/fe/digis/database-api/src/repository"
 )
 
@@ -30,12 +31,8 @@ func main() {
 	}
 	log.Infof("Connected to database: %v", version)
 
-	authors, err := db.GetAuthorByName("smith")
-	if err != nil {
-		log.Errorf("Can not retrieve authors: %v", err)
-	}
-	log.Infof("Retrieved %d authors: %v", len(authors), authors)
+	handler := handler.NewHandler(db)
 
-	echoAPI := api.InitializeAPI()
-	log.Fatal(echoAPI.Start(":81"))
+	echoAPI := api.InitializeAPI(handler)
+	log.Fatal(echoAPI.Start(":8081"))
 }

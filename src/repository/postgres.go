@@ -59,7 +59,7 @@ func (pC *postgresConnector) Ping() (string, error) {
 
 func (pC *postgresConnector) GetAuthorByName(name string) ([]model.People, error) {
 	authors := []model.People{}
-	err := pC.query("SELECT * FROM odm2.people WHERE lower(personlastname) = $1", &authors, name)
+	err := pC.query("SELECT * FROM odm2.people WHERE lower(personlastname) = lower($1)", &authors, name)
 	return authors, err
 }
 
