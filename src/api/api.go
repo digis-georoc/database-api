@@ -15,8 +15,10 @@ func InitializeAPI(h *handler.Handler) *echo.Echo {
 	e.Use(emw.RequestID())
 	e.Use(middleware.Logger)
 	e.Use(emw.RequestLoggerWithConfig(emw.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
+		LogURI:       true,
+		LogStatus:    true,
+		LogRequestID: true,
+		LogMethod:    true,
 		LogValuesFunc: func(c echo.Context, values emw.RequestLoggerValues) error {
 			log.WithFields(logrus.Fields{
 				"method":    values.Method,
