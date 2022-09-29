@@ -128,5 +128,4 @@ left join (
 	group by rel_res.relatedfeatureid
 ) results on results.id = samples.samplingfeatureid
 group by samples.SamplingFeatureID
-;
 `

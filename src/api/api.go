@@ -36,6 +36,6 @@ func InitializeAPI(h *handler.Handler) *echo.Echo {
 	// api/v1
 	v1 := e.Group("/api/v1")
 	v1.GET("/authors/:lastName", h.GetAuthors)
-
+	v1.GET("/fullData/:identifier", h.GetFullData)
 	return e
 }
