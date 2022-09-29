@@ -6,6 +6,7 @@ import (
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"gitlab.gwdg.de/fe/digis/database-api/src/model"
+	"gitlab.gwdg.de/fe/digis/database-api/src/sql"
 )
 
 // PostgresConnector interface exposes methods to connect to and interact with a postgreSQL instance
@@ -24,6 +25,10 @@ type PostgresConnector interface {
 	// Retrieve authors by last name
 	// returns the matching authors or an error
 	GetAuthorByName(name string) ([]model.People, error)
+
+	// Retrieve full dataset by sample_num
+	// returns the complete data for a given sample_num
+	GetFullDataById(sample_num string) (model.FullData, error)
 }
 
 type postgresConnector struct {
@@ -59,8 +64,14 @@ func (pC *postgresConnector) Ping() (string, error) {
 
 func (pC *postgresConnector) GetAuthorByName(name string) ([]model.People, error) {
 	authors := []model.People{}
-	err := pC.query("SELECT * FROM odm2.people WHERE lower(personlastname) = lower($1)", &authors, name)
+	err := pC.query(sql.AuthorByNameQuery, &authors, name)
 	return authors, err
+}
+
+func (pC *postgresConnector) GetFullDataById(identifier string) (model.FullData, error) {
+	fullData := model.FullData{}
+	err := pC.query(sql.FullDataByIdQuery, &fullData, identifier)
+	return fullData, err
 }
 
 // query is the generic method to query the database
