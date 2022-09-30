@@ -28,7 +28,7 @@ type PostgresConnector interface {
 
 	// Retrieve full dataset by sample_num
 	// returns the complete data for a given sample_num
-	GetFullDataById(sample_num string) (model.FullData, error)
+	GetFullDataById(sample_num string) ([]model.FullData, error)
 }
 
 type postgresConnector struct {
@@ -68,8 +68,8 @@ func (pC *postgresConnector) GetAuthorByName(name string) ([]model.People, error
 	return authors, err
 }
 
-func (pC *postgresConnector) GetFullDataById(identifier string) (model.FullData, error) {
-	fullData := model.FullData{}
+func (pC *postgresConnector) GetFullDataById(identifier string) ([]model.FullData, error) {
+	fullData := []model.FullData{}
 	err := pC.query(sql.FullDataByIdQuery, &fullData, identifier)
 	return fullData, err
 }

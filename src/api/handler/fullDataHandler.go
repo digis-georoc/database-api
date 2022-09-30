@@ -10,15 +10,16 @@ import (
 
 // GET /fullData/:identifier
 func (h *Handler) GetFullData(c echo.Context) error {
-	fullData, err := h.db.GetFullDataById(c.Param("identifier"))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Can not retrieve full data: %v", err))
-	}
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	logger.Infof("Retrieved full data: %v", fullData)
+
+	fullData, err := h.db.GetFullDataById(c.Param("identifier"))
+	if err != nil {
+		logger.Errorf("Can not retrieve FullDataById: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
+	}
 	response := struct {
 		NumItems int
 		Data     interface{}
