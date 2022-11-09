@@ -1,14 +1,16 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
 	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
-	"gitlab.gwdg.de/fe/digis/database-api/src/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
 )
 
-func InitializeAPI(h *handler.Handler) *echo.Echo {
+func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.Echo {
 	e := echo.New()
 	log := logrus.New()
 	e.Use(emw.Recover())
@@ -35,7 +37,13 @@ func InitializeAPI(h *handler.Handler) *echo.Echo {
 
 	// api/v1
 	v1 := e.Group("/api/v1")
-	v1.GET("/authors/:lastName", h.GetAuthors)
+	v1.GET("/ping", func(c echo.Context) error { return c.JSON(http.StatusOK, "pong") })
+	v1.POST("/login", h.Login)
+
+	// keycloak secured
+	secured := v1.Group("/secured")
+	secured.Use(middleware.GetAcademicCloudAuthMW(config))
+	secured.GET("/authors/:lastName", h.GetAuthors)
 
 	return e
 }

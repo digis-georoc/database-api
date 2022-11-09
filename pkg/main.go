@@ -7,10 +7,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.gwdg.de/fe/digis/database-api/src/api"
 	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
+	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/src/repository"
 )
 
 func main() {
+	// setup database connection
 	db := repository.NewPostgresConnector()
 	defer db.Close()
 
@@ -31,8 +33,15 @@ func main() {
 	}
 	log.Infof("Connected to database: %v", version)
 
-	handler := handler.NewHandler(db)
+	// keycloak configuration
+	config := middleware.KeycloakConfig{
+		Host:         os.Getenv("KC_HOST"),
+		ClientID:     os.Getenv("KC_CLIENTID"),
+		ClientSecret: os.Getenv("KC_CLIENTSECRET"),
+		Realm:        os.Getenv("KC_REALM"),
+	}
 
-	echoAPI := api.InitializeAPI(handler)
+	handler := handler.NewHandler(db, config)
+	echoAPI := api.InitializeAPI(handler, config)
 	log.Fatal(echoAPI.Start(":8081"))
 }
