@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"gitlab.gwdg.de/fe/digis/database-api/src/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
 )
 
 // GET /authors/:lastName
