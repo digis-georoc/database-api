@@ -10,7 +10,7 @@ COPY . .
 RUN go mod download
 
 # Without CGO_ENABLED=0, the resulting binary is not found in the CMD: `exec ./app: no such file or directory`
-RUN CGO_ENABLED=0 go build -o /go/bin/app/pkg
+RUN CGO_ENABLED=0 go build -o /go/bin/app ./cmd
 
 # RUN STAGE
 # Use distroless image to reduce image size

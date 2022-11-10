@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
-	"gitlab.gwdg.de/fe/digis/database-api/src/repository"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 )
 
 // Handler is the core strunct holding all dependencies to handle api requests

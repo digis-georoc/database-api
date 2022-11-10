@@ -6,8 +6,8 @@ import (
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 )
 
 func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.Echo {

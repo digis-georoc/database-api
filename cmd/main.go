@@ -5,10 +5,10 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
-	"gitlab.gwdg.de/fe/digis/database-api/src/repository"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 )
 
 func main() {
