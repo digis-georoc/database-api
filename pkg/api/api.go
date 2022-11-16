@@ -10,7 +10,7 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 )
 
-func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.Echo {
+func InitializeAPI(h *handler.Handler, config *middleware.KeycloakConfig) *echo.Echo {
 	e := echo.New()
 	log := logrus.New()
 	e.Use(emw.Recover())
@@ -38,7 +38,7 @@ func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.E
 	// api/v1
 	v1 := e.Group("/api/v1")
 	v1.GET("/ping", func(c echo.Context) error { return c.JSON(http.StatusOK, "pong") })
-	v1.POST("/login", h.Login)
+	v1.POST("/login", h.KeycloakLogin)
 
 	// keycloak secured
 	secured := v1.Group("/secured")

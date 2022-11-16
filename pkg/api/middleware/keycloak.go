@@ -20,14 +20,17 @@ type KeycloakConfig struct {
 // that returns the echo.HandlerFunc
 // which executes the auth middleware method
 // param: config The KeycloakConfig to connect to and interact with the Keycloak instance
-func GetAcademicCloudAuthMW(config KeycloakConfig) echo.MiddlewareFunc {
+func GetAcademicCloudAuthMW(config *KeycloakConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			if config == nil {
+				return fmt.Errorf("No keycloak config provided")
+			}
 			logger, ok := c.Get(LOGGER_KEY).(APILogger)
 			if !ok {
 				panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(LOGGER_KEY), APILogger{}))
 			}
-			err := academiccloudAuth(c, config)
+			err := academiccloudAuth(c, *config)
 			if err != nil {
 				logger.Errorf("Auth error: %v", err)
 				// set Unauthorized header

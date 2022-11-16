@@ -22,7 +22,7 @@ type loginRequest struct {
 
 // POST /login
 // requires keys "username" and "password" in body
-func (h *Handler) Login(c echo.Context) error {
+func (h *Handler) KeycloakLogin(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
@@ -39,6 +39,9 @@ func (h *Handler) Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, "Password is required")
 	}
 	config := h.config
+	if config == nil {
+		return c.JSON(http.StatusInternalServerError, "No configuration provided")
+	}
 	client := gocloak.NewClient(config.Host)
 	ctx := context.Background()
 	token, err := client.Login(ctx, config.ClientID, config.ClientSecret, config.Realm, req.Username, req.Password)

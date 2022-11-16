@@ -7,7 +7,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
-	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/secretstore"
 )
@@ -35,14 +34,8 @@ func main() {
 	}
 	log.Infof("Connected to database: %v", version)
 
-	// keycloak configuration
-	config, err := buildKeycloakConfig(secStore)
-	if err != nil {
-		log.Fatal(fmt.Errorf("Can not build keycloak config: %v", err))
-	}
-
-	handler := handler.NewHandler(db, *config)
-	echoAPI := api.InitializeAPI(handler, *config)
+	handler := handler.NewHandler(db, nil)
+	echoAPI := api.InitializeAPI(handler, nil)
 	log.Fatal(echoAPI.Start(":8081"))
 }
 
@@ -63,32 +56,4 @@ func buildConnectionString(secStore secretstore.SecretStore) (string, error) {
 	database := os.Getenv("DATABASE")
 
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", username, password, host, port, database), nil
-}
-
-// buildKeycloakConfig builds the configuration for keycloak from vault- and env-vars
-// param secStore: the instance of the secretstore.Secretstore to load values provided by vault
-func buildKeycloakConfig(secStore secretstore.SecretStore) (*middleware.KeycloakConfig, error) {
-	clientID, err := secStore.GetSecret("KC_CLIENTID")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret KC_CLIENTID")
-	}
-	clientSecret, err := secStore.GetSecret("KC_CLIENTSECRET")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret KC_CLIENTSECRET")
-	}
-	host := os.Getenv("KC_HOST")
-	if host == "" {
-		return nil, fmt.Errorf("Can not load env var KC_HOST")
-	}
-	realm := os.Getenv("KC_REALM")
-	if realm == "" {
-		return nil, fmt.Errorf("Can not load env var KC_REALM")
-	}
-	config := middleware.KeycloakConfig{
-		Host:         host,
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Realm:        realm,
-	}
-	return &config, nil
 }
