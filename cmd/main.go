@@ -16,7 +16,12 @@ func main() {
 	db := repository.NewPostgresConnector()
 	defer db.Close()
 
-	secStore, err := secretstore.NewSecretStore("/vault/secrets/database-config.txt")
+	// for local testing this can be set to the local project directory; in containerized setup this remains empty
+	workdir := os.Getenv("WORKDIR")
+
+	log.Info(workdir)
+	secStore := secretstore.NewSecretStore(workdir)
+	err := secStore.LoadSecretsFromFile("/vault/secrets/database-config.txt")
 	if err != nil {
 		log.Fatal(fmt.Errorf("Error loading secrets: %v", err))
 	}
@@ -35,8 +40,8 @@ func main() {
 	log.Infof("Connected to database: %v", version)
 
 	handler := handler.NewHandler(db, nil)
-	echoAPI := api.InitializeAPI(handler, nil)
-	log.Fatal(echoAPI.Start(":8081"))
+	echoAPI := api.InitializeAPI(handler, secStore)
+	log.Fatal(echoAPI.Start(":80"))
 }
 
 // buildConnectionString builds the database connection string from vault- and env-vars
@@ -51,9 +56,9 @@ func buildConnectionString(secStore secretstore.SecretStore) (string, error) {
 		return "", fmt.Errorf("Can not load secret DB_PASSWORD")
 	}
 
-	host := os.Getenv("HOST")
-	port := os.Getenv("PORT")
-	database := os.Getenv("DATABASE")
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	database := os.Getenv("DB_NAME")
 
 	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", username, password, host, port, database), nil
 }

@@ -18,7 +18,8 @@ type APILogger struct {
 func Logger(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		customLogger := logrus.WithFields(logrus.Fields{
-			"requestID": c.Response().Header()[echo.HeaderXRequestID],
+			"RequestID":    c.Response().Header()[echo.HeaderXRequestID],
+			"usertracking": c.Request().Header.Get(HEADER_USER_TRACKING),
 		})
 		c.Set(LOGGER_KEY, APILogger{customLogger})
 		return next(c)

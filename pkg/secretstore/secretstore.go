@@ -9,8 +9,10 @@ import (
 
 // secretStore holds a map of secrets provided by an external source, e.g. Vault
 // secretMap is a key/value map containing the secrets
+// workdir is the current directory relative to which the paths are evaluated in calls to LoadSecretsFromFile(path)
 type secretStore struct {
 	secretMap map[string]string
+	workdir   string
 }
 
 // SecretStore provides the interface methods to interact with a secretStore
@@ -20,32 +22,36 @@ type SecretStore interface {
 
 	// Returns a secret by its key or nil if the key is not found
 	GetSecret(key string) (string, error)
+
+	// Returns the full secret map
+	GetMap() (map[string]string, error)
 }
 
 // NewSecretStore creates a new secretStore from a given file path
-func NewSecretStore(path string) (*secretStore, error) {
-	store := secretStore{}
-	err := store.LoadSecretsFromFile(path)
-	return &store, err
+func NewSecretStore(workdir string) SecretStore {
+	store := secretStore{
+		workdir: workdir,
+	}
+	return &store
 }
 
 // LoadSecretsFromFile loads the secrets from the given filepath
-// Is invoked on NewSecretstore(path)
 func (s *secretStore) LoadSecretsFromFile(path string) error {
 	secretMap := make(map[string]string)
-	f, err := os.Open(path)
+	fullPath := s.workdir + path
+	f, err := os.Open(fullPath)
 	if err != nil {
-		return err
+		return fmt.Errorf("Can not open path %s: %v", fullPath, err)
 	}
 	defer f.Close()
 
 	secretBytes, err := ioutil.ReadAll(f)
 	if err != nil {
-		return err
+		return fmt.Errorf("Can not read file: %v", err)
 	}
 	err = json.Unmarshal(secretBytes, &secretMap)
 	if err != nil {
-		return err
+		return fmt.Errorf("Can not unmarshal data: %v", err)
 	}
 
 	s.secretMap = secretMap
@@ -58,4 +64,11 @@ func (s *secretStore) GetSecret(key string) (string, error) {
 		return "", fmt.Errorf("No secret with key '%s'", key)
 	}
 	return secret, nil
+}
+
+func (s *secretStore) GetMap() (map[string]string, error) {
+	if s.secretMap == nil || len(s.secretMap) == 0 {
+		return map[string]string{}, fmt.Errorf("No secretMap found or empty: %+v", s.secretMap)
+	}
+	return s.secretMap, nil
 }
