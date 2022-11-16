@@ -1,3 +1,14 @@
+include:
+- project: 'subugoe/argo-cd-workflow'
+  file: 
+    # trigger downstream cross-project pipeline to update the helm chart; triggered on pushing a new tag
+    - 'ci-templates/trigger-downstream-pipeline.yml'
+
+# Override variables for included trigger job
+trigger-downstream-pipeline:
+    variables:
+      IMAGE_TAG: ${CI_COMMIT_TAG}
+      REPOSITORY_PATH: fe/digis/database-api-helm
 
 variables:
   imageTag: "${CI_COMMIT_TAG}"
