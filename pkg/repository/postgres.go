@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"gitlab.gwdg.de/fe/digis/database-api/src/model"
-	"gitlab.gwdg.de/fe/digis/database-api/src/sql"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
 // PostgresConnector interface exposes methods to connect to and interact with a postgreSQL instance

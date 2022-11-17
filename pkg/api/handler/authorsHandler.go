@@ -5,24 +5,25 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"gitlab.gwdg.de/fe/digis/database-api/src/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 )
 
-// GET /fullData/:identifier
-func (h *Handler) GetFullData(c echo.Context) error {
+// GET /authors/:lastName
+func (h *Handler) GetAuthors(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	fullData, err := h.db.GetFullDataById(c.Param("identifier"))
+	authors, err := h.db.GetAuthorByName(c.Param("lastName"))
 	if err != nil {
-		logger.Errorf("Can not retrieve FullDataById: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
+		logger.Errorf("Can not GetAuthorsByName: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
 	}
+	logger.Infof("Retrieved author data: %v", authors)
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{1, fullData}
+	}{len(authors), authors}
 	return c.JSON(http.StatusOK, response)
 }
