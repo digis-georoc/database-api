@@ -1,0 +1,20 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the database api for the new GeoROC datamodel",
+        "title": "DIGIS Database API",
+        "contact": {
+            "name": "DIGIS Project",
+            "url": "https://www.uni-goettingen.de/de/643369.html",
+            "email": "digis-info@uni-goettingen.de"
+        },
+        "license": {
+            "name": "CC BY-SA 4.0",
+            "url": "https://creativecommons.org/licenses/by-sa/4.0/"
+        },
+        "version": "0.1.0"
+    },
+    "host": "localhost:8081",
+    "basePath": "/api/v1",
+    "paths": {}
+}
