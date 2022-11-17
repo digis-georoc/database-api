@@ -29,6 +29,10 @@ type PostgresConnector interface {
 	// Retrieve full dataset by sample_num
 	// returns the complete data for a given sample_num
 	GetFullDataById(sample_num string) ([]model.FullData, error)
+
+	// Retrieve sites
+	// returns list of site data
+	GetSites() ([]model.Site, error)
 }
 
 type postgresConnector struct {
@@ -72,6 +76,12 @@ func (pC *postgresConnector) GetFullDataById(identifier string) ([]model.FullDat
 	fullData := []model.FullData{}
 	err := pC.query(sql.FullDataByIdQuery, &fullData, identifier)
 	return fullData, err
+}
+
+func (pC *postgresConnector) GetSites() ([]model.Site, error) {
+	sites := []model.Site{}
+	err := pC.query(sql.SitesQuery, &sites)
+	return sites, err
 }
 
 // query is the generic method to query the database

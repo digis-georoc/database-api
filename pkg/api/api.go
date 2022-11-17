@@ -47,6 +47,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
 	secured.GET("/authors/:lastName", h.GetAuthors)
 	secured.GET("/fullData/:identifier", h.GetFullData)
+	secured.GET("/sites", h.GetSites)
 
 	return e
 }

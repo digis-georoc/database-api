@@ -20,7 +20,6 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 		logger.Errorf("Can not GetAuthorsByName: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
 	}
-	logger.Infof("Retrieved author data: %v", authors)
 	response := struct {
 		NumItems int
 		Data     interface{}
