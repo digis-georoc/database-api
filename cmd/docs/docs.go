@@ -16,7 +16,7 @@ const docTemplate = `{
             "email": "digis-info@uni-goettingen.de"
         },
         "license": {
-            "name": "CC BY-SA 4.0",
+            "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
         "version": "{{.Version}}"

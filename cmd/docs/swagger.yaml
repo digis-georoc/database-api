@@ -7,7 +7,7 @@ info:
     url: https://www.uni-goettingen.de/de/643369.html
   description: This is the database api for the new GeoROC datamodel
   license:
-    name: CC BY-SA 4.0
+    name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
   version: 0.1.0

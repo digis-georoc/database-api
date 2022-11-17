@@ -12,18 +12,18 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/secretstore"
 )
 
-// @title DIGIS Database API
-// @version 0.1.0
+// @title       DIGIS Database API
+// @version     0.1.0
 // @description This is the database api for the new GeoROC datamodel
 
-// @contact.name DIGIS Project
-// @contact.url https://www.uni-goettingen.de/de/643369.html
+// @contact.name  DIGIS Project
+// @contact.url   https://www.uni-goettingen.de/de/643369.html
 // @contact.email digis-info@uni-goettingen.de
 
 // @license.name Data retrieved is licensed under CC BY-SA 4.0
-// @license.url https://creativecommons.org/licenses/by-sa/4.0/
+// @license.url  https://creativecommons.org/licenses/by-sa/4.0/
 
-// @host localhost:8081
+// @host     localhost:8081
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
@@ -60,7 +60,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// accesskey secured
 	secured := v1.Group("/secured")
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
-	secured.GET("/authors/:lastName", h.GetAuthors)
+	secured.GET("/authors/:lastName", h.GetAuthorsByLastname)
 	secured.GET("/fullData/:identifier", h.GetFullData)
 	secured.GET("/sites", h.GetSites)
 
