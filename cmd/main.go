@@ -45,7 +45,7 @@ func main() {
 	if port == "" {
 		port = "80"
 	}
-	log.Fatal(echoAPI.Start(port))
+	log.Fatal(echoAPI.Start(":" + port))
 }
 
 // buildConnectionString builds the database connection string from vault- and env-vars
