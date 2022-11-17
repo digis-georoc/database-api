@@ -6,15 +6,17 @@ import (
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/handler"
-	"gitlab.gwdg.de/fe/digis/database-api/src/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/secretstore"
 )
 
-func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.Echo {
+func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
 	log := logrus.New()
 	e.Use(emw.Recover())
 	e.Use(emw.RequestID())
+	e.Use(middleware.GetUserTrackMiddleware())
 	e.Use(middleware.Logger)
 	e.Use(emw.RequestLoggerWithConfig(emw.RequestLoggerConfig{
 		LogURI:       true,
@@ -29,6 +31,7 @@ func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.E
 				"error":     values.Error,
 				"timestamp": values.StartTime,
 				"requestID": values.RequestID,
+				"userTrack": c.Request().Header.Get(middleware.HEADER_USER_TRACKING),
 			}).Info("request")
 
 			return nil
@@ -38,11 +41,10 @@ func InitializeAPI(h *handler.Handler, config middleware.KeycloakConfig) *echo.E
 	// api/v1
 	v1 := e.Group("/api/v1")
 	v1.GET("/ping", func(c echo.Context) error { return c.JSON(http.StatusOK, "pong") })
-	v1.POST("/login", h.Login)
 
 	// keycloak secured
 	secured := v1.Group("/secured")
-	secured.Use(middleware.GetAcademicCloudAuthMW(config))
+	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
 	secured.GET("/authors/:lastName", h.GetAuthors)
 
 	return e
