@@ -20,7 +20,7 @@ import (
 // @Failure     401      {object} string
 // @Failure     404      {object} string
 // @Failure     500      {object} string
-// @Router      /secured/authors/{lastName} [get]
+// @Router      /queries/authors/{lastName} [get]
 func (h *Handler) GetAuthorsByLastName(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

@@ -19,7 +19,7 @@ import (
 // @Failure     401 {object} string
 // @Failure     404 {object} string
 // @Failure     500 {object} string
-// @Router      /secured/sites [get]
+// @Router      /queries/sites [get]
 func (h *Handler) GetSites(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

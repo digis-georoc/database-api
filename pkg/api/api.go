@@ -59,7 +59,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	v1.GET("/docs/*", echoSwagger.WrapHandler)
 
 	// accesskey secured
-	secured := v1.Group("/secured")
+	secured := v1.Group("/queries")
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
 	secured.GET("/authors/:lastName", h.GetAuthorsByLastName)
 	secured.GET("/fullData/:identifier", h.GetFullDataByID)

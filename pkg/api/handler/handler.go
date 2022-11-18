@@ -28,7 +28,7 @@ func NewHandler(db repository.PostgresConnector, config *middleware.KeycloakConf
 // @Tags        general
 // @Accept      json
 // @Produce     json
-// @Success     200 {array}  model.Site
+// @Success     200 {array}  string
 // @Failure     404 {object} string
 // @Router      /ping [get]
 func (h *Handler) Ping(c echo.Context) error {
