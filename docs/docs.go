@@ -41,10 +41,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Site"
-                            }
+                            "type": "string"
                         }
                     },
                     "404": {
@@ -56,8 +53,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/secured/authors/{lastName}": {
+        "/queries/authors/{lastName}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "get authors by lastname",
                 "consumes": [
                     "application/json"
@@ -109,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/secured/fulldata/{samplingfeatureid}": {
+        "/queries/fulldata/{samplingfeatureid}": {
             "get": {
                 "description": "get full dataset by samplingfeatureid",
                 "consumes": [
@@ -162,9 +164,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/secured/sites": {
+        "/queries/sites": {
             "get": {
-                "description": "get all sites",
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all sites where the longitude and latitude values are within the given range\nOmit query parameters to retrieve all sites",
                 "consumes": [
                     "application/json"
                 ],
@@ -174,7 +181,33 @@ const docTemplate = `{
                 "tags": [
                     "sites"
                 ],
-                "summary": "Retrieve all sites",
+                "summary": "Retrieve all sites within given coordinates",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Minimum (inclusive) latitude",
+                        "name": "latMin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum (inclusive) latitude",
+                        "name": "latMax",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Minimum (inclusive) longitude",
+                        "name": "lonMin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Maximum (inclusive) longitude",
+                        "name": "lonMax",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

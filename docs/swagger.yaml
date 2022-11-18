@@ -185,9 +185,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Site'
-            type: array
+            type: string
         "404":
           description: Not Found
           schema:
@@ -195,7 +193,7 @@ paths:
       summary: Sample request
       tags:
       - general
-  /secured/authors/{lastName}:
+  /queries/authors/{lastName}:
     get:
       consumes:
       - application/json
@@ -227,10 +225,12 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Retrieve authors by lastname
       tags:
       - people
-  /secured/fulldata/{samplingfeatureid}:
+  /queries/fulldata/{samplingfeatureid}:
     get:
       consumes:
       - application/json
@@ -265,11 +265,30 @@ paths:
       summary: Retrieve full dataset by samplingfeatureid
       tags:
       - fulldata
-  /secured/sites:
+  /queries/sites:
     get:
       consumes:
       - application/json
-      description: get all sites
+      description: |-
+        Get all sites where the longitude and latitude values are within the given range
+        Omit query parameters to retrieve all sites
+      parameters:
+      - description: Minimum (inclusive) latitude
+        in: query
+        name: latMin
+        type: number
+      - description: Maximum (inclusive) latitude
+        in: query
+        name: latMax
+        type: number
+      - description: Minimum (inclusive) longitude
+        in: query
+        name: lonMin
+        type: number
+      - description: Maximum (inclusive) longitude
+        in: query
+        name: lonMax
+        type: number
       produces:
       - application/json
       responses:
@@ -291,7 +310,9 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: Retrieve all sites
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all sites within given coordinates
       tags:
       - sites
 swagger: "2.0"

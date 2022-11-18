@@ -11,7 +11,7 @@ import (
 // GetFullDataByID godoc
 // @Summary     Retrieve full dataset by samplingfeatureid
 // @Description get full dataset by samplingfeatureid
-// @securityDefinitions.apikey ApiKeyAuth
+// @Security    ApiKeyAuth
 // @Tags        fulldata
 // @Accept      json
 // @Produce     json

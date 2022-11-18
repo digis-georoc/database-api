@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -24,6 +26,11 @@ import (
 // @license.name Data retrieved is licensed under CC BY-SA 4.0
 // @license.url  https://creativecommons.org/licenses/by-sa/4.0/
 
+//  @securityDefinitions.apikey  ApiKeyAuth
+//  @in                          header
+//  @name                        DIGIS_API_ACCESSKEY
+//  @description                 Accesskey based security scheme to secure api group "/queries/*"
+
 // @host     localhost:8081
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
@@ -38,6 +45,12 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 		LogStatus:    true,
 		LogRequestID: true,
 		LogMethod:    true,
+		Skipper: func(c echo.Context) bool {
+			if strings.Contains(c.Request().URL.Path, "docs") {
+				return true
+			}
+			return false
+		},
 		LogValuesFunc: func(c echo.Context, values emw.RequestLoggerValues) error {
 			log.WithFields(logrus.Fields{
 				"method":    values.Method,
@@ -63,7 +76,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
 	secured.GET("/authors/:lastName", h.GetAuthorsByLastName)
 	secured.GET("/fullData/:identifier", h.GetFullDataByID)
-	secured.GET("/sites", h.GetSites)
+	secured.GET("/sites", h.GetSitesByCoords)
 
 	return e
 }

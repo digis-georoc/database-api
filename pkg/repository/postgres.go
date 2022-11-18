@@ -33,6 +33,10 @@ type PostgresConnector interface {
 	// Retrieve sites
 	// returns list of site data
 	GetSites() ([]model.Site, error)
+
+	// Retrieve sites by coordinates
+	// returns list of site data
+	GetSitesByCoords(latMin, latMax, longMin, longMax string) ([]model.Site, error)
 }
 
 type postgresConnector struct {
@@ -81,6 +85,12 @@ func (pC *postgresConnector) GetFullDataByID(identifier string) ([]model.FullDat
 func (pC *postgresConnector) GetSites() ([]model.Site, error) {
 	sites := []model.Site{}
 	err := pC.query(sql.SitesQuery, &sites)
+	return sites, err
+}
+
+func (pC *postgresConnector) GetSitesByCoords(latMin, latMax, longMin, longMax string) ([]model.Site, error) {
+	sites := []model.Site{}
+	err := pC.query(sql.SitesByCoordsQuery, &sites, latMin, latMax, longMin, longMax)
 	return sites, err
 }
 

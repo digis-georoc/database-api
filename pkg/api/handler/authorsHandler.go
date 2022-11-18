@@ -11,7 +11,7 @@ import (
 // GetAuthorsByLastname godoc
 // @Summary     Retrieve authors by lastname
 // @Description get authors by lastname
-// @securityDefinitions.apikey ApiKeyAuth
+// @Security    ApiKeyAuth
 // @Tags        people
 // @Accept      json
 // @Produce     json
