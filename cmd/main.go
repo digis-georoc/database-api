@@ -9,9 +9,6 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/secretstore"
-
-	// import swagger docs
-	_ "gitlab.gwdg.de/fe/digis/database-api/cmd/docs"
 )
 
 func main() {

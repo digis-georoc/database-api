@@ -8,7 +8,18 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 )
 
-// GET /sites
+// GetSites godoc
+// @Summary     Retrieve all sites
+// @Description get all sites
+// @securityDefinitions.apikey ApiKeyAuth
+// @Tags        sites
+// @Accept      json
+// @Produce     json
+// @Success     200 {array}  model.Site
+// @Failure     401 {object} string
+// @Failure     404 {object} string
+// @Failure     500 {object} string
+// @Router      /secured/sites [get]
 func (h *Handler) GetSites(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

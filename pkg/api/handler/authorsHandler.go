@@ -11,22 +11,23 @@ import (
 // GetAuthorsByLastname godoc
 // @Summary     Retrieve authors by lastname
 // @Description get authors by lastname
-// @Tags        authors
+// @securityDefinitions.apikey ApiKeyAuth
+// @Tags        people
 // @Accept      json
 // @Produce     json
 // @Param       lastName path     string true "Author lastname"
-// @Success     200      {array}  model.Author
-// @Failure     401      {object} httputil.HTTPError
-// @Failure     404      {object} httputil.HTTPError
-// @Failure     500      {object} httputil.HTTPError
+// @Success     200      {array}  model.People
+// @Failure     401      {object} string
+// @Failure     404      {object} string
+// @Failure     500      {object} string
 // @Router      /secured/authors/{lastName} [get]
-func (h *Handler) GetAuthorsByLastname(c echo.Context) error {
+func (h *Handler) GetAuthorsByLastName(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	authors, err := h.db.GetAuthorByName(c.Param("lastName"))
+	authors, err := h.db.GetAuthorByLastName(c.Param("lastName"))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorsByName: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")

@@ -1,8 +1,6 @@
 package api
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
 	"github.com/sirupsen/logrus"
@@ -10,6 +8,9 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/handler"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/secretstore"
+
+	// import swagger docs
+	_ "gitlab.gwdg.de/fe/digis/database-api/docs"
 )
 
 // @title       DIGIS Database API
@@ -54,14 +55,14 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 
 	// api/v1
 	v1 := e.Group("/api/v1")
-	v1.GET("/ping", func(c echo.Context) error { return c.JSON(http.StatusOK, "pong") })
-	v1.GET("/openapi/*", echoSwagger.WrapHandler)
+	v1.GET("/ping", h.Ping)
+	v1.GET("/docs/*", echoSwagger.WrapHandler)
 
 	// accesskey secured
 	secured := v1.Group("/secured")
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
-	secured.GET("/authors/:lastName", h.GetAuthorsByLastname)
-	secured.GET("/fullData/:identifier", h.GetFullData)
+	secured.GET("/authors/:lastName", h.GetAuthorsByLastName)
+	secured.GET("/fullData/:identifier", h.GetFullDataByID)
 	secured.GET("/sites", h.GetSites)
 
 	return e

@@ -24,11 +24,11 @@ type PostgresConnector interface {
 
 	// Retrieve authors by last name
 	// returns the matching authors or an error
-	GetAuthorByName(name string) ([]model.People, error)
+	GetAuthorByLastName(name string) ([]model.People, error)
 
 	// Retrieve full dataset by sample_num
 	// returns the complete data for a given sample_num
-	GetFullDataById(sample_num string) ([]model.FullData, error)
+	GetFullDataByID(sample_num string) ([]model.FullData, error)
 
 	// Retrieve sites
 	// returns list of site data
@@ -66,13 +66,13 @@ func (pC *postgresConnector) Ping() (string, error) {
 	return version[0].Version, nil
 }
 
-func (pC *postgresConnector) GetAuthorByName(name string) ([]model.People, error) {
+func (pC *postgresConnector) GetAuthorByLastName(name string) ([]model.People, error) {
 	authors := []model.People{}
 	err := pC.query(sql.AuthorByNameQuery, &authors, name)
 	return authors, err
 }
 
-func (pC *postgresConnector) GetFullDataById(identifier string) ([]model.FullData, error) {
+func (pC *postgresConnector) GetFullDataByID(identifier string) ([]model.FullData, error) {
 	fullData := []model.FullData{}
 	err := pC.query(sql.FullDataByIdQuery, &fullData, identifier)
 	return fullData, err

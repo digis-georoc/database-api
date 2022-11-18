@@ -1,0 +1,297 @@
+basePath: /api/v1
+definitions:
+  model.FullData:
+    properties:
+      age_Max:
+        type: integer
+      age_Min:
+        type: integer
+      batches:
+        items:
+          type: integer
+        type: array
+      comment:
+        items:
+          type: string
+        type: array
+      elevation_Max:
+        type: integer
+      elevation_Min:
+        type: integer
+      inclusion_Type:
+        items:
+          type: string
+        type: array
+      institution:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      item_Group:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      item_Name:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      land_Or_Sea:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      latitude:
+        type: number
+      latitude_Max:
+        type: string
+      latitude_Min:
+        type: string
+      loc_Data: {}
+      location_Names:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      location_Num:
+        type: integer
+      location_Types:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      longitude:
+        type: number
+      longitude_Max:
+        type: string
+      longitude_Min:
+        type: string
+      material:
+        items:
+          type: string
+        type: array
+      method:
+        items:
+          type: string
+        type: array
+      mineral:
+        items:
+          type: string
+        type: array
+      references: {}
+      rock_Class:
+        type: string
+      rock_Texture:
+        type: string
+      rock_Type:
+        type: string
+      sample_Num:
+        type: integer
+      sampleIds:
+        items:
+          type: string
+        type: array
+      standard_Names:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      standard_Values:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+      tectonic_Setting:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      unique_id:
+        type: string
+      units:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      values:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+    type: object
+  model.People:
+    properties:
+      personFirstName:
+        type: string
+      personId:
+        type: integer
+      personLastName:
+        type: string
+    type: object
+  model.Site:
+    properties:
+      latitude:
+        type: number
+      locationPrecision:
+        type: number
+      locationPrecisionComment:
+        type: string
+      longitude:
+        type: number
+      samplingFeatureID:
+        type: integer
+      setting:
+        type: string
+      siteDescription:
+        type: string
+      siteTypeCV:
+        type: string
+      spatialReferenceID:
+        type: integer
+    type: object
+host: localhost:8081
+info:
+  contact:
+    email: digis-info@uni-goettingen.de
+    name: DIGIS Project
+    url: https://www.uni-goettingen.de/de/643369.html
+  description: This is the database api for the new GeoROC datamodel
+  license:
+    name: Data retrieved is licensed under CC BY-SA 4.0
+    url: https://creativecommons.org/licenses/by-sa/4.0/
+  title: DIGIS Database API
+  version: 0.1.0
+paths:
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: Check connection to api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Sample request
+      tags:
+      - general
+  /secured/authors/{lastName}:
+    get:
+      consumes:
+      - application/json
+      description: get authors by lastname
+      parameters:
+      - description: Author lastname
+        in: path
+        name: lastName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.People'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve authors by lastname
+      tags:
+      - people
+  /secured/fulldata/{samplingfeatureid}:
+    get:
+      consumes:
+      - application/json
+      description: get full dataset by samplingfeatureid
+      parameters:
+      - description: Samplingfeature identifier
+        in: path
+        name: samplingfeatureid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.FullData'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve full dataset by samplingfeatureid
+      tags:
+      - fulldata
+  /secured/sites:
+    get:
+      consumes:
+      - application/json
+      description: get all sites
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Retrieve all sites
+      tags:
+      - sites
+swagger: "2.0"

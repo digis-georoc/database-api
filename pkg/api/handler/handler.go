@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 )
@@ -17,4 +20,17 @@ func NewHandler(db repository.PostgresConnector, config *middleware.KeycloakConf
 		db:     db,
 		config: config,
 	}
+}
+
+// Ping godoc
+// @Summary     Sample request
+// @Description Check connection to api
+// @Tags        general
+// @Accept      json
+// @Produce     json
+// @Success     200 {array}  model.Site
+// @Failure     404 {object} string
+// @Router      /ping [get]
+func (h *Handler) Ping(c echo.Context) error {
+	return c.JSON(http.StatusOK, "Pong")
 }
