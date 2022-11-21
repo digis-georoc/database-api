@@ -32,6 +32,7 @@ import (
 //  @description                 Accesskey based security scheme to secure api group "/queries/*"
 
 // @host     localhost:8081
+// @schemes  https
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()

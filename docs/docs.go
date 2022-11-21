@@ -113,6 +113,11 @@ const docTemplate = `{
         },
         "/queries/fulldata/{samplingfeatureid}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "get full dataset by samplingfeatureid",
                 "consumes": [
                     "application/json"
@@ -491,7 +496,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "0.1.0",
 	Host:             "localhost:8081",
 	BasePath:         "/api/v1",
-	Schemes:          []string{},
+	Schemes:          []string{"https"},
 	Title:            "DIGIS Database API",
 	Description:      "This is the database api for the new GeoROC datamodel",
 	InfoInstanceName: "swagger",

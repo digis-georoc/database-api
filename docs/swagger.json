@@ -1,4 +1,7 @@
 {
+    "schemes": [
+        "https"
+    ],
     "swagger": "2.0",
     "info": {
         "description": "This is the database api for the new GeoROC datamodel",
@@ -106,6 +109,11 @@
         },
         "/queries/fulldata/{samplingfeatureid}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "get full dataset by samplingfeatureid",
                 "consumes": [
                     "application/json"

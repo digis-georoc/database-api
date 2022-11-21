@@ -262,6 +262,8 @@ paths:
           description: Internal Server Error
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Retrieve full dataset by samplingfeatureid
       tags:
       - fulldata
@@ -315,4 +317,6 @@ paths:
       summary: Retrieve all sites within given coordinates
       tags:
       - sites
+schemes:
+- https
 swagger: "2.0"
