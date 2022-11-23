@@ -25,10 +25,10 @@ array_agg(samples.mineral) as mineral,
 (array_agg(distinct loc.loc_data))[1][1].samplingfeatureid as location_num,
 (array_agg(distinct loc.loc_data))[1][1].latitude as latitude,
 (array_agg(distinct loc.loc_data))[1][1].longitude as longitude,
-(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationcomment, 'LATITUDE_MIN=(-?\d+\.?\d*);'))[1] as latitude_min,
-(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationcomment, 'LATITUDE_MAX=(-?\d+\.?\d*);'))[1] as latitude_max,
-(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationcomment, 'LONGITUDE_MIN=(-?\d+\.?\d*);'))[1] as longitude_min,
-(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationcomment, 'LONGITUDE_MAX=(-?\d+\.?\d*)'))[1] as longitude_max,
+(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationprecisioncomment, 'LATITUDE_MIN=(-?\d+\.?\d*);'))[1] as latitude_min,
+(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationprecisioncomment, 'LATITUDE_MAX=(-?\d+\.?\d*);'))[1] as latitude_max,
+(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationprecisioncomment, 'LONGITUDE_MIN=(-?\d+\.?\d*);'))[1] as longitude_min,
+(regexp_match((array_agg(distinct loc.loc_data))[1][1].locationprecisioncomment, 'LONGITUDE_MAX=(-?\d+\.?\d*)'))[1] as longitude_max,
 array_agg(distinct loc.setting) as tectonic_setting,
 array_agg(methods.method_acronyms) as method,
 array_agg(methods.method_comments) as comment,
@@ -67,7 +67,7 @@ left join
 	array_agg(distinct p_ref.*) as authors 
 	from odm2.specimentaxonomicclassifiers stc_ref
 	left join odm2.citations c_ref on c_ref.citationid = stc_ref.citationid
-	left join odm2.citationexternalidentifiers cei_ref on cei_ref.citationid = c_ref.citationid and cei_ref.externalidentifiersystemname = 'DOI'
+	left join odm2.citationexternalidentifiers cei_ref on cei_ref.citationid = c_ref.citationid and cei_ref.externalidentifiersystemid = 1 -- id of externalidentifiersystem "DOI"
 	left join odm2.authorlists a_ref on a_ref.citationid = c_ref.citationid
 	left join odm2.people p_ref on p_ref.personid = a_ref.personid 
 	left join odm2.affiliations af_ref on af_ref.personid = p_ref.personid
@@ -81,7 +81,7 @@ left join
 	(array_agg(distinct si_loc.*)) as loc_data, 
 	array_remove(array_agg(sg_loc.locationname), null) as loc_names, 
 	array_remove(array_agg(g_loc.geolocationtype), null) as loc_types ,
-	array_remove(array_agg(loc.elevationcomment), null) as elevation,
+	array_remove(array_agg(loc.elevationprecisioncomment), null) as elevation,
 	array_remove(array_agg(distinct si_loc.sitedescription), null) as land_or_sea,
 	array_remove(array_agg(distinct si_loc.setting), null) as setting
 	from odm2.relatedfeatures rel_loc
