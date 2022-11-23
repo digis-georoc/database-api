@@ -1,5 +1,36 @@
 basePath: /api/v1
 definitions:
+  model.Citation:
+    properties:
+      authors:
+        items:
+          $ref: '#/definitions/model.People'
+        type: array
+      bookTitle:
+        type: string
+      citationID:
+        type: integer
+      citationLink:
+        type: string
+      editors:
+        type: string
+      firstPage:
+        type: string
+      issue:
+        type: string
+      journal:
+        type: string
+      lastPage:
+        type: string
+      publicationyear:
+        type: integer
+      publisher:
+        type: string
+      title:
+        type: string
+      volume:
+        type: string
+    type: object
   model.FullData:
     properties:
       age_Max:
@@ -193,15 +224,46 @@ paths:
       summary: Sample request
       tags:
       - general
-  /queries/authors/{lastName}:
+  /queries/authors:
     get:
       consumes:
       - application/json
-      description: get authors by lastname
+      description: get authors
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.People'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve authors
+      tags:
+      - people
+  /queries/authors/{personID}:
+    get:
+      consumes:
+      - application/json
+      description: get authors by personID
       parameters:
-      - description: Author lastname
+      - description: Person ID
         in: path
-        name: lastName
+        name: personID
         required: true
         type: string
       produces:
@@ -227,9 +289,77 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: Retrieve authors by lastname
+      summary: Retrieve authors by personID
       tags:
       - people
+  /queries/citations:
+    get:
+      consumes:
+      - application/json
+      description: get citations
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Citation'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve citations
+      tags:
+      - citations
+  /queries/citations/{citationID}:
+    get:
+      consumes:
+      - application/json
+      description: get citations by citationID
+      parameters:
+      - description: Citation ID
+        in: path
+        name: citationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Citation'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve citations by citationID
+      tags:
+      - citations
   /queries/fulldata/{samplingfeatureid}:
     get:
       consumes:
@@ -271,26 +401,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: |-
-        Get all sites where the longitude and latitude values are within the given range
-        Omit query parameters to retrieve all sites
-      parameters:
-      - description: Minimum (inclusive) latitude
-        in: query
-        name: latMin
-        type: number
-      - description: Maximum (inclusive) latitude
-        in: query
-        name: latMax
-        type: number
-      - description: Minimum (inclusive) longitude
-        in: query
-        name: lonMin
-        type: number
-      - description: Maximum (inclusive) longitude
-        in: query
-        name: lonMax
-        type: number
+      description: Get all sites
       produces:
       - application/json
       responses:
@@ -314,7 +425,75 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: Retrieve all sites within given coordinates
+      summary: Retrieve all sites
+      tags:
+      - sites
+  /queries/sites/{samplingfeatureID}:
+    get:
+      consumes:
+      - application/json
+      description: Get sites by samplingfeatureID
+      parameters:
+      - description: samplingfeatureID
+        in: path
+        name: samplingfeatureID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve sites by samplingfeatureID
+      tags:
+      - sites
+  /queries/sites/settings:
+    get:
+      consumes:
+      - application/json
+      description: Get all geological settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all geological settings
       tags:
       - sites
 schemes:

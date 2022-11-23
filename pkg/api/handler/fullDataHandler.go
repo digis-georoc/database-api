@@ -6,6 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
 // GetFullDataByID godoc
@@ -26,8 +28,8 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-
-	fullData, err := h.db.GetFullDataByID(c.Param("identifier"))
+	fullData := []model.FullData{}
+	err := h.db.Query(sql.FullDataByIdQuery, &fullData, c.Param("identifier"))
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")

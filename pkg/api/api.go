@@ -75,9 +75,18 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// accesskey secured
 	secured := v1.Group("/queries")
 	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
-	secured.GET("/authors/:lastName", h.GetAuthorsByLastName)
+	// authors
+	secured.GET("/authors", h.GetAuthors)
+	secured.GET("/authors/:personID", h.GetAuthorByID)
+	// sites
+	secured.GET("/sites", h.GetSites)
+	secured.GET("/sites/:samplingfeatureID", h.GetSiteByID)
+	secured.GET("/sites/settings", h.GetGeoSettings)
+	// citations
+	secured.GET("/citations", h.GetCitations)
+	secured.GET("/citations/:citationID", h.GetCitationByID)
+	// full data
 	secured.GET("/fullData/:identifier", h.GetFullDataByID)
-	secured.GET("/sites", h.GetSitesByCoords)
 
 	return e
 }

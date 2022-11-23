@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
-	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
 // PostgresConnector interface exposes methods to connect to and interact with a postgreSQL instance
@@ -22,21 +20,16 @@ type PostgresConnector interface {
 	// returns the database version or an error
 	Ping() (string, error)
 
-	// Retrieve authors by last name
-	// returns the matching authors or an error
-	GetAuthorByLastName(name string) ([]model.People, error)
-
-	// Retrieve full dataset by sample_num
-	// returns the complete data for a given sample_num
-	GetFullDataByID(sample_num string) ([]model.FullData, error)
-
-	// Retrieve sites
-	// returns list of site data
-	GetSites() ([]model.Site, error)
-
-	// Retrieve sites by coordinates
-	// returns list of site data
-	GetSitesByCoords(latMin, latMax, longMin, longMax string) ([]model.Site, error)
+	// query is the generic method to query the database
+	// param receiver must be a pointer to a slice of struct that contains the expected columns as fields
+	// param args can be a number of arguments to the query
+	// returns any error occurring while executing the query
+	//
+	// Example:
+	// sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
+	// receiver := []struct{ Phonenumber int, Name string }{} // be sure to use uppercase field names; make it a slice of your type because call to pgx.QueryRow will return a list of rows even if there is just one
+	// err := query(sql, receiver, "Turing")
+	Query(sql string, receiver interface{}, args ...interface{}) error
 }
 
 type postgresConnector struct {
@@ -63,47 +56,14 @@ func (pC *postgresConnector) Close() {
 
 func (pC *postgresConnector) Ping() (string, error) {
 	version := []struct{ Version string }{}
-	err := pC.query("SELECT version()", &version)
+	err := pC.Query("SELECT version()", &version)
 	if err != nil {
 		return "", err
 	}
 	return version[0].Version, nil
 }
 
-func (pC *postgresConnector) GetAuthorByLastName(name string) ([]model.People, error) {
-	authors := []model.People{}
-	err := pC.query(sql.AuthorByNameQuery, &authors, name)
-	return authors, err
-}
-
-func (pC *postgresConnector) GetFullDataByID(identifier string) ([]model.FullData, error) {
-	fullData := []model.FullData{}
-	err := pC.query(sql.FullDataByIdQuery, &fullData, identifier)
-	return fullData, err
-}
-
-func (pC *postgresConnector) GetSites() ([]model.Site, error) {
-	sites := []model.Site{}
-	err := pC.query(sql.SitesQuery, &sites)
-	return sites, err
-}
-
-func (pC *postgresConnector) GetSitesByCoords(latMin, latMax, longMin, longMax string) ([]model.Site, error) {
-	sites := []model.Site{}
-	err := pC.query(sql.SitesByCoordsQuery, &sites, latMin, latMax, longMin, longMax)
-	return sites, err
-}
-
-// query is the generic method to query the database
-// param receiver must be a pointer to a slice of struct that contains the expected columns as fields
-// param args can be a number of arguments to the query
-// returns any error occurring while executing the query
-//
-// Example:
-// sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
-// receiver := []struct{ Phonenumber int, Name string }{} // be sure to use uppercase field names; make it a slice of your type because call to pgx.QueryRow will return a list of rows even if there is just one
-// err := query(sql, receiver, "Turing")
-func (pC *postgresConnector) query(sql string, receiver interface{}, args ...interface{}) error {
+func (pC *postgresConnector) Query(sql string, receiver interface{}, args ...interface{}) error {
 	// from https://github.com/jackc/pgx/issues/878
 	// Add PostgreSQL magic json functions
 	// This gives us a single row back even if the query returns many rows

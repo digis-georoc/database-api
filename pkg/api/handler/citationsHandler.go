@@ -10,64 +10,65 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
-// GetAuthors godoc
-// @Summary     Retrieve authors
-// @Description get authors
+// GetCitations godoc
+// @Summary     Retrieve citations
+// @Description get citations
 // @Security    ApiKeyAuth
-// @Tags        people
+// @Tags        citations
 // @Accept      json
 // @Produce     json
-// @Success     200      {array}  model.People
+// @Success     200      {array}  model.Citation
 // @Failure     401      {object} string
 // @Failure     404      {object} string
 // @Failure     500      {object} string
-// @Router      /queries/authors [get]
-func (h *Handler) GetAuthors(c echo.Context) error {
+// @Router      /queries/citations [get]
+func (h *Handler) GetCitations(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	authors := []model.People{}
-	err := h.db.Query(sql.AuthorsQuery, &authors)
+
+	citations := []model.Citation{}
+	err := h.db.Query(sql.CitationsQuery, &citations)
 	if err != nil {
-		logger.Errorf("Can not GetAuthors: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
+		logger.Errorf("Can not GetCitations: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(authors), authors}
+	}{len(citations), citations}
 	return c.JSON(http.StatusOK, response)
 }
 
-// GetAuthorsByID godoc
-// @Summary     Retrieve authors by personID
-// @Description get authors by personID
+// GetCitationByID godoc
+// @Summary     Retrieve citations by citationID
+// @Description get citations by citationID
 // @Security    ApiKeyAuth
-// @Tags        people
+// @Tags        citations
 // @Accept      json
 // @Produce     json
-// @Param       personID path     string true "Person ID"
-// @Success     200      {array}  model.People
+// @Param       citationID path     string true "Citation ID"
+// @Success     200      {array}  model.Citation
 // @Failure     401      {object} string
 // @Failure     404      {object} string
 // @Failure     500      {object} string
-// @Router      /queries/authors/{personID} [get]
-func (h *Handler) GetAuthorByID(c echo.Context) error {
+// @Router      /queries/citations/{citationID} [get]
+func (h *Handler) GetCitationByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	authors := []model.People{}
-	err := h.db.Query(sql.AuthorByIDQuery, &authors, c.Param("personID"))
+	citations := []model.Citation{}
+	err := h.db.Query(sql.CitationByIDQuery, &citations, c.Param("citationID"))
 	if err != nil {
-		logger.Errorf("Can not GetAuthorByID: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
+		logger.Errorf("Can not GetCitationByID: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(authors), authors}
+	}{len(citations), citations}
 	return c.JSON(http.StatusOK, response)
 }

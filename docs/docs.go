@@ -53,14 +53,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/queries/authors/{lastName}": {
+        "/queries/authors": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get authors by lastname",
+                "description": "get authors",
                 "consumes": [
                     "application/json"
                 ],
@@ -70,12 +70,61 @@ const docTemplate = `{
                 "tags": [
                     "people"
                 ],
-                "summary": "Retrieve authors by lastname",
+                "summary": "Retrieve authors",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.People"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/authors/{personID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get authors by personID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "people"
+                ],
+                "summary": "Retrieve authors by personID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Author lastname",
-                        "name": "lastName",
+                        "description": "Person ID",
+                        "name": "personID",
                         "in": "path",
                         "required": true
                     }
@@ -87,6 +136,113 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.People"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/citations": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get citations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "citations"
+                ],
+                "summary": "Retrieve citations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Citation"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/citations/{citationID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get citations by citationID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "citations"
+                ],
+                "summary": "Retrieve citations by citationID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Citation ID",
+                        "name": "citationID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Citation"
                             }
                         }
                     },
@@ -176,7 +332,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all sites where the longitude and latitude values are within the given range\nOmit query parameters to retrieve all sites",
+                "description": "Get all sites",
                 "consumes": [
                     "application/json"
                 ],
@@ -186,31 +342,112 @@ const docTemplate = `{
                 "tags": [
                     "sites"
                 ],
-                "summary": "Retrieve all sites within given coordinates",
+                "summary": "Retrieve all sites",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Site"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/sites/settings": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all geological settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sites"
+                ],
+                "summary": "Retrieve all geological settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Site"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/sites/{samplingfeatureID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get sites by samplingfeatureID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sites"
+                ],
+                "summary": "Retrieve sites by samplingfeatureID",
                 "parameters": [
                     {
-                        "type": "number",
-                        "description": "Minimum (inclusive) latitude",
-                        "name": "latMin",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Maximum (inclusive) latitude",
-                        "name": "latMax",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Minimum (inclusive) longitude",
-                        "name": "lonMin",
-                        "in": "query"
-                    },
-                    {
-                        "type": "number",
-                        "description": "Maximum (inclusive) longitude",
-                        "name": "lonMax",
-                        "in": "query"
+                        "type": "string",
+                        "description": "samplingfeatureID",
+                        "name": "samplingfeatureID",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -246,6 +483,53 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.Citation": {
+            "type": "object",
+            "properties": {
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.People"
+                    }
+                },
+                "bookTitle": {
+                    "type": "string"
+                },
+                "citationID": {
+                    "type": "integer"
+                },
+                "citationLink": {
+                    "type": "string"
+                },
+                "editors": {
+                    "type": "string"
+                },
+                "firstPage": {
+                    "type": "string"
+                },
+                "issue": {
+                    "type": "string"
+                },
+                "journal": {
+                    "type": "string"
+                },
+                "lastPage": {
+                    "type": "string"
+                },
+                "publicationyear": {
+                    "type": "integer"
+                },
+                "publisher": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "volume": {
+                    "type": "string"
+                }
+            }
+        },
         "model.FullData": {
             "type": "object",
             "properties": {

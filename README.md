@@ -2,6 +2,12 @@
 
 API to access the GEOROC database in the new ODM2 schema
 
+## Structure
+
+The database resources are available at `/api/v1/queries`.
+You can get all resources of a type by GETing `/resource`, optionally providing pagination parameters `/resource?limit=10&offset=30`, where `limit` is the pagesize and `offset` is the pagenumber times the pagesize.
+To get a specific resource by its identifier, GET `/resource/:identifier`.
+
 ## Documentation
 
 To view the api documentation, open the route `/api/v1/docs/index.html` in your browser.
