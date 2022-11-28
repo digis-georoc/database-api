@@ -229,6 +229,17 @@ paths:
       consumes:
       - application/json
       description: get authors
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -297,6 +308,17 @@ paths:
       consumes:
       - application/json
       description: get citations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -402,6 +424,17 @@ paths:
       consumes:
       - application/json
       description: Get all sites
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        required: true
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
@@ -417,6 +450,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
           schema:
             type: string
         "500":
@@ -498,4 +535,10 @@ paths:
       - sites
 schemes:
 - https
+securityDefinitions:
+  ApiKeyAuth:
+    description: Accesskey based security scheme to secure api group "/queries/*"
+    in: header
+    name: DIGIS_API_ACCESSKEY
+    type: apiKey
 swagger: "2.0"

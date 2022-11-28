@@ -26,10 +26,10 @@ import (
 // @license.name Data retrieved is licensed under CC BY-SA 4.0
 // @license.url  https://creativecommons.org/licenses/by-sa/4.0/
 
-//  @securityDefinitions.apikey  ApiKeyAuth
-//  @in                          header
-//  @name                        DIGIS_API_ACCESSKEY
-//  @description                 Accesskey based security scheme to secure api group "/queries/*"
+// @securityDefinitions.apikey ApiKeyAuth
+// @in                         header
+// @name                       DIGIS_API_ACCESSKEY
+// @description                Accesskey based security scheme to secure api group "/queries/*"
 
 // @host     localhost:8081
 // @schemes  https

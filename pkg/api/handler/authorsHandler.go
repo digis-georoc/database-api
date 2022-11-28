@@ -17,12 +17,12 @@ import (
 // @Tags        people
 // @Accept      json
 // @Produce     json
-// @Param       limit query     int true "limit"
-// @Param       offset query     int true "offset"
-// @Success     200      {array}  model.People
-// @Failure     401      {object} string
-// @Failure     404      {object} string
-// @Failure     500      {object} string
+// @Param       limit  query    int true "limit"
+// @Param       offset query    int true "offset"
+// @Success     200    {array}  model.People
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     500    {object} string
 // @Router      /queries/authors [get]
 func (h *Handler) GetAuthors(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
