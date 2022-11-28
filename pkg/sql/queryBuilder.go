@@ -1,6 +1,9 @@
 package sql
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 // A PostgreSQL query
 type Query struct {
@@ -28,8 +31,12 @@ func NewQuery(baseQuery string) *Query {
 }
 
 // Create a new QueryFilter
+// varchar values need to be enclosed in "'" manually
+// Example:
+// for varchar/string value: NewQueryFilter("table.field", "'myVarchar'", OpEq)
+// for integer/numeric value: NewQueryFilter("table.field", "4.6", OpEq)
 func NewQueryFilter(key string, value string, operator FilterOperator) QueryFilter {
-	return fmt.Sprintf("'%s' %s '%s'", key, operator, value)
+	return fmt.Sprintf("%s %s %s", key, operator, value)
 }
 
 // Add a filter with operator "=" to the query
@@ -60,6 +67,15 @@ func (q *Query) AddOffset(offset int) {
 // Render the complete query with all appended clauses
 func (q *Query) String() string {
 	fullQuery := q.baseQuery
+	// cut group by clauses to add where clauses first
+	groupByIndex := strings.LastIndex(fullQuery, "group by")
+	groupClause := ""
+	if groupByIndex >= 0 {
+		groupClause = fullQuery[groupByIndex:]
+		fullQuery = fullQuery[:groupByIndex]
+	}
+
+	// add where clauses and limit/offset
 	for i, filter := range q.filters {
 		if i == 0 {
 			// first filter is appended with "WHERE"
@@ -75,5 +91,11 @@ func (q *Query) String() string {
 	if q.offset > 0 {
 		fullQuery = fmt.Sprintf("%s OFFSET %d", fullQuery, q.offset)
 	}
+
+	if groupClause != "" {
+		// re-add group by clause
+		fullQuery = fmt.Sprintf("%s %s", fullQuery, groupClause)
+	}
+
 	return fullQuery
 }

@@ -171,6 +171,25 @@ definitions:
       personLastName:
         type: string
     type: object
+  model.Sample:
+    properties:
+      elevationPrecision:
+        type: number
+      elevationPrecisionComment:
+        type: string
+      samplingFeatureCode:
+        type: string
+      samplingFeatureDescription:
+        type: string
+      samplingFeatureID:
+        type: integer
+      samplingFeatureName:
+        type: string
+      samplingFeatureTypeCV:
+        type: string
+      samplingFeatureUUID:
+        type: integer
+    type: object
   model.Site:
     properties:
       latitude:
@@ -198,7 +217,9 @@ info:
     email: digis-info@uni-goettingen.de
     name: DIGIS Project
     url: https://www.uni-goettingen.de/de/643369.html
-  description: This is the database api for the new GeoROC datamodel
+  description: |-
+    This is the database api for the new GeoROC datamodel
+    Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
   license:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
@@ -255,6 +276,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
           schema:
             type: string
         "500":
@@ -334,6 +359,10 @@ paths:
             type: string
         "404":
           description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
           schema:
             type: string
         "500":
@@ -419,6 +448,66 @@ paths:
       summary: Retrieve full dataset by samplingfeatureid
       tags:
       - fulldata
+  /queries/samples:
+    get:
+      consumes:
+      - application/json
+      description: Get all samples matching the current filters
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: tectonic setting
+        in: query
+        name: setting
+        type: string
+      - description: location level 1
+        in: query
+        name: location1
+        type: string
+      - description: location level 2
+        in: query
+        name: location2
+        type: string
+      - description: location level 3
+        in: query
+        name: location3
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sample'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all samples filtered by a variety of fields
+      tags:
+      - samples
   /queries/sites:
     get:
       consumes:

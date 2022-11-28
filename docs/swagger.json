@@ -4,7 +4,7 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "This is the database api for the new GeoROC datamodel",
+        "description": "This is the database api for the new GeoROC datamodel\nNote: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192",
         "title": "DIGIS Database API",
         "contact": {
             "name": "DIGIS Project",
@@ -101,6 +101,12 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "string"
                         }
@@ -228,6 +234,12 @@
                             "type": "string"
                         }
                     },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -340,6 +352,99 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all samples matching the current filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve all samples filtered by a variety of fields",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "tectonic setting",
+                        "name": "setting",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 1",
+                        "name": "location1",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 2",
+                        "name": "location2",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 3",
+                        "name": "location3",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Sample"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "string"
                         }
@@ -787,6 +892,35 @@
                 },
                 "personLastName": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Sample": {
+            "type": "object",
+            "properties": {
+                "elevationPrecision": {
+                    "type": "number"
+                },
+                "elevationPrecisionComment": {
+                    "type": "string"
+                },
+                "samplingFeatureCode": {
+                    "type": "string"
+                },
+                "samplingFeatureDescription": {
+                    "type": "string"
+                },
+                "samplingFeatureID": {
+                    "type": "integer"
+                },
+                "samplingFeatureName": {
+                    "type": "string"
+                },
+                "samplingFeatureTypeCV": {
+                    "type": "string"
+                },
+                "samplingFeatureUUID": {
+                    "type": "integer"
                 }
             }
         },

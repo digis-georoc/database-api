@@ -18,6 +18,7 @@ import (
 // @title       DIGIS Database API
 // @version     0.1.0
 // @description This is the database api for the new GeoROC datamodel
+// @description Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
 
 // @contact.name  DIGIS Project
 // @contact.url   https://www.uni-goettingen.de/de/643369.html
@@ -47,10 +48,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 		LogRequestID: true,
 		LogMethod:    true,
 		Skipper: func(c echo.Context) bool {
-			if strings.Contains(c.Request().URL.Path, "docs") {
-				return true
-			}
-			return false
+			return strings.Contains(c.Request().URL.Path, "docs")
 		},
 		LogValuesFunc: func(c echo.Context, values emw.RequestLoggerValues) error {
 			log.WithFields(logrus.Fields{
@@ -72,21 +70,23 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	v1.GET("/ping", h.Ping)
 	v1.GET("/docs/*", echoSwagger.WrapHandler)
 
-	// accesskey secured
-	secured := v1.Group("/queries")
-	secured.Use(middleware.GetAccessKeyMiddleware(secStore))
+	// accesskey queries
+	queries := v1.Group("/queries")
+	queries.Use(middleware.GetAccessKeyMiddleware(secStore))
 	// authors
-	secured.GET("/authors", h.GetAuthors)
-	secured.GET("/authors/:personID", h.GetAuthorByID)
+	queries.GET("/authors", h.GetAuthors)
+	queries.GET("/authors/:personID", h.GetAuthorByID)
 	// sites
-	secured.GET("/sites", h.GetSites)
-	secured.GET("/sites/:samplingfeatureID", h.GetSiteByID)
-	secured.GET("/sites/settings", h.GetGeoSettings)
+	queries.GET("/sites", h.GetSites)
+	queries.GET("/sites/:samplingfeatureID", h.GetSiteByID)
+	queries.GET("/sites/settings", h.GetGeoSettings)
 	// citations
-	secured.GET("/citations", h.GetCitations)
-	secured.GET("/citations/:citationID", h.GetCitationByID)
+	queries.GET("/citations", h.GetCitations)
+	queries.GET("/citations/:citationID", h.GetCitationByID)
 	// full data
-	secured.GET("/fullData/:identifier", h.GetFullDataByID)
+	queries.GET("/fullData/:identifier", h.GetFullDataByID)
+	// samples
+	queries.GET("/samples", h.GetSamplesByGeoSetting)
 
 	return e
 }

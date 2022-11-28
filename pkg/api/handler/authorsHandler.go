@@ -22,6 +22,7 @@ import (
 // @Success     200    {array}  model.People
 // @Failure     401    {object} string
 // @Failure     404    {object} string
+// @Failure     422    {object} string
 // @Failure     500    {object} string
 // @Router      /queries/authors [get]
 func (h *Handler) GetAuthors(c echo.Context) error {

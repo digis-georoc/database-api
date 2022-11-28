@@ -22,6 +22,7 @@ import (
 // @Success     200    {array}  model.Citation
 // @Failure     401    {object} string
 // @Failure     404    {object} string
+// @Failure     422    {object} string
 // @Failure     500    {object} string
 // @Router      /queries/citations [get]
 func (h *Handler) GetCitations(c echo.Context) error {
