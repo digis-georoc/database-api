@@ -17,4 +17,4 @@ For installation guides see [the documentation](https://github.com/swaggo/swag#g
 
 To generate the documentation files under **docs/**, execute
 
-`swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go`
+`swag fmt && swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go`
