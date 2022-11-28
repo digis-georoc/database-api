@@ -29,7 +29,8 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	fullData := []model.FullData{}
-	err := h.db.Query(sql.FullDataByIdQuery, &fullData, c.Param("identifier"))
+	query := sql.NewQuery(sql.FullDataByIdQuery)
+	err := h.db.Query(query.String(), &fullData, c.Param("identifier"))
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")

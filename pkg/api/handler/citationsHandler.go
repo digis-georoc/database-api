@@ -17,6 +17,8 @@ import (
 // @Tags        citations
 // @Accept      json
 // @Produce     json
+// @Param       limit query     int true "limit"
+// @Param       offset query     int true "offset"
 // @Success     200      {array}  model.Citation
 // @Failure     401      {object} string
 // @Failure     404      {object} string
@@ -29,7 +31,15 @@ func (h *Handler) GetCitations(c echo.Context) error {
 	}
 
 	citations := []model.Citation{}
-	err := h.db.Query(sql.CitationsQuery, &citations)
+	query := sql.NewQuery(sql.CitationsQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &citations)
 	if err != nil {
 		logger.Errorf("Can not GetCitations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
@@ -61,7 +71,8 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 	}
 
 	citations := []model.Citation{}
-	err := h.db.Query(sql.CitationByIDQuery, &citations, c.Param("citationID"))
+	query := sql.NewQuery(sql.CitationByIDQuery)
+	err := h.db.Query(query.String(), &citations, c.Param("citationID"))
 	if err != nil {
 		logger.Errorf("Can not GetCitationByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")

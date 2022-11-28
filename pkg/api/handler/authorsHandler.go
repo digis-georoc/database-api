@@ -17,6 +17,8 @@ import (
 // @Tags        people
 // @Accept      json
 // @Produce     json
+// @Param       limit query     int true "limit"
+// @Param       offset query     int true "offset"
 // @Success     200      {array}  model.People
 // @Failure     401      {object} string
 // @Failure     404      {object} string
@@ -28,7 +30,15 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	authors := []model.People{}
-	err := h.db.Query(sql.AuthorsQuery, &authors)
+	query := sql.NewQuery(sql.AuthorsQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &authors)
 	if err != nil {
 		logger.Errorf("Can not GetAuthors: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
@@ -60,7 +70,8 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 	}
 
 	authors := []model.People{}
-	err := h.db.Query(sql.AuthorByIDQuery, &authors, c.Param("personID"))
+	query := sql.NewQuery(sql.AuthorByIDQuery)
+	err := h.db.Query(query.String(), &authors, c.Param("personID"))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")

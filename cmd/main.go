@@ -18,6 +18,7 @@ func main() {
 
 	// for local testing this can be set to the local project directory; in containerized setup this remains empty
 	workdir := os.Getenv("WORKDIR")
+
 	secStore := secretstore.NewSecretStore(workdir)
 	err := secStore.LoadSecretsFromFile("/vault/secrets/database-config.txt")
 	if err != nil {

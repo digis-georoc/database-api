@@ -103,7 +103,7 @@ left join (
 	left join odm2.actions a_meth on a_meth.actionid = f_meth.actionid
 	left join odm2.methods meth on meth.methodid = a_meth.methodid
 	left join odm2.actionby ab_meth on ab_meth.actionid = a_meth.actionid 
-	left join odm2.organizations org on org.organizationid = ab_meth.organizationid::int4
+	left join odm2.organizations org on org.organizationid = ab_meth.organizationid
 	where rel_meth.relatedfeatureid = $1
 	group by rel_meth.relatedfeatureid
 ) methods on methods.id = samples.samplingfeatureid
@@ -112,16 +112,15 @@ left join (
 	select rel_res.relatedfeatureid as id,
 	array_agg(vars.variablecode) as items_measured,
 	array_agg(vars.variabletypecode) as item_types,
-	coalesce(array_agg(distinct rr.relationdescription), array['Unknown']) as standard_names,
-	coalesce(array_agg(distinct std_vals.datavalue), array[-999]) as standard_values,
+	coalesce(array_agg(distinct std.standardname) filter (where std.standardname is not null), array['Unknown']) as standard_names,
+	coalesce(array_agg(distinct std.standardvalue) filter (where std.standardvalue is not null), array[-999]) as standard_values,
 	array_agg(chem_vals.datavalue) as values_meas,
 	array_agg(u.unitgeoroc) as units 
 	from odm2.relatedfeatures rel_res
 	left join odm2.featureactions f_res on f_res.samplingfeatureid = rel_res.samplingfeatureid -- add sample-featureactions? or f_res.samplingfeatureid = rel_res.relatedfeatureid
 	left join odm2.results res on res.featureactionid = f_res.featureactionid
-	left join odm2.variables vars on vars.variableid = res.variableid 
-	left join odm2.relatedresults rr on rr.resultid = res.resultid 
-	left join odm2.measurementresultvalues std_vals on std_vals.valueid = rr.relatedresultid 
+	left join odm2.variables vars on vars.variableid = res.variableid
+	left join odm2.standards std on std.actionid = f_res.actionid 
 	left join odm2.measurementresultvalues chem_vals on chem_vals.valueid = res.resultid 
 	left join odm2.units u on u.unitsid = res.unitsid 
 	where rel_res.relatedfeatureid = $1

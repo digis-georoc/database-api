@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -33,4 +34,27 @@ func NewHandler(db repository.PostgresConnector, config *middleware.KeycloakConf
 // @Router      /ping [get]
 func (h *Handler) Ping(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Pong")
+}
+
+// handlePaginationParams reads the pagination parameters from the request and returns them as integers
+func handlePaginationParams(c echo.Context) (int, int, error) {
+	var err error
+	limit := c.QueryParam("limit")
+	limVal := 0
+	if limit != "" {
+		limVal, err = strconv.Atoi(limit)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	offset := c.QueryParam("offset")
+	offVal := 0
+	if offset != "" {
+		offVal, err = strconv.Atoi(offset)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+	return limVal, offVal, nil
 }
