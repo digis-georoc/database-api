@@ -17,8 +17,8 @@ import (
 // @Tags        people
 // @Accept      json
 // @Produce     json
-// @Param       limit  query    int true "limit"
-// @Param       offset query    int true "offset"
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
 // @Success     200    {array}  model.People
 // @Failure     401    {object} string
 // @Failure     404    {object} string

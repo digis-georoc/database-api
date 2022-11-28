@@ -254,12 +254,10 @@ paths:
       - description: limit
         in: query
         name: limit
-        required: true
         type: integer
       - description: offset
         in: query
         name: offset
-        required: true
         type: integer
       produces:
       - application/json
@@ -337,12 +335,10 @@ paths:
       - description: limit
         in: query
         name: limit
-        required: true
         type: integer
       - description: offset
         in: query
         name: offset
-        required: true
         type: integer
       produces:
       - application/json
@@ -517,12 +513,10 @@ paths:
       - description: limit
         in: query
         name: limit
-        required: true
         type: integer
       - description: offset
         in: query
         name: offset
-        required: true
         type: integer
       produces:
       - application/json

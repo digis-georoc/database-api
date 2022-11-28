@@ -40,6 +40,11 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	log := logrus.New()
 	e.Use(emw.Recover())
 	e.Use(emw.RequestID())
+	e.Use(emw.CORSWithConfig(
+		emw.CORSConfig{
+			AllowOrigins: []string{"https://localhost:8081/*"},
+		},
+	))
 	e.Use(middleware.GetUserTrackMiddleware())
 	e.Use(middleware.Logger)
 	e.Use(emw.RequestLoggerWithConfig(emw.RequestLoggerConfig{
