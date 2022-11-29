@@ -448,7 +448,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get all samples matching the current filters
+      description: |-
+        Get all samples matching the current filters
+        Multiple values in a single filter must be comma separated
       parameters:
       - description: limit
         in: query
@@ -473,6 +475,34 @@ paths:
       - description: location level 3
         in: query
         name: location3
+        type: string
+      - description: samplingfeature name
+        in: query
+        name: samplename
+        type: string
+      - description: sampling technique
+        in: query
+        name: sampletech
+        type: string
+      - description: land or sea
+        in: query
+        name: landorsea
+        type: string
+      - description: taxonomic classifier name
+        in: query
+        name: rockclass
+        type: string
+      - description: rock type
+        in: query
+        name: rocktype
+        type: string
+      - description: material
+        in: query
+        name: material
+        type: string
+      - description: chemical element
+        in: query
+        name: majorelem
         type: string
       produces:
       - application/json
@@ -618,6 +648,7 @@ paths:
       - sites
 schemes:
 - https
+- http
 securityDefinitions:
   ApiKeyAuth:
     description: Accesskey based security scheme to secure api group "/queries/*"

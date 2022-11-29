@@ -372,7 +372,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samples matching the current filters",
+                "description": "Get all samples matching the current filters\nMultiple values in a single filter must be comma separated",
                 "consumes": [
                     "application/json"
                 ],
@@ -418,6 +418,48 @@ const docTemplate = `{
                         "type": "string",
                         "description": "location level 3",
                         "name": "location3",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "samplingfeature name",
+                        "name": "samplename",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "land or sea",
+                        "name": "landorsea",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "taxonomic classifier name",
+                        "name": "rockclass",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rock type",
+                        "name": "rocktype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "material",
+                        "name": "material",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "chemical element",
+                        "name": "majorelem",
                         "in": "query"
                     }
                 ],
@@ -970,7 +1012,7 @@ var SwaggerInfo = &swag.Spec{
 	Version:          "0.1.0",
 	Host:             "localhost:8081",
 	BasePath:         "/api/v1",
-	Schemes:          []string{"https"},
+	Schemes:          []string{"https", "http"},
 	Title:            "DIGIS Database API",
 	Description:      "This is the database api for the new GeoROC datamodel\nNote: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192",
 	InfoInstanceName: "swagger",

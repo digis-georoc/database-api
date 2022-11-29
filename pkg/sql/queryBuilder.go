@@ -23,6 +23,7 @@ const (
 	OpEq FilterOperator = "="
 	OpLt FilterOperator = "<"
 	OpGt FilterOperator = ">"
+	OpIn FilterOperator = "IN"
 )
 
 // Create a new Query
@@ -40,6 +41,12 @@ func NewQueryFilter(key string, value string, operator FilterOperator) QueryFilt
 }
 
 // Add a filter with operator "=" to the query
+// value will be enclosed in single quotes
+func (q *Query) AddEqFilterQuoted(key string, value string) {
+	q.AddEqFilter(key, fmt.Sprintf("'%s'", value))
+}
+
+// Add a filter with operator "=" to the query
 func (q *Query) AddEqFilter(key string, value string) {
 	q.filters = append(q.filters, NewQueryFilter(key, value, OpEq))
 }
@@ -52,6 +59,31 @@ func (q *Query) AddLtFilter(key string, value string) {
 // Add a filter with operator ">" to the query
 func (q *Query) AddGtFilter(key string, value string) {
 	q.filters = append(q.filters, NewQueryFilter(key, value, OpGt))
+}
+
+// Add a filter to check if a field is in a set of string values
+// each comma separated value gets enclosed in single quotes
+// param key: the table.field to check agains
+// param values: comma-concatenated string of values
+func (q *Query) AddInFilterQuoted(key string, values string) {
+	valueSlice := strings.Split(values, ",")
+	valueString := ""
+	for i, v := range valueSlice {
+		if i == 0 {
+			valueString = fmt.Sprintf("'%s'", v)
+		} else {
+			valueString = fmt.Sprintf("%s,'%s'", valueString, v)
+		}
+	}
+	q.AddInFilter(key, valueString)
+}
+
+// Add a filter to check if a field is in a set of  values
+// param key: the table.field to check agains
+// param values: comma-concatenated string of values
+func (q *Query) AddInFilter(key string, values string) {
+	valueString := fmt.Sprintf("(%s)", values)
+	q.filters = append(q.filters, NewQueryFilter(key, valueString, OpIn))
 }
 
 // Add a limit to the query

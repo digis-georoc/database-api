@@ -33,18 +33,13 @@ import (
 // @description                Accesskey based security scheme to secure api group "/queries/*"
 
 // @host     localhost:8081
-// @schemes  https
+// @schemes  https http
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
 	log := logrus.New()
 	e.Use(emw.Recover())
 	e.Use(emw.RequestID())
-	e.Use(emw.CORSWithConfig(
-		emw.CORSConfig{
-			AllowOrigins: []string{"https://localhost:8081/*"},
-		},
-	))
 	e.Use(middleware.GetUserTrackMiddleware())
 	e.Use(middleware.Logger)
 	e.Use(emw.RequestLoggerWithConfig(emw.RequestLoggerConfig{

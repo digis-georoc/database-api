@@ -1,6 +1,7 @@
 {
     "schemes": [
-        "https"
+        "https",
+        "http"
     ],
     "swagger": "2.0",
     "info": {
@@ -368,7 +369,7 @@
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samples matching the current filters",
+                "description": "Get all samples matching the current filters\nMultiple values in a single filter must be comma separated",
                 "consumes": [
                     "application/json"
                 ],
@@ -414,6 +415,48 @@
                         "type": "string",
                         "description": "location level 3",
                         "name": "location3",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "samplingfeature name",
+                        "name": "samplename",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "land or sea",
+                        "name": "landorsea",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "taxonomic classifier name",
+                        "name": "rockclass",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rock type",
+                        "name": "rocktype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "material",
+                        "name": "material",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "chemical element",
+                        "name": "majorelem",
                         "in": "query"
                     }
                 ],
