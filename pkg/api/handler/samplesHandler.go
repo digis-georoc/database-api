@@ -10,6 +10,20 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
+const (
+	QP_SETTING   = "setting"
+	QP_LOC1      = "location1"
+	QP_LOC2      = "location2"
+	QP_LOC3      = "location3"
+	QP_SAMPNAME  = "samplename"
+	QP_SAMPTECH  = "sampletech"
+	QP_LORS      = "landorsea"
+	QP_ROCKCLASS = "rockclass"
+	QP_ROCKTYPE  = "rocktype"
+	QP_MATERIAL  = "material"
+	QP_MAJORELEM = "majorelem"
+)
+
 // GetSamplesByGeoSetting godoc
 // @Summary     Retrieve all samples filtered by a variety of fields
 // @Description Get all samples matching the current filters
@@ -54,47 +68,47 @@ func (h *Handler) GetSamplesByGeoSetting(c echo.Context) error {
 	query.AddOffset(offset)
 
 	// add optional search filters
-	setting := c.QueryParam("setting")
+	setting := c.QueryParam(QP_SETTING)
 	if setting != "" {
 		query.AddInFilterQuoted("s.setting", setting)
 	}
-	location1 := c.QueryParam("location1")
+	location1 := c.QueryParam(QP_LOC1)
 	if location1 != "" {
 		query.AddInFilterQuoted("toplevelloc.locationname", location1)
 	}
-	location2 := c.QueryParam("location2")
+	location2 := c.QueryParam(QP_LOC2)
 	if location2 != "" {
 		query.AddInFilterQuoted("secondlevelloc.locationname", location2)
 	}
-	location3 := c.QueryParam("location3")
+	location3 := c.QueryParam(QP_LOC3)
 	if location3 != "" {
 		query.AddInFilterQuoted("thirdlevelloc.locationname", location3)
 	}
-	samplename := c.QueryParam("samplename")
+	samplename := c.QueryParam(QP_SAMPNAME)
 	if samplename != "" {
 		query.AddInFilterQuoted("sf.samplingfeaturename", samplename)
 	}
-	sampletech := c.QueryParam("sampletech")
+	sampletech := c.QueryParam(QP_SAMPTECH)
 	if sampletech != "" {
 		query.AddInFilterQuoted("ann_samp_tech.annotationtext", sampletech)
 	}
-	landorsea := c.QueryParam("landorsea")
+	landorsea := c.QueryParam(QP_LORS)
 	if landorsea != "" {
 		query.AddInFilterQuoted("s.sitedescription", landorsea)
 	}
-	rockclass := c.QueryParam("rockclass")
+	rockclass := c.QueryParam(QP_ROCKCLASS)
 	if rockclass != "" {
 		query.AddInFilterQuoted("tax_class.taxonomicclassifiername", rockclass)
 	}
-	rocktype := c.QueryParam("rocktype")
+	rocktype := c.QueryParam(QP_ROCKTYPE)
 	if rocktype != "" {
 		query.AddInFilterQuoted("tax_type.taxonomicclassifiername", rocktype)
 	}
-	material := c.QueryParam("material")
+	material := c.QueryParam(QP_MATERIAL)
 	if material != "" {
 		query.AddInFilterQuoted("ann_mat.annotationtext", material)
 	}
-	majorelem := c.QueryParam("majorelem")
+	majorelem := c.QueryParam(QP_MAJORELEM)
 	if majorelem != "" {
 		query.AddInFilterQuoted("v.variablecode", majorelem)
 	}

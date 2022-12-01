@@ -11,10 +11,7 @@ import (
 )
 
 const (
-	QP_LAT_MIN  = "latMin"
-	QP_LAT_MAX  = "latMax"
-	QP_LONG_MIN = "lonMin"
-	QP_LONG_MAX = "lonMax"
+	QP_SAMPFEATUREID = "samplingfeatureID"
 )
 
 // GetSites godoc
@@ -79,7 +76,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 	}
 	sites := []model.Site{}
 	query := sql.NewQuery(sql.SiteByIDQuery)
-	err := h.db.Query(query.String(), &sites, c.Param("samplingfeatureID"))
+	err := h.db.Query(query.String(), &sites, c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSiteByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")

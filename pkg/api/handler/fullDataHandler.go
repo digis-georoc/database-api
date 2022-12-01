@@ -10,6 +10,10 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
+const (
+	QP_IDENTIFIER = "identifier"
+)
+
 // GetFullDataByID godoc
 // @Summary     Retrieve full dataset by samplingfeatureid
 // @Description get full dataset by samplingfeatureid
@@ -30,7 +34,7 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 	}
 	fullData := []model.FullData{}
 	query := sql.NewQuery(sql.FullDataByIdQuery)
-	err := h.db.Query(query.String(), &fullData, c.Param("identifier"))
+	err := h.db.Query(query.String(), &fullData, c.Param(QP_IDENTIFIER))
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")

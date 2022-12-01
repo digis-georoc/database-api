@@ -9,6 +9,11 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 )
 
+const (
+	QP_LIMIT  = "limit"
+	QP_OFFSET = "offset"
+)
+
 // Handler is the core strunct holding all dependencies to handle api requests
 type Handler struct {
 	db     repository.PostgresConnector
@@ -39,7 +44,7 @@ func (h *Handler) Ping(c echo.Context) error {
 // handlePaginationParams reads the pagination parameters from the request and returns them as integers
 func handlePaginationParams(c echo.Context) (int, int, error) {
 	var err error
-	limit := c.QueryParam("limit")
+	limit := c.QueryParam(QP_LIMIT)
 	limVal := 0
 	if limit != "" {
 		limVal, err = strconv.Atoi(limit)
@@ -48,7 +53,7 @@ func handlePaginationParams(c echo.Context) (int, int, error) {
 		}
 	}
 
-	offset := c.QueryParam("offset")
+	offset := c.QueryParam(QP_OFFSET)
 	offVal := 0
 	if offset != "" {
 		offVal, err = strconv.Atoi(offset)

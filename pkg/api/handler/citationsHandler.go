@@ -10,6 +10,10 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
+const (
+	QP_CITATIONID = "citationID"
+)
+
 // GetCitations godoc
 // @Summary     Retrieve citations
 // @Description get citations
@@ -73,7 +77,7 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 
 	citations := []model.Citation{}
 	query := sql.NewQuery(sql.CitationByIDQuery)
-	err := h.db.Query(query.String(), &citations, c.Param("citationID"))
+	err := h.db.Query(query.String(), &citations, c.Param(QP_CITATIONID))
 	if err != nil {
 		logger.Errorf("Can not GetCitationByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")

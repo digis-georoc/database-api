@@ -10,6 +10,10 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
+const (
+	QP_PERSONID = "personID"
+)
+
 // GetAuthors godoc
 // @Summary     Retrieve authors
 // @Description get authors
@@ -72,7 +76,7 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 
 	authors := []model.People{}
 	query := sql.NewQuery(sql.AuthorByIDQuery)
-	err := h.db.Query(query.String(), &authors, c.Param("personID"))
+	err := h.db.Query(query.String(), &authors, c.Param(QP_PERSONID))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
