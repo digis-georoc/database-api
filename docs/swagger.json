@@ -5,7 +5,7 @@
     ],
     "swagger": "2.0",
     "info": {
-        "description": "This is the database api for the new GeoROC datamodel\nNote: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192",
+        "description": "This is the database api for the new GeoROC datamodel\n\nNote: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192",
         "title": "DIGIS Database API",
         "contact": {
             "name": "DIGIS Project",
@@ -18,9 +18,75 @@
         },
         "version": "0.1.0"
     },
-    "host": "localhost:8081",
+    "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
     "paths": {
+        "/geodata/sites": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get site data in GeoJSON format",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sites"
+                ],
+                "summary": "Retrieve site data as GeoJSON",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.GeoJSONFeatureCollection"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/ping": {
             "get": {
                 "description": "Check connection to api",
@@ -915,6 +981,56 @@
                             "type": "number"
                         }
                     }
+                }
+            }
+        },
+        "model.GeoJSONFeature": {
+            "type": "object",
+            "properties": {
+                "geometry": {
+                    "$ref": "#/definitions/model.Geometry"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "properties": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GeoJSONFeatureCollection": {
+            "type": "object",
+            "properties": {
+                "features": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeoJSONFeature"
+                    }
+                },
+                "numberMatched": {
+                    "type": "integer"
+                },
+                "numberReturned": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Geometry": {
+            "type": "object",
+            "properties": {
+                "coordinates": {
+                    "type": "array",
+                    "items": {}
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },

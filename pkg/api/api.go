@@ -33,7 +33,7 @@ import (
 // @name                       DIGIS_API_ACCESSKEY
 // @description                Accesskey based security scheme to secure api group "/queries/*"
 
-// @host     api.georoc.eu
+// @host     api-test.georoc.eu
 // @schemes  https http
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {

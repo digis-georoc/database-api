@@ -27,7 +27,7 @@ type GeoJSONFeatureCollection struct {
 // GeoJSON Geometry
 type Geometry struct {
 	Type        GeoJSONFeatureType
-	Coordinates []float64
+	Coordinates []interface{}
 }
 
 // GeoJSON Feature

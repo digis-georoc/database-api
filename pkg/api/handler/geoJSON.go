@@ -19,7 +19,7 @@ import (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.GeoSites
+// @Success     200    {object} model.GeoJSONFeatureCollection
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -57,14 +57,14 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 func buildFeatures(sites []map[string]interface{}) []model.GeoJSONFeature {
 	featureList := []model.GeoJSONFeature{}
 	for i, result := range sites {
-		lat := result["lat"].(float64)
-		long := result["long"].(float64)
+		lat := result["lat"].([]interface{})[0]
+		long := result["long"].([]interface{})[0]
 		feature := model.GeoJSONFeature{
 			Type: model.GEOJSONTYPE_FEATURE,
 			ID:   fmt.Sprintf("%d", i),
 			Geometry: model.Geometry{
 				Type:        model.GEOJSON_GEOMETRY_POINT,
-				Coordinates: []float64{lat, long},
+				Coordinates: []interface{}{lat, long},
 			},
 			Properties: result,
 		}

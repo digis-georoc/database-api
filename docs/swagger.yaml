@@ -162,6 +162,39 @@ definitions:
           type: array
         type: array
     type: object
+  model.GeoJSONFeature:
+    properties:
+      geometry:
+        $ref: '#/definitions/model.Geometry'
+      id:
+        type: string
+      properties:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    type: object
+  model.GeoJSONFeatureCollection:
+    properties:
+      features:
+        items:
+          $ref: '#/definitions/model.GeoJSONFeature'
+        type: array
+      numberMatched:
+        type: integer
+      numberReturned:
+        type: integer
+      type:
+        type: string
+    type: object
+  model.Geometry:
+    properties:
+      coordinates:
+        items: {}
+        type: array
+      type:
+        type: string
+    type: object
   model.People:
     properties:
       personFirstName:
@@ -211,7 +244,7 @@ definitions:
       spatialReferenceID:
         type: integer
     type: object
-host: localhost:8081
+host: api-test.georoc.eu
 info:
   contact:
     email: digis-info@uni-goettingen.de
@@ -219,6 +252,7 @@ info:
     url: https://www.uni-goettingen.de/de/643369.html
   description: |-
     This is the database api for the new GeoROC datamodel
+
     Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
   license:
     name: Data retrieved is licensed under CC BY-SA 4.0
@@ -226,6 +260,48 @@ info:
   title: DIGIS Database API
   version: 0.1.0
 paths:
+  /geodata/sites:
+    get:
+      consumes:
+      - application/json
+      description: get site data in GeoJSON format
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GeoJSONFeatureCollection'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve site data as GeoJSON
+      tags:
+      - sites
   /ping:
     get:
       consumes:

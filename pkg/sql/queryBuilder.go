@@ -117,16 +117,17 @@ func (q *Query) String() string {
 		// subsequent filters are appended with "AND"
 		fullQuery = fmt.Sprintf("%s AND %s", fullQuery, filter)
 	}
+
+	if groupClause != "" {
+		// re-add group by clause
+		fullQuery = fmt.Sprintf("%s %s", fullQuery, groupClause)
+	}
+
 	if q.limit > 0 {
 		fullQuery = fmt.Sprintf("%s LIMIT %d", fullQuery, q.limit)
 	}
 	if q.offset > 0 {
 		fullQuery = fmt.Sprintf("%s OFFSET %d", fullQuery, q.offset)
-	}
-
-	if groupClause != "" {
-		// re-add group by clause
-		fullQuery = fmt.Sprintf("%s %s", fullQuery, groupClause)
 	}
 
 	return fullQuery
