@@ -11,31 +11,32 @@ import (
 )
 
 const (
-	QP_PERSONID = "personID"
+	QP_CITATIONID = "citationID"
 )
 
-// GetAuthors godoc
-// @Summary     Retrieve authors
-// @Description get authors
+// GetCitations godoc
+// @Summary     Retrieve citations
+// @Description get citations
 // @Security    ApiKeyAuth
-// @Tags        people
+// @Tags        citations
 // @Accept      json
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.People
+// @Success     200    {array}  model.Citation
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
 // @Failure     500    {object} string
-// @Router      /queries/authors [get]
-func (h *Handler) GetAuthors(c echo.Context) error {
+// @Router      /queries/citations [get]
+func (h *Handler) GetCitations(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	authors := []model.People{}
-	query := sql.NewQuery(sql.AuthorsQuery)
+
+	citations := []model.Citation{}
+	query := sql.NewQuery(sql.CitationsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -43,47 +44,47 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &authors)
+	err = h.db.Query(query.String(), &citations)
 	if err != nil {
-		logger.Errorf("Can not GetAuthors: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
+		logger.Errorf("Can not GetCitations: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(authors), authors}
+	}{len(citations), citations}
 	return c.JSON(http.StatusOK, response)
 }
 
-// GetAuthorsByID godoc
-// @Summary     Retrieve authors by personID
-// @Description get authors by personID
+// GetCitationByID godoc
+// @Summary     Retrieve citations by citationID
+// @Description get citations by citationID
 // @Security    ApiKeyAuth
-// @Tags        people
+// @Tags        citations
 // @Accept      json
 // @Produce     json
-// @Param       personID path     string true "Person ID"
-// @Success     200      {array}  model.People
-// @Failure     401      {object} string
-// @Failure     404      {object} string
-// @Failure     500      {object} string
-// @Router      /queries/authors/{personID} [get]
-func (h *Handler) GetAuthorByID(c echo.Context) error {
+// @Param       citationID path     string true "Citation ID"
+// @Success     200        {array}  model.Citation
+// @Failure     401        {object} string
+// @Failure     404        {object} string
+// @Failure     500        {object} string
+// @Router      /queries/citations/{citationID} [get]
+func (h *Handler) GetCitationByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	authors := []model.People{}
-	query := sql.NewQuery(sql.AuthorByIDQuery)
-	err := h.db.Query(query.String(), &authors, c.Param(QP_PERSONID))
+	citations := []model.Citation{}
+	query := sql.NewQuery(sql.CitationByIDQuery)
+	err := h.db.Query(query.String(), &citations, c.Param(QP_CITATIONID))
 	if err != nil {
-		logger.Errorf("Can not GetAuthorByID: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
+		logger.Errorf("Can not GetCitationByID: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(authors), authors}
+	}{len(citations), citations}
 	return c.JSON(http.StatusOK, response)
 }

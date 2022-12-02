@@ -1,0 +1,734 @@
+basePath: /api/v1
+definitions:
+  model.Citation:
+    properties:
+      authors:
+        items:
+          $ref: '#/definitions/model.People'
+        type: array
+      bookTitle:
+        type: string
+      citationID:
+        type: integer
+      citationLink:
+        type: string
+      editors:
+        type: string
+      firstPage:
+        type: string
+      issue:
+        type: string
+      journal:
+        type: string
+      lastPage:
+        type: string
+      publicationyear:
+        type: integer
+      publisher:
+        type: string
+      title:
+        type: string
+      volume:
+        type: string
+    type: object
+  model.FullData:
+    properties:
+      age_Max:
+        type: integer
+      age_Min:
+        type: integer
+      batches:
+        items:
+          type: integer
+        type: array
+      comment:
+        items:
+          type: string
+        type: array
+      elevation_Max:
+        type: integer
+      elevation_Min:
+        type: integer
+      inclusion_Type:
+        items:
+          type: string
+        type: array
+      institution:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      item_Group:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      item_Name:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      land_Or_Sea:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      latitude:
+        type: number
+      latitude_Max:
+        type: string
+      latitude_Min:
+        type: string
+      loc_Data: {}
+      location_Names:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      location_Num:
+        type: integer
+      location_Types:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      longitude:
+        type: number
+      longitude_Max:
+        type: string
+      longitude_Min:
+        type: string
+      material:
+        items:
+          type: string
+        type: array
+      method:
+        items:
+          type: string
+        type: array
+      mineral:
+        items:
+          type: string
+        type: array
+      references: {}
+      rock_Class:
+        type: string
+      rock_Texture:
+        type: string
+      rock_Type:
+        type: string
+      sample_Num:
+        type: integer
+      sampleIds:
+        items:
+          type: string
+        type: array
+      standard_Names:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      standard_Values:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+      tectonic_Setting:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      unique_id:
+        type: string
+      units:
+        items:
+          items:
+            type: string
+          type: array
+        type: array
+      values:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+    type: object
+  model.GeoJSONFeature:
+    properties:
+      geometry:
+        $ref: '#/definitions/model.Geometry'
+      id:
+        type: string
+      properties:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    type: object
+  model.GeoJSONFeatureCollection:
+    properties:
+      features:
+        items:
+          $ref: '#/definitions/model.GeoJSONFeature'
+        type: array
+      numberMatched:
+        type: integer
+      numberReturned:
+        type: integer
+      type:
+        type: string
+    type: object
+  model.Geometry:
+    properties:
+      coordinates:
+        items: {}
+        type: array
+      type:
+        type: string
+    type: object
+  model.People:
+    properties:
+      personFirstName:
+        type: string
+      personId:
+        type: integer
+      personLastName:
+        type: string
+    type: object
+  model.Sample:
+    properties:
+      elevationPrecision:
+        type: number
+      elevationPrecisionComment:
+        type: string
+      samplingFeatureCode:
+        type: string
+      samplingFeatureDescription:
+        type: string
+      samplingFeatureID:
+        type: integer
+      samplingFeatureName:
+        type: string
+      samplingFeatureTypeCV:
+        type: string
+      samplingFeatureUUID:
+        type: integer
+    type: object
+  model.Site:
+    properties:
+      latitude:
+        type: number
+      locationPrecision:
+        type: number
+      locationPrecisionComment:
+        type: string
+      longitude:
+        type: number
+      samplingFeatureID:
+        type: integer
+      setting:
+        type: string
+      siteDescription:
+        type: string
+      siteTypeCV:
+        type: string
+      spatialReferenceID:
+        type: integer
+    type: object
+host: api-test.georoc.eu
+info:
+  contact:
+    email: digis-info@uni-goettingen.de
+    name: DIGIS Project
+    url: https://www.uni-goettingen.de/de/643369.html
+  description: |-
+    This is the database api for the new GeoROC datamodel
+
+    Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
+  license:
+    name: Data retrieved is licensed under CC BY-SA 4.0
+    url: https://creativecommons.org/licenses/by-sa/4.0/
+  title: DIGIS Database API
+  version: 0.1.0
+paths:
+  /geodata/sites:
+    get:
+      consumes:
+      - application/json
+      description: get site data in GeoJSON format
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.GeoJSONFeatureCollection'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve site data as GeoJSON
+      tags:
+      - sites
+  /ping:
+    get:
+      consumes:
+      - application/json
+      description: Check connection to api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Sample request
+      tags:
+      - general
+  /queries/authors:
+    get:
+      consumes:
+      - application/json
+      description: get authors
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.People'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve authors
+      tags:
+      - people
+  /queries/authors/{personID}:
+    get:
+      consumes:
+      - application/json
+      description: get authors by personID
+      parameters:
+      - description: Person ID
+        in: path
+        name: personID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.People'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve authors by personID
+      tags:
+      - people
+  /queries/citations:
+    get:
+      consumes:
+      - application/json
+      description: get citations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Citation'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve citations
+      tags:
+      - citations
+  /queries/citations/{citationID}:
+    get:
+      consumes:
+      - application/json
+      description: get citations by citationID
+      parameters:
+      - description: Citation ID
+        in: path
+        name: citationID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Citation'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve citations by citationID
+      tags:
+      - citations
+  /queries/fulldata/{samplingfeatureid}:
+    get:
+      consumes:
+      - application/json
+      description: get full dataset by samplingfeatureid
+      parameters:
+      - description: Samplingfeature identifier
+        in: path
+        name: samplingfeatureid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.FullData'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve full dataset by samplingfeatureid
+      tags:
+      - fulldata
+  /queries/samples:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get all samples matching the current filters
+        Multiple values in a single filter must be comma separated
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: tectonic setting
+        in: query
+        name: setting
+        type: string
+      - description: location level 1
+        in: query
+        name: location1
+        type: string
+      - description: location level 2
+        in: query
+        name: location2
+        type: string
+      - description: location level 3
+        in: query
+        name: location3
+        type: string
+      - description: samplingfeature name
+        in: query
+        name: samplename
+        type: string
+      - description: sampling technique
+        in: query
+        name: sampletech
+        type: string
+      - description: land or sea
+        in: query
+        name: landorsea
+        type: string
+      - description: taxonomic classifier name
+        in: query
+        name: rockclass
+        type: string
+      - description: rock type
+        in: query
+        name: rocktype
+        type: string
+      - description: material
+        in: query
+        name: material
+        type: string
+      - description: chemical element
+        in: query
+        name: majorelem
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sample'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all samples filtered by a variety of fields
+      tags:
+      - samples
+  /queries/sites:
+    get:
+      consumes:
+      - application/json
+      description: Get all sites
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all sites
+      tags:
+      - sites
+  /queries/sites/{samplingfeatureID}:
+    get:
+      consumes:
+      - application/json
+      description: Get sites by samplingfeatureID
+      parameters:
+      - description: samplingfeatureID
+        in: path
+        name: samplingfeatureID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve sites by samplingfeatureID
+      tags:
+      - sites
+  /queries/sites/settings:
+    get:
+      consumes:
+      - application/json
+      description: Get all geological settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Site'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all geological settings
+      tags:
+      - sites
+schemes:
+- https
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    description: Accesskey based security scheme to secure api group "/queries/*"
+    in: header
+    name: DIGIS_API_ACCESSKEY
+    type: apiKey
+swagger: "2.0"
