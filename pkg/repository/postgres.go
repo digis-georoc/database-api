@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -42,6 +44,7 @@ func NewPostgresConnector() PostgresConnector {
 }
 
 func (pC *postgresConnector) Connect(connString string) error {
+	log.Info("Connecting to database...")
 	connection, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		return err
