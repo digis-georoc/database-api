@@ -30,8 +30,8 @@ import (
 
 // @securityDefinitions.apikey ApiKeyAuth
 // @in                         header
-// @name                       DIGIS_API_ACCESSKEY
-// @description                Accesskey based security scheme to secure api group "/queries/*"
+// @name                       DIGIS-API-ACCESSKEY
+// @description                Accesskey based security scheme to secure api groups "/queries/*" and "/geodata/*"
 
 // @host     api-test.georoc.eu
 // @schemes  https http
