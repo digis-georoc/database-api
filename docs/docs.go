@@ -1115,9 +1115,9 @@ const docTemplate = `{
     },
     "securityDefinitions": {
         "ApiKeyAuth": {
-            "description": "Accesskey based security scheme to secure api group \"/queries/*\"",
+            "description": "Accesskey based security scheme to secure api groups \"/queries/*\" and \"/geodata/*\"",
             "type": "apiKey",
-            "name": "DIGIS_API_ACCESSKEY",
+            "name": "DIGIS-API-ACCESSKEY",
             "in": "header"
         }
     }
