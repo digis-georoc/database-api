@@ -18,22 +18,22 @@ const (
 
 // GeoJSON FeatureCollection
 type GeoJSONFeatureCollection struct {
-	Type           GeoJSONFeatureType
-	Features       []GeoJSONFeature
-	NumberMatched  int
-	NumberReturned int
+	Type           GeoJSONFeatureType `json:"type"`
+	Features       []GeoJSONFeature   `json:"features"`
+	NumberMatched  int                `json:"numberMatched"`
+	NumberReturned int                `json:"numberReturned"`
 }
 
 // GeoJSON Geometry
 type Geometry struct {
-	Type        GeoJSONFeatureType
-	Coordinates []interface{}
+	Type        GeoJSONFeatureType `json:"type"`
+	Coordinates []interface{}      `json:"coordinates"`
 }
 
 // GeoJSON Feature
 type GeoJSONFeature struct {
-	Type       GeoJSONGeometryType
-	ID         string
-	Geometry   Geometry
-	Properties map[string]interface{}
+	Type       GeoJSONGeometryType    `json:"type"`
+	ID         string                 `json:"id"`
+	Geometry   Geometry               `json:"geometry"`
+	Properties map[string]interface{} `json:"properties"`
 }
