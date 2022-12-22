@@ -64,7 +64,7 @@ func buildFeatures(sites []map[string]interface{}) []model.GeoJSONFeature {
 			ID:   fmt.Sprintf("%d", i),
 			Geometry: model.Geometry{
 				Type:        model.GEOJSON_GEOMETRY_POINT,
-				Coordinates: []interface{}{lat, long},
+				Coordinates: []interface{}{long, lat},
 			},
 			Properties: result,
 		}
