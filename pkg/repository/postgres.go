@@ -3,8 +3,10 @@ package repository
 import (
 	"context"
 	"fmt"
+	"net"
 
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/ssh"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 )
@@ -14,6 +16,10 @@ type PostgresConnector interface {
 	// Connect tries to connect to a postgreSQL database with the credentials provided in the connString
 	// returns an error if the connection can not be established
 	Connect(connString string) error
+
+	// SSHConnect opens a ssh tunnel to the host and connects to a postgresql database there
+	// taken from: https://github.com/jackc/pgx/issues/382
+	SSHConnect(connString string, params *ConnectionParams) error
 
 	// Close stops the connection
 	Close()
@@ -38,6 +44,19 @@ type postgresConnector struct {
 	connection *pgxpool.Pool
 }
 
+// ConnectionParams holds the parameters for a postgresql database connection
+type ConnectionParams struct {
+	DBHost      string
+	DBPort      int
+	DBUser      string
+	DBPassword  string
+	DBName      string
+	SSHHost     string
+	SSHPort     int
+	SSHUser     string
+	SSHPassword string
+}
+
 // NewPostgresConnector returns a pointer to a new PostgresConnector instance
 func NewPostgresConnector() PostgresConnector {
 	return &postgresConnector{}
@@ -48,6 +67,42 @@ func (pC *postgresConnector) Connect(connString string) error {
 	connection, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		return err
+	}
+	pC.connection = connection
+	return nil
+}
+
+func (pC *postgresConnector) SSHConnect(connString string, params *ConnectionParams) error {
+	// The client configuration with configuration option to use the ssh-agent
+	sshConfig := &ssh.ClientConfig{
+		User:            params.SSHUser,
+		Auth:            []ssh.AuthMethod{},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // should be alright with the known ssh server
+	}
+
+	// When there's a non empty password add the password AuthMethod
+	if params.SSHPassword != "" {
+		sshConfig.Auth = append(sshConfig.Auth, ssh.PasswordCallback(func() (string, error) {
+			return params.SSHPassword, nil
+		}))
+	}
+
+	sshcon, err := ssh.Dial("tcp", fmt.Sprintf("%s:%d", params.SSHHost, params.SSHPort), sshConfig)
+	if err != nil {
+		return fmt.Errorf("Can not connect to database via ssh: %v", err)
+	}
+
+	connPoolConfig, err := pgxpool.ParseConfig(connString)
+	if err != nil {
+		return fmt.Errorf("Can not parse config: %v", err)
+	}
+	connPoolConfig.ConnConfig.DialFunc = func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return sshcon.Dial(network, addr)
+	}
+	log.Info("Connecting to database via ssh...")
+	connection, err := pgxpool.ConnectConfig(context.Background(), connPoolConfig)
+	if err != nil {
+		return fmt.Errorf("Can not create new connection pool: %v", err)
 	}
 	pC.connection = connection
 	return nil
