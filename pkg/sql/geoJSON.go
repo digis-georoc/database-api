@@ -4,6 +4,7 @@ const GeoJSONQuery = `
 select
 (s.latitude, s.longitude) as coordinates,
 count(distinct s.samplingfeatureid) as num_samplingfeatureids,
+array_agg(distinct s.samplingfeatureid) as samplingfeatureids,
 array_agg(distinct s.latitude) as lat ,
 array_agg(distinct s.longitude) as long,
 array_agg(distinct s.setting) as setting,
