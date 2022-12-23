@@ -46,7 +46,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 		emw.CORSConfig{
 			AllowOrigins: []string{"*"},
 			AllowMethods: []string{http.MethodGet, http.MethodHead},
-			AllowHeaders: []string{middleware.HEADER_ACCESS_KEY},
+			AllowHeaders: []string{"*"},
 		},
 	))
 	e.Use(middleware.GetUserTrackMiddleware())
