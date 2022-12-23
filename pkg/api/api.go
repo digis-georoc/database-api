@@ -1,6 +1,7 @@
 package api
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -41,6 +42,13 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	log := logrus.New()
 	e.Use(emw.Recover())
 	e.Use(emw.RequestID())
+	e.Use(emw.CORSWithConfig(
+		emw.CORSConfig{
+			AllowOrigins: []string{"*"},
+			AllowMethods: []string{http.MethodGet, http.MethodHead},
+			AllowHeaders: []string{middleware.HEADER_ACCESS_KEY},
+		},
+	))
 	e.Use(middleware.GetUserTrackMiddleware())
 	e.Use(middleware.Logger)
 	e.Use(emw.RequestLoggerWithConfig(emw.RequestLoggerConfig{
@@ -85,7 +93,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/citations", h.GetCitations)
 	queries.GET("/citations/:citationID", h.GetCitationByID)
 	// full data
-	queries.GET("/fullData/:identifier", h.GetFullDataByID)
+	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	// samples
 	queries.GET("/samples", h.GetSamplesByGeoSetting)
 
