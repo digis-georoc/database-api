@@ -3,8 +3,10 @@ package sql
 const GeoJSONQuery = `
 select
 (s.latitude, s.longitude) as coordinates,
-count(distinct s.samplingfeatureid) as num_samplingfeatureids,
-array_agg(distinct s.samplingfeatureid) as samplingfeatureids,
+count(distinct s.samplingfeatureid) as num_locationids,
+array_agg(distinct s.samplingfeatureid) as locationids,
+count(distinct r.samplingfeatureid) as num_samplingfeatureids,
+array_agg(distinct r.samplingfeatureid) as samplingfeatureids,
 array_agg(distinct s.latitude) as lat ,
 array_agg(distinct s.longitude) as long,
 array_agg(distinct s.setting) as setting,
@@ -34,5 +36,6 @@ left join
 	left join odm2.geolocations g on g.geolocationid = sg.geolocationid
 	where right(g.locationhierarchy::varchar, 3) = '300' --third level
 ) thirdlevelloc on thirdlevelloc.samplingfeatureid = s.samplingfeatureid
+left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid 
 group by (s.latitude, s.longitude)
 `
