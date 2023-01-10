@@ -39,9 +39,13 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
 	}
+	num := len(fullData)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{1, fullData}
+	}{num, fullData}
 	return c.JSON(http.StatusOK, response)
 }

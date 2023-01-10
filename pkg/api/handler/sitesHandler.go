@@ -81,10 +81,14 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 		logger.Errorf("Can not GetSiteByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
 	}
+	num := len(sites)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(sites), sites}
+	}{num, sites}
 	return c.JSON(http.StatusOK, response)
 }
 
