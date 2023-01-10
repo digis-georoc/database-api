@@ -81,9 +81,13 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
 	}
+	num := len(authors)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(authors), authors}
+	}{num, authors}
 	return c.JSON(http.StatusOK, response)
 }

@@ -82,9 +82,13 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 		logger.Errorf("Can not GetCitationByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
+	num := len(citations)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
 	response := struct {
 		NumItems int
 		Data     interface{}
-	}{len(citations), citations}
+	}{num, citations}
 	return c.JSON(http.StatusOK, response)
 }
