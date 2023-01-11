@@ -89,6 +89,10 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/sites", h.GetSites)
 	queries.GET("/sites/:samplingfeatureID", h.GetSiteByID)
 	queries.GET("/sites/settings", h.GetGeoSettings)
+	// locations
+	queries.GET("/locations/l1", h.GetLocationsL1)
+	queries.GET("/locations/l2", h.GetLocationsL2)
+	queries.GET("/locations/l3", h.GetLocationsL3)
 	// citations
 	queries.GET("/citations", h.GetCitations)
 	queries.GET("/citations/:citationID", h.GetCitationByID)

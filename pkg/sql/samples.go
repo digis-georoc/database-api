@@ -1,7 +1,6 @@
 package sql
 
 const GetSamplesByGeoSettingQuery = `
-
 select 
 s.samplingfeatureid,
 spec.samplingfeatureid as specimen,
