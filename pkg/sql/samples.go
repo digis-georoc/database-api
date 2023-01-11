@@ -4,22 +4,22 @@ const GetSamplesByGeoSettingQuery = `
 select 
 s.samplingfeatureid,
 spec.samplingfeatureid as specimen,
-array_agg(distinct s.latitude) as lat ,
-array_agg(distinct s.longitude) as long,
-array_agg(distinct s.setting) as setting,
-array_agg(distinct toplevelloc.locationname) as loc1,
-array_agg(distinct secondlevelloc.locationname) as loc2,
-array_agg(distinct thirdlevelloc.locationname) as loc3,
-array_agg(spec.specimentexture) as texture,
-array_agg(tax_type.taxonomicclassifiername) as rock_type,
-array_agg(tax_class.taxonomicclassifiername) as rock_class,
-array_agg(tax_min.taxonomicclassifiercommonname) as mineral, -- missing values
-array_agg(ann_mat.annotationtext) as material,
-array_agg(ann_inc_type.annotationtext) as inclusion_type, -- missing values
-array_agg(ann_samp_tech.annotationtext) as samp_technique,
-array_agg(distinct sf.samplingfeaturename) as sample_names,
-array_agg(distinct s.sitedescription) as land_or_sea,
-array_agg(ann_rim_or_core.annotationtext) as rim_or_core -- missing values
+(array_agg(distinct s.latitude) as lat ,
+(array_agg(distinct s.longitude) as long,
+(array_agg(distinct s.setting) as setting,
+(array_agg(distinct toplevelloc.locationname) as loc1,
+(array_agg(distinct secondlevelloc.locationname) as loc2,
+(array_agg(distinct thirdlevelloc.locationname))[1] as loc3,
+(array_agg(spec.specimentexture))[1] as texture,
+(array_agg(tax_type.taxonomicclassifiername))[1] as rock_type,
+(array_agg(tax_class.taxonomicclassifiername))[1] as rock_class,
+(array_agg(tax_min.taxonomicclassifiercommonname))[1] as mineral, -- missing values
+(array_agg(ann_mat.annotationtext))[1] as material,
+(array_agg(ann_inc_type.annotationtext))[1] as inclusion_type, -- missing values
+(array_agg(ann_samp_tech.annotationtext))[1] as samp_technique,
+(array_agg(distinct sf.samplingfeaturename)) as sample_names,
+(array_agg(distinct s.sitedescription))[1] as land_or_sea,
+(array_agg(ann_rim_or_core.annotationtext))[1] as rim_or_core -- missing values
 from odm2.sites s
 left join 
 (

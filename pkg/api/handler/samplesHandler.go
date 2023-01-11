@@ -45,7 +45,7 @@ const (
 // @Param       rocktype   query    string false "rock type"
 // @Param       material   query    string false "material"
 // @Param       majorelem  query    string false "chemical element"
-// @Success     200        {array}  model.Sample
+// @Success     200        {array}  model.SampleByGeoSettingResponse
 // @Failure     401        {object} string
 // @Failure     404        {object} string
 // @Failure     422        {object} string
@@ -56,7 +56,7 @@ func (h *Handler) GetSamplesByGeoSetting(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	samples := []model.Sample{}
+	samples := []model.SampleByGeoSettingResponse{}
 	query := sql.NewQuery(sql.GetSamplesByGeoSettingQuery)
 
 	limit, offset, err := handlePaginationParams(c)
@@ -122,5 +122,47 @@ func (h *Handler) GetSamplesByGeoSetting(c echo.Context) error {
 		NumItems int
 		Data     interface{}
 	}{len(samples), samples}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetSpecimenTypes godoc
+// @Summary     Retrieve specimen types
+// @Description get specimen types
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Specimen
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/specimentypes [get]
+func (h *Handler) GetSpecimenTypes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	specimentypes := []model.Specimen{}
+	query := sql.NewQuery(sql.GetSpecimenTypesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &specimentypes)
+	if err != nil {
+		logger.Errorf("Can not GetSpecimenTypes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(specimentypes), specimentypes}
 	return c.JSON(http.StatusOK, response)
 }
