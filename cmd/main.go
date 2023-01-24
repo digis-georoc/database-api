@@ -85,14 +85,9 @@ func getConnectionParams(secStore secretstore.SecretStore) (*repository.Connecti
 		return nil, fmt.Errorf("Can not load secret DB_PASSWORD")
 	}
 
-	sshUser, err := secStore.GetSecret("SSH_USER")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret SSH_USER")
-	}
-	sshPassword, err := secStore.GetSecret("SSH_PASSWORD")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret SSH_PASSWORD")
-	}
+	// SSH params are optional
+	sshUser, _ := secStore.GetSecret("SSH_USER")
+	sshPassword, _ := secStore.GetSecret("SSH_PASSWORD")
 
 	host := os.Getenv("DB_HOST")
 	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
