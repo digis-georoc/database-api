@@ -807,58 +807,37 @@ const docTemplate = `{
                     }
                 },
                 "comment": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "elevation_Max": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "elevation_Min": {
-                    "type": "integer"
+                    "type": "string"
                 },
-                "inclusion_Type": {
+                "inclusion_Types": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "institution": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                    "type": "string"
                 },
                 "item_Group": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "item_Name": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "land_Or_Sea": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                    "type": "string"
                 },
                 "latitude": {
                     "type": "number"
@@ -873,10 +852,7 @@ const docTemplate = `{
                 "location_Names": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "location_Num": {
@@ -885,10 +861,7 @@ const docTemplate = `{
                 "location_Types": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "longitude": {
@@ -900,39 +873,45 @@ const docTemplate = `{
                 "longitude_Min": {
                     "type": "string"
                 },
-                "material": {
+                "materials": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "method": {
+                    "type": "string"
+                },
+                "minerals": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "mineral": {
+                "references": {
+                    "type": "array",
+                    "items": {}
+                },
+                "rock_Classes": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "references": {},
-                "rock_Class": {
-                    "type": "string"
-                },
-                "rock_Texture": {
-                    "type": "string"
-                },
-                "rock_Type": {
-                    "type": "string"
-                },
-                "sampleIds": {
+                "rock_Textures": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "rock_Types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sampleName": {
+                    "type": "string"
                 },
                 "sample_Num": {
                     "type": "integer"
@@ -956,13 +935,7 @@ const docTemplate = `{
                     }
                 },
                 "tectonic_Setting": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
-                    }
+                    "type": "string"
                 },
                 "unique_id": {
                     "type": "string"
@@ -970,19 +943,13 @@ const docTemplate = `{
                 "units": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "values": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "number"
-                        }
+                        "type": "number"
                     }
                 }
             }
