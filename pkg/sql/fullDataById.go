@@ -4,7 +4,7 @@ const FullDataByIdQuery = `
 select
 samples.SamplingFeatureID as sample_num,
 samples.SamplingFeatureUUID as unique_id,
-samples.batches as batches,
+array(select unnest(samples.batchids)) as batches,
 refs.references,
 samples.samplingfeaturename as sampleids,
 coalesce (loc.loc_names, array['Unknown']) as location_names,
@@ -44,7 +44,7 @@ from
 (
 	select samples.samplingfeatureid, 
 	samples.samplingfeatureuuid, 
-	(array_agg(batches.batches)) as batches,
+	(array_agg(batches.batches)) as batchids,
 	samples.samplingfeaturename,
 	(array_agg(tax_type.taxonomicclassifiername)) as rock_type,
 	(array_agg(tax_class.taxonomicclassifiername)) as rock_class,
@@ -150,18 +150,29 @@ left join (
 	select rel_res.relatedfeatureid as id,
 	array_agg(vars.variablecode) as items_measured,
 	array_agg(vars.variabletypecode) as item_types,
-	coalesce(array_agg(distinct std.standardname) filter (where std.standardname is not null), array['Unknown']) as standard_names,
-	coalesce(array_agg(distinct std.standardvalue) filter (where std.standardvalue is not null), array[-999]) as standard_values,
+	coalesce(array_agg(std.std_names), array['Unknown']) as standard_names,
+	coalesce(array_agg(std.std_values), array[-999]) as standard_values,
 	array_agg(chem_vals.datavalue) as values_meas,
 	array_agg(u.unitgeoroc) as units 
 	from odm2.relatedfeatures rel_res
-	left join odm2.featureactions f_res on f_res.samplingfeatureid = rel_res.samplingfeatureid -- add sample-featureactions? or f_res.samplingfeatureid = rel_res.relatedfeatureid
+	join odm2.featureactions f_res on f_res.samplingfeatureid = rel_res.samplingfeatureid
 	left join odm2.results res on res.featureactionid = f_res.featureactionid
-	left join odm2.variables vars on vars.variableid = res.variableid
-	left join odm2.standards std on std.actionid = f_res.actionid 
+	left join odm2.variables vars on vars.variableid = res.variableid 
+	left join 
+	(
+		select relf.samplingfeatureid,
+		array_agg(standards.standardname) as std_names,
+		array_agg(standards.standardvalue) as std_values 
+		from odm2.relatedfeatures relf
+		join odm2.featureactions fa on fa.samplingfeatureid = relf.samplingfeatureid
+		left join odm2.standards standards on standards.actionid = fa.actionid
+		where relf.relatedfeatureid = $1
+		group by relf.samplingfeatureid
+	)std on std.samplingfeatureid = rel_res.samplingfeatureid 
 	left join odm2.measurementresultvalues chem_vals on chem_vals.valueid = res.resultid 
 	left join odm2.units u on u.unitsid = res.unitsid 
 	where rel_res.relatedfeatureid = $1
+	and rel_res.relationshiptypecv = 'Is child of'
 	group by rel_res.relatedfeatureid
 ) results on results.id = samples.samplingfeatureid
 `
