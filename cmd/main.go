@@ -96,9 +96,13 @@ func getConnectionParams(secStore secretstore.SecretStore) (*repository.Connecti
 	}
 	database := os.Getenv("DB_NAME")
 	sshHost := os.Getenv("SSH_HOST")
-	sshPort, err := strconv.Atoi(os.Getenv("SSH_PORT"))
-	if err != nil {
-		return nil, fmt.Errorf("Can not cast env-var SSH_PORT to int: %+v", os.Getenv("SSH_PORT"))
+	sshPort := 0
+	sshPortEnv := os.Getenv("SSH_PORT")
+	if sshPortEnv != "" {
+		sshPort, err = strconv.Atoi(sshPortEnv)
+		if err != nil {
+			return nil, fmt.Errorf("Can not cast env-var SSH_PORT to int: '%+v'", os.Getenv("SSH_PORT"))
+		}
 	}
 
 	return &repository.ConnectionParams{DBHost: host, DBPort: port, DBUser: username, DBPassword: password, DBName: database, SSHHost: sshHost, SSHPort: sshPort, SSHUser: sshUser, SSHPassword: sshPassword}, nil
