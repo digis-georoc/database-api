@@ -85,14 +85,9 @@ func getConnectionParams(secStore secretstore.SecretStore) (*repository.Connecti
 		return nil, fmt.Errorf("Can not load secret DB_PASSWORD")
 	}
 
-	sshUser, err := secStore.GetSecret("SSH_USER")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret SSH_USER")
-	}
-	sshPassword, err := secStore.GetSecret("SSH_PASSWORD")
-	if err != nil {
-		return nil, fmt.Errorf("Can not load secret SSH_PASSWORD")
-	}
+	// SSH params are optional
+	sshUser, _ := secStore.GetSecret("SSH_USER")
+	sshPassword, _ := secStore.GetSecret("SSH_PASSWORD")
 
 	host := os.Getenv("DB_HOST")
 	port, err := strconv.Atoi(os.Getenv("DB_PORT"))
@@ -101,9 +96,13 @@ func getConnectionParams(secStore secretstore.SecretStore) (*repository.Connecti
 	}
 	database := os.Getenv("DB_NAME")
 	sshHost := os.Getenv("SSH_HOST")
-	sshPort, err := strconv.Atoi(os.Getenv("SSH_PORT"))
-	if err != nil {
-		return nil, fmt.Errorf("Can not cast env-var SSH_PORT to int: %+v", os.Getenv("SSH_PORT"))
+	sshPort := 0
+	sshPortEnv := os.Getenv("SSH_PORT")
+	if sshPortEnv != "" {
+		sshPort, err = strconv.Atoi(sshPortEnv)
+		if err != nil {
+			return nil, fmt.Errorf("Can not cast env-var SSH_PORT to int: '%+v'", os.Getenv("SSH_PORT"))
+		}
 	}
 
 	return &repository.ConnectionParams{DBHost: host, DBPort: port, DBUser: username, DBPassword: password, DBName: database, SSHHost: sshHost, SSHPort: sshPort, SSHUser: sshUser, SSHPassword: sshPassword}, nil
