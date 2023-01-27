@@ -11,9 +11,8 @@ import (
 )
 
 const (
-	LOC_LEVEL_1 = "100"
-	LOC_LEVEL_2 = "200"
-	LOC_LEVEL_3 = "300"
+	PARAM_LOC_LEVEL_1 = "locationl1"
+	PARAM_LOC_LEVEL_2 = "locationl2"
 )
 
 // GetLocationsL1 godoc
@@ -37,7 +36,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	locations := []model.Location{}
-	query := sql.NewQuery(sql.LocationNamesByLevelQuery)
+	query := sql.NewQuery(sql.FirstLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -45,7 +44,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &locations, LOC_LEVEL_1)
+	err = h.db.Query(query.String(), &locations)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL1: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve first level locations")
@@ -66,6 +65,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
+// @Param       locationl1 query string true "Locationname Level 1"
 // @Success     200    {array}  model.Location
 // @Failure     401    {object} string
 // @Failure     404    {object} string
@@ -78,15 +78,16 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	locations := []model.Location{}
-	query := sql.NewQuery(sql.LocationNamesByLevelQuery)
+	query := sql.NewQuery(sql.SecondLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
 		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
 	}
+	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &locations, LOC_LEVEL_2)
+	err = h.db.Query(query.String(), &locations, locationNameL1)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL2: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve second level locations")
@@ -107,6 +108,8 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
+// @Param       locationl1 query string true "Locationname Level 1"
+// @Param       locationl2 query string true "Locationname Level 2"
 // @Success     200    {array}  model.Location
 // @Failure     401    {object} string
 // @Failure     404    {object} string
@@ -119,7 +122,7 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	locations := []model.Location{}
-	query := sql.NewQuery(sql.LocationNamesByLevelQuery)
+	query := sql.NewQuery(sql.ThirdLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -127,7 +130,9 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &locations, LOC_LEVEL_3)
+	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
+	locationNameL2 := c.QueryParam(PARAM_LOC_LEVEL_2)
+	err = h.db.Query(query.String(), &locations, locationNameL1, locationNameL2)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL3: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve third level locations")
