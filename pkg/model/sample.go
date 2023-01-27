@@ -35,3 +35,7 @@ type SampleByGeoSettingResponse struct {
 	LandOrSea         string   `json:"land_or_sea"`
 	RimOrCore         string   `json:"rim_or_core"`
 }
+
+type SamplingTechnique struct {
+	Name string
+}

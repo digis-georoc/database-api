@@ -166,3 +166,45 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	}{len(specimentypes), specimentypes}
 	return c.JSON(http.StatusOK, response)
 }
+
+// GetSamplingTechniques godoc
+// @Summary     Retrieve sampling techniques
+// @Description get sampling techniques
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.SamplingTechnique
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/samplingtechniques [get]
+func (h *Handler) GetSamplingTechniques(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	samplingtechniques := []model.SamplingTechnique{}
+	query := sql.NewQuery(sql.SamplingTechniquesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &samplingtechniques)
+	if err != nil {
+		logger.Errorf("Can not GetSamplingTechniques: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(samplingtechniques), samplingtechniques}
+	return c.JSON(http.StatusOK, response)
+}

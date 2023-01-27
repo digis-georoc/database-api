@@ -101,6 +101,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// samples
 	queries.GET("/samples", h.GetSamplesByGeoSetting)
 	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
+	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
 
 	// GeoJSON
 	geoData := v1.Group("/geodata")
