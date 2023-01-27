@@ -173,6 +173,11 @@ definitions:
       type:
         type: string
     type: object
+  model.Location:
+    properties:
+      name:
+        type: string
+    type: object
   model.People:
     properties:
       personFirstName:
@@ -182,24 +187,46 @@ definitions:
       personLastName:
         type: string
     type: object
-  model.Sample:
+  model.SampleByGeoSettingResponse:
     properties:
-      elevationPrecision:
+      inclusion_type:
+        type: string
+      land_or_sea:
+        type: string
+      lat:
         type: number
-      elevationPrecisionComment:
+      loc1:
         type: string
-      samplingFeatureCode:
+      loc2:
         type: string
-      samplingFeatureDescription:
+      loc3:
         type: string
+      long:
+        type: number
+      material:
+        type: string
+      mineral:
+        type: string
+      rim_or_core:
+        type: string
+      rock_class:
+        type: string
+      rock_type:
+        type: string
+      samp_technique:
+        type: string
+      sample_names:
+        items:
+          type: string
+        type: array
       samplingFeatureID:
         type: integer
-      samplingFeatureName:
+      setting:
         type: string
-      samplingFeatureTypeCV:
-        type: string
-      samplingFeatureUUID:
+      specimen:
         type: integer
+      texture:
+        type: string
     type: object
   model.Site:
     properties:
@@ -221,6 +248,11 @@ definitions:
         type: string
       spatialReferenceID:
         type: integer
+    type: object
+  model.Specimen:
+    properties:
+      specimenType:
+        type: string
     type: object
 host: api-test.georoc.eu
 info:
@@ -280,6 +312,153 @@ paths:
       summary: Retrieve site data as GeoJSON
       tags:
       - sites
+  /locations/l1:
+    get:
+      consumes:
+      - application/json
+      description: get top level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of first level
+      tags:
+      - locations
+  /locations/l2:
+    get:
+      consumes:
+      - application/json
+      description: get second level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of second level
+      tags:
+      - locations
+  /locations/l3:
+    get:
+      consumes:
+      - application/json
+      description: get third level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      - description: Locationname Level 2
+        in: query
+        name: locationl2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of third level
+      tags:
+      - locations
   /ping:
     get:
       consumes:
@@ -565,7 +744,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Sample'
+              $ref: '#/definitions/model.SampleByGeoSettingResponse'
             type: array
         "401":
           description: Unauthorized
@@ -586,6 +765,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve all samples filtered by a variety of fields
+      tags:
+      - samples
+  /queries/samples/specimentypes:
+    get:
+      consumes:
+      - application/json
+      description: get specimen types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Specimen'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve specimen types
       tags:
       - samples
   /queries/sites:
