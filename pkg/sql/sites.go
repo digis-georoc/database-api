@@ -12,3 +12,7 @@ WHERE s.samplingfeatureID = $1
 const GeoSettingsQuery = `
 SELECT distinct s.setting FROM odm2.sites s
 `
+const LandOrSeaQuery = `
+select distinct upper(s.sitedescription) as name
+from odm2.sites s 
+`

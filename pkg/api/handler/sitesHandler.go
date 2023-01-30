@@ -121,3 +121,33 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 	}{len(sites), sites}
 	return c.JSON(http.StatusOK, response)
 }
+
+// GetLandOrSea godoc
+// @Summary     Retrieve land or sea options
+// @Description Get land or sea options
+// @Security    ApiKeyAuth
+// @Tags        sites
+// @Accept      json
+// @Produce     json
+// @Success     200 {array}  model.LandOrSea
+// @Failure     401 {object} string
+// @Failure     404 {object} string
+// @Failure     500 {object} string
+// @Router      /queries/sites/landorsea [get]
+func (h *Handler) GetLandOrSea(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+	landOrSea := []model.LandOrSea{}
+	err := h.db.Query(sql.LandOrSeaQuery, &landOrSea)
+	if err != nil {
+		logger.Errorf("Can not LandOrSea: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve land or sea data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(landOrSea), landOrSea}
+	return c.JSON(http.StatusOK, response)
+}
