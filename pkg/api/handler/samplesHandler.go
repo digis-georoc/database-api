@@ -208,3 +208,129 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	}{len(samplingtechniques), samplingtechniques}
 	return c.JSON(http.StatusOK, response)
 }
+
+// GetRockClasses godoc
+// @Summary     Retrieve rock classes
+// @Description get rock classes
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/rockclasses [get]
+func (h *Handler) GetRockClasses(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	rockclasses := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.RockClassQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &rockclasses)
+	if err != nil {
+		logger.Errorf("Can not GetRockClasses: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(rockclasses), rockclasses}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetRockTypes godoc
+// @Summary     Retrieve rock types
+// @Description get rock types
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/rocktypes [get]
+func (h *Handler) GetRockTypes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	rocktypes := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.RockTypeQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &rocktypes)
+	if err != nil {
+		logger.Errorf("Can not GetRockTypes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(rocktypes), rocktypes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetMinerals godoc
+// @Summary     Retrieve minerals
+// @Description get minerals
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/minerals [get]
+func (h *Handler) GetMinerals(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	minerals := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.MineralQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &minerals)
+	if err != nil {
+		logger.Errorf("Can not GetMinerals: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(minerals), minerals}
+	return c.JSON(http.StatusOK, response)
+}

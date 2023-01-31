@@ -14,7 +14,7 @@ import (
 // @Summary     Retrieve site data as GeoJSON
 // @Description get site data in GeoJSON format
 // @Security    ApiKeyAuth
-// @Tags        sites
+// @Tags        geodata
 // @Accept      json
 // @Produce     json
 // @Param       limit  query    int false "limit"
