@@ -29,7 +29,7 @@ const (
 // @Failure     404    {object} string
 // @Failure     422    {object} string
 // @Failure     500    {object} string
-// @Router      /locations/l1 [get]
+// @Router      /queries/locations/l1 [get]
 func (h *Handler) GetLocationsL1(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -71,7 +71,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 // @Failure     404        {object} string
 // @Failure     422        {object} string
 // @Failure     500        {object} string
-// @Router      /locations/l2 [get]
+// @Router      /queries/locations/l2 [get]
 func (h *Handler) GetLocationsL2(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -115,7 +115,7 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 // @Failure     404        {object} string
 // @Failure     422        {object} string
 // @Failure     500        {object} string
-// @Router      /locations/l3 [get]
+// @Router      /queries/locations/l3 [get]
 func (h *Handler) GetLocationsL3(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

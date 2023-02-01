@@ -1,5 +1,15 @@
 package sql
 
+const GetSamplesQuery = `
+select * from odm2.samplingfeatures s
+where s.samplingfeaturedescription = 'Sample'
+`
+
+const GetSampleByIDQuery = `
+select * from odm2.samplingfeatures s
+where s.samplingfeatureid = $1
+`
+
 const GetSamplesByGeoSettingQuery = `
 select 
 s.samplingfeatureid,

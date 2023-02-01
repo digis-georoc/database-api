@@ -327,153 +327,6 @@ paths:
       summary: Retrieve site data as GeoJSON
       tags:
       - geodata
-  /locations/l1:
-    get:
-      consumes:
-      - application/json
-      description: get top level locations
-      parameters:
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: offset
-        in: query
-        name: offset
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable Entity
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Retrieve locations of first level
-      tags:
-      - locations
-  /locations/l2:
-    get:
-      consumes:
-      - application/json
-      description: get second level locations
-      parameters:
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: offset
-        in: query
-        name: offset
-        type: integer
-      - description: Locationname Level 1
-        in: query
-        name: locationl1
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable Entity
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Retrieve locations of second level
-      tags:
-      - locations
-  /locations/l3:
-    get:
-      consumes:
-      - application/json
-      description: get third level locations
-      parameters:
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: offset
-        in: query
-        name: offset
-        type: integer
-      - description: Locationname Level 1
-        in: query
-        name: locationl1
-        required: true
-        type: string
-      - description: Locationname Level 2
-        in: query
-        name: locationl2
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable Entity
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Retrieve locations of third level
-      tags:
-      - locations
   /ping:
     get:
       consumes:
@@ -692,6 +545,153 @@ paths:
       summary: Retrieve full dataset by samplingfeatureid
       tags:
       - fulldata
+  /queries/locations/l1:
+    get:
+      consumes:
+      - application/json
+      description: get top level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of first level
+      tags:
+      - locations
+  /queries/locations/l2:
+    get:
+      consumes:
+      - application/json
+      description: get second level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of second level
+      tags:
+      - locations
+  /queries/locations/l3:
+    get:
+      consumes:
+      - application/json
+      description: get third level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      - description: Locationname Level 2
+        in: query
+        name: locationl2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of third level
+      tags:
+      - locations
   /queries/samples:
     get:
       consumes:
@@ -708,19 +708,19 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: tectonic setting
+      - description: tectonic setting - choose from /queries/sites/settings
         in: query
         name: setting
         type: string
-      - description: location level 1
+      - description: location level 1 - choose from /queries/locations/l1
         in: query
         name: location1
         type: string
-      - description: location level 2
+      - description: location level 2 - choose from /queries/locations/l2
         in: query
         name: location2
         type: string
-      - description: location level 3
+      - description: location level 3 - choose from /queries/locations/l3
         in: query
         name: location3
         type: string
@@ -728,25 +728,25 @@ paths:
         in: query
         name: samplename
         type: string
-      - description: sampling technique
+      - description: sampling technique - choose from /queries/samples/samplingtechniques
         in: query
         name: sampletech
         type: string
-      - description: land or sea
+      - description: land or sea - choose from /queries/sites/landorsea
         in: query
         name: landorsea
         type: string
-      - description: taxonomic classifier name
+      - description: rock class - choose from /queries/samples/rockclasses
         in: query
         name: rockclass
         type: string
-      - description: rock type
+      - description: rock type - choose from /queries/samples/rocktypes
         in: query
         name: rocktype
         type: string
-      - description: material
+      - description: mineral - choose from /queries/samples/minerals
         in: query
-        name: material
+        name: mineral
         type: string
       - description: chemical element
         in: query

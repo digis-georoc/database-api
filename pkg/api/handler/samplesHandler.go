@@ -11,18 +11,98 @@ import (
 )
 
 const (
-	QP_SETTING   = "setting"
-	QP_LOC1      = "location1"
-	QP_LOC2      = "location2"
-	QP_LOC3      = "location3"
-	QP_SAMPNAME  = "samplename"
-	QP_SAMPTECH  = "sampletech"
-	QP_LORS      = "landorsea"
-	QP_ROCKCLASS = "rockclass"
-	QP_ROCKTYPE  = "rocktype"
-	QP_MATERIAL  = "material"
-	QP_MAJORELEM = "majorelem"
+	QP_SAMPLINGFEATUREID = "samplingfeatureID"
+	QP_SETTING           = "setting"
+	QP_LOC1              = "location1"
+	QP_LOC2              = "location2"
+	QP_LOC3              = "location3"
+	QP_SAMPNAME          = "samplename"
+	QP_SAMPTECH          = "sampletech"
+	QP_LORS              = "landorsea"
+	QP_ROCKCLASS         = "rockclass"
+	QP_ROCKTYPE          = "rocktype"
+	QP_MATERIAL          = "material"
+	QP_MAJORELEM         = "majorelem"
 )
+
+// GetSamples godoc
+// @Summary     Retrieve all samples
+// @Description get all sample data
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Sample
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples [get]
+func (h *Handler) GetSamples(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	samples := []model.Sample{}
+	query := sql.NewQuery(sql.GetSamplesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.String(), &samples)
+	if err != nil {
+		logger.Errorf("Can not GetSamples: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(samples), samples}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetSampleByID godoc
+// @Summary     Retrieve sample by samplingfeatureid
+// @Description get sample by samplingfeatureid
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       samplingfeatureID path     string true "Sample ID"
+// @Success     200        {array}  model.Sample
+// @Failure     401        {object} string
+// @Failure     404        {object} string
+// @Failure     500        {object} string
+// @Router      /queries/samples/{samplingfeatureID} [get]
+func (h *Handler) GetSampleByID(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	samples := []model.Sample{}
+	query := sql.NewQuery(sql.SampleByIDQuery)
+	err := h.db.Query(query.String(), &samples, c.Param(QP_SAMPLINGFEATUREID))
+	if err != nil {
+		logger.Errorf("Can not GetSampleByID: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	num := len(samples)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{num, samples}
+	return c.JSON(http.StatusOK, response)
+}
 
 // GetSamplesByGeoSetting godoc
 // @Summary     Retrieve all samples filtered by a variety of fields
@@ -34,16 +114,16 @@ const (
 // @Produce     json
 // @Param       limit      query    int    false "limit"
 // @Param       offset     query    int    false "offset"
-// @Param       setting    query    string false "tectonic setting"
-// @Param       location1  query    string false "location level 1"
-// @Param       location2  query    string false "location level 2"
-// @Param       location3  query    string false "location level 3"
+// @Param       setting    query    string false "tectonic setting - choose from /queries/sites/settings"
+// @Param       location1  query    string false "location level 1 - choose from /queries/locations/l1"
+// @Param       location2  query    string false "location level 2 - choose from /queries/locations/l2"
+// @Param       location3  query    string false "location level 3 - choose from /queries/locations/l3"
 // @Param       samplename query    string false "samplingfeature name"
-// @Param       sampletech query    string false "sampling technique"
-// @Param       landorsea  query    string false "land or sea"
-// @Param       rockclass  query    string false "taxonomic classifier name"
-// @Param       rocktype   query    string false "rock type"
-// @Param       material   query    string false "material"
+// @Param       sampletech query    string false "sampling technique - choose from /queries/samples/samplingtechniques"
+// @Param       landorsea  query    string false "land or sea - choose from /queries/sites/landorsea"
+// @Param       rockclass  query    string false "rock class - choose from /queries/samples/rockclasses"
+// @Param       rocktype   query    string false "rock type - choose from /queries/samples/rocktypes"
+// @Param       mineral    query    string false "mineral - choose from /queries/samples/minerals"
 // @Param       majorelem  query    string false "chemical element"
 // @Success     200        {array}  model.SampleByGeoSettingResponse
 // @Failure     401        {object} string

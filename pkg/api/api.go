@@ -100,12 +100,15 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// full data
 	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	// samples
-	queries.GET("/samples", h.GetSamplesByGeoSetting)
+	queries.GET("/samples", h.GetSamples)
+	queries.GET("/samples/:samplingfeatureID", h.GetSampleByID)
 	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
 	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
 	queries.GET("/samples/rockclasses", h.GetRockClasses)
 	queries.GET("/samples/rocktypes", h.GetRockTypes)
 	queries.GET("/samples/minerals", h.GetMinerals)
+	// results
+	queries.GET("/results/bygeosetting", h.GetSamplesByGeoSetting)
 	// GeoJSON
 	geoData := v1.Group("/geodata")
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))
