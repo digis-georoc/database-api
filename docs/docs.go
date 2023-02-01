@@ -666,6 +666,75 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
+                "description": "get all sample data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve all samples",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Sample"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/bygeosetting": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all samples matching the current filters\nMultiple values in a single filter must be comma separated",
                 "consumes": [
                     "application/json"
@@ -1126,6 +1195,64 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/{samplingfeatureID}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get sample by samplingfeatureid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve sample by samplingfeatureid",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sample ID",
+                        "name": "samplingfeatureID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Sample"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "string"
                         }
@@ -1653,6 +1780,35 @@ const docTemplate = `{
                 },
                 "personLastName": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Sample": {
+            "type": "object",
+            "properties": {
+                "elevationPrecision": {
+                    "type": "number"
+                },
+                "elevationPrecisionComment": {
+                    "type": "string"
+                },
+                "samplingFeatureCode": {
+                    "type": "string"
+                },
+                "samplingFeatureDescription": {
+                    "type": "string"
+                },
+                "samplingFeatureID": {
+                    "type": "integer"
+                },
+                "samplingFeatureName": {
+                    "type": "string"
+                },
+                "samplingFeatureTypeCV": {
+                    "type": "string"
+                },
+                "samplingFeatureUUID": {
+                    "type": "integer"
                 }
             }
         },

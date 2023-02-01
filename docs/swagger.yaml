@@ -192,6 +192,25 @@ definitions:
       personLastName:
         type: string
     type: object
+  model.Sample:
+    properties:
+      elevationPrecision:
+        type: number
+      elevationPrecisionComment:
+        type: string
+      samplingFeatureCode:
+        type: string
+      samplingFeatureDescription:
+        type: string
+      samplingFeatureID:
+        type: integer
+      samplingFeatureName:
+        type: string
+      samplingFeatureTypeCV:
+        type: string
+      samplingFeatureUUID:
+        type: integer
+    type: object
   model.SampleByGeoSettingResponse:
     properties:
       inclusion_type:
@@ -693,6 +712,87 @@ paths:
       tags:
       - locations
   /queries/samples:
+    get:
+      consumes:
+      - application/json
+      description: get all sample data
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sample'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve all samples
+      tags:
+      - samples
+  /queries/samples/{samplingfeatureID}:
+    get:
+      consumes:
+      - application/json
+      description: get sample by samplingfeatureid
+      parameters:
+      - description: Sample ID
+        in: path
+        name: samplingfeatureID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sample'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve sample by samplingfeatureid
+      tags:
+      - samples
+  /queries/samples/bygeosetting:
     get:
       consumes:
       - application/json

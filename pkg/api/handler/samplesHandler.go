@@ -75,10 +75,10 @@ func (h *Handler) GetSamples(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureID path     string true "Sample ID"
-// @Success     200        {array}  model.Sample
-// @Failure     401        {object} string
-// @Failure     404        {object} string
-// @Failure     500        {object} string
+// @Success     200               {array}  model.Sample
+// @Failure     401               {object} string
+// @Failure     404               {object} string
+// @Failure     500               {object} string
 // @Router      /queries/samples/{samplingfeatureID} [get]
 func (h *Handler) GetSampleByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -130,7 +130,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Failure     404        {object} string
 // @Failure     422        {object} string
 // @Failure     500        {object} string
-// @Router      /queries/samples [get]
+// @Router      /queries/samples/bygeosetting [get]
 func (h *Handler) GetSamplesByGeoSetting(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
