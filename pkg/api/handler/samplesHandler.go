@@ -87,7 +87,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 	}
 
 	samples := []model.Sample{}
-	query := sql.NewQuery(sql.SampleByIDQuery)
+	query := sql.NewQuery(sql.GetSampleByIDQuery)
 	err := h.db.Query(query.String(), &samples, c.Param(QP_SAMPLINGFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSampleByID: %v", err)
