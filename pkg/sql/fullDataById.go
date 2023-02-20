@@ -148,16 +148,14 @@ left join (
 left join (
 	-- query results
 	select rel_res.relatedfeatureid as id,
-	array_agg(vars.variablecode) as items_measured,
-	array_agg(vars.variabletypecode) as item_types,
+	array_agg(mv.variablecode) as items_measured,
+	array_agg(mv.variabletypecode) as item_types,
 	coalesce(array_agg(std.std_names), array['Unknown']) as standard_names,
 	coalesce(array_agg(std.std_values), array[-999]) as standard_values,
-	array_agg(chem_vals.datavalue) as values_meas,
-	array_agg(u.unitgeoroc) as units 
+	array_agg(mv.datavalue) as values_meas,
+	array_agg(mv.unitgeoroc) as units 
 	from odm2.relatedfeatures rel_res
-	join odm2.featureactions f_res on f_res.samplingfeatureid = rel_res.samplingfeatureid
-	left join odm2.results res on res.featureactionid = f_res.featureactionid
-	left join odm2.variables vars on vars.variableid = res.variableid 
+	left join odm2.measuredvalues mv on mv.samplingfeatureid = rel_res.samplingfeatureid
 	left join 
 	(
 		select relf.samplingfeatureid,
@@ -169,8 +167,6 @@ left join (
 		where relf.relatedfeatureid = $1
 		group by relf.samplingfeatureid
 	)std on std.samplingfeatureid = rel_res.samplingfeatureid 
-	left join odm2.measurementresultvalues chem_vals on chem_vals.valueid = res.resultid 
-	left join odm2.units u on u.unitsid = res.unitsid 
 	where rel_res.relatedfeatureid = $1
 	and rel_res.relationshiptypecv = 'Is child of'
 	group by rel_res.relatedfeatureid
