@@ -438,7 +438,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\n?\u003cfield\u003e=\u003cop\u003e:\u003cvalue\u003e\nwhere \u003cfield\u003e is one of the accepted query params; \u003cop\u003e is one of \"lt\", \"gt\", \"eq\", \"in\" and \u003cvalue\u003e is an unquoted string, integer or decimal\nMultiple values for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
+                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\", \"gt\", \"eq\", \"in\" and VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
                 "consumes": [
                     "application/json"
                 ],

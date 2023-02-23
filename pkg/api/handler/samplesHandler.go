@@ -34,9 +34,9 @@ const (
 // @Summary     Retrieve all samplingfeatureIDs filtered by a variety of fields
 // @Description Get all samplingfeatureIDs matching the current filters
 // @Description Filter DSL syntax:
-// @Description ?<field>=<op>:<value>
-// @Description where <field> is one of the accepted query params; <op> is one of "lt", "gt", "eq", "in" and <value> is an unquoted string, integer or decimal
-// @Description Multiple values for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+// @Description FIELD=OPERATOR:VALUE
+// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
+// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
 // @Description The filters are evaluated conjunctively.
 // @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
 // @Security    ApiKeyAuth
