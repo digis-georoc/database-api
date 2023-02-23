@@ -34,35 +34,35 @@ const (
 // @Summary     Retrieve all samplingfeatureIDs filtered by a variety of fields
 // @Description Get all samplingfeatureIDs matching the current filters
 // @Description Filter DSL syntax:
-// @Description ?<field>=<op>:<value>|<value>[,<value>]*
+// @Description ?<field>=<op>:<value>
 // @Description where <field> is one of the accepted query params; <op> is one of "lt", "gt", "eq", "in" and <value> is an unquoted string, integer or decimal
-// @Description Values for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+// @Description Multiple values for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
 // @Description The filters are evaluated conjunctively.
 // @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
 // @Security    ApiKeyAuth
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit      query    int    false "limit"
-// @Param       offset     query    int    false "offset"
-// @Param       setting    query    string false "tectonic setting"
-// @Param       location1  query    string false "location level 1"
-// @Param       location2  query    string false "location level 2"
-// @Param       location3  query    string false "location level 3"
-// @Param       rocktype   query    string false "rock type"
-// @Param       rockclass  query    string false "taxonomic classifier name"
-// @Param		mineral		query string false "mineral"
-// @Param       material   query    string false "material"
-// @Param       inclusiontype   query    string false "inclusion type"
-// @Param       sampletech query    string false "sampling technique"
-// @Param       element  query    string false "chemical element"
-// @Param       elementtype  query    string false "element type"
-// @Param       value  query    string false "measured value"
-// @Success     200        {array}  model.Specimen
-// @Failure     401        {object} string
-// @Failure     404        {object} string
-// @Failure     422        {object} string
-// @Failure     500        {object} string
+// @Param       limit         query    int    false "limit"
+// @Param       offset        query    int    false "offset"
+// @Param       setting       query    string false "tectonic setting"
+// @Param       location1     query    string false "location level 1"
+// @Param       location2     query    string false "location level 2"
+// @Param       location3     query    string false "location level 3"
+// @Param       rocktype      query    string false "rock type"
+// @Param       rockclass     query    string false "taxonomic classifier name"
+// @Param       mineral       query    string false "mineral"
+// @Param       material      query    string false "material"
+// @Param       inclusiontype query    string false "inclusion type"
+// @Param       sampletech    query    string false "sampling technique"
+// @Param       element       query    string false "chemical element"
+// @Param       elementtype   query    string false "element type"
+// @Param       value         query    string false "measured value"
+// @Success     200           {array}  model.Specimen
+// @Failure     401           {object} string
+// @Failure     404           {object} string
+// @Failure     422           {object} string
+// @Failure     500           {object} string
 // @Router      /queries/samples [get]
 func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)

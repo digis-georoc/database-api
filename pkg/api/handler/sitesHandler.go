@@ -100,10 +100,10 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200 {array}  model.Site
-// @Failure     401 {object} string
-// @Failure     404 {object} string
-// @Failure     500 {object} string
+// @Success     200    {array}  model.Site
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     500    {object} string
 // @Router      /queries/sites/settings [get]
 func (h *Handler) GetGeoSettings(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)

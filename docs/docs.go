@@ -438,7 +438,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samples matching the current filters\nMultiple values in a single filter must be comma separated",
+                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\n?\u003cfield\u003e=\u003cop\u003e:\u003cvalue\u003e\nwhere \u003cfield\u003e is one of the accepted query params; \u003cop\u003e is one of \"lt\", \"gt\", \"eq\", \"in\" and \u003cvalue\u003e is an unquoted string, integer or decimal\nMultiple values for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -448,7 +448,7 @@ const docTemplate = `{
                 "tags": [
                     "samples"
                 ],
-                "summary": "Retrieve all samples filtered by a variety of fields",
+                "summary": "Retrieve all samplingfeatureIDs filtered by a variety of fields",
                 "parameters": [
                     {
                         "type": "integer",
@@ -488,20 +488,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "samplingfeature name",
-                        "name": "samplename",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sampling technique",
-                        "name": "sampletech",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "land or sea",
-                        "name": "landorsea",
+                        "description": "rock type",
+                        "name": "rocktype",
                         "in": "query"
                     },
                     {
@@ -512,8 +500,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "rock type",
-                        "name": "rocktype",
+                        "description": "mineral",
+                        "name": "mineral",
                         "in": "query"
                     },
                     {
@@ -524,8 +512,32 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "inclusion type",
+                        "name": "inclusiontype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "chemical element",
-                        "name": "majorelem",
+                        "name": "element",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "element type",
+                        "name": "elementtype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "measured value",
+                        "name": "value",
                         "in": "query"
                     }
                 ],
@@ -535,7 +547,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Sample"
+                                "$ref": "#/definitions/model.Specimen"
                             }
                         }
                     },
@@ -653,6 +665,20 @@ const docTemplate = `{
                     "sites"
                 ],
                 "summary": "Retrieve all geological settings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1018,35 +1044,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Sample": {
-            "type": "object",
-            "properties": {
-                "elevationPrecision": {
-                    "type": "number"
-                },
-                "elevationPrecisionComment": {
-                    "type": "string"
-                },
-                "samplingFeatureCode": {
-                    "type": "string"
-                },
-                "samplingFeatureDescription": {
-                    "type": "string"
-                },
-                "samplingFeatureID": {
-                    "type": "integer"
-                },
-                "samplingFeatureName": {
-                    "type": "string"
-                },
-                "samplingFeatureTypeCV": {
-                    "type": "string"
-                },
-                "samplingFeatureUUID": {
-                    "type": "integer"
-                }
-            }
-        },
         "model.Site": {
             "type": "object",
             "properties": {
@@ -1076,6 +1073,23 @@ const docTemplate = `{
                 },
                 "spatialReferenceID": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.Specimen": {
+            "type": "object",
+            "properties": {
+                "isFieldSpecimen": {
+                    "type": "boolean"
+                },
+                "samplingFeatureID": {
+                    "type": "integer"
+                },
+                "specimenMediumCV": {
+                    "type": "string"
+                },
+                "specimenTypeCV": {
+                    "type": "string"
                 }
             }
         }
