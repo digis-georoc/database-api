@@ -182,25 +182,6 @@ definitions:
       personLastName:
         type: string
     type: object
-  model.Sample:
-    properties:
-      elevationPrecision:
-        type: number
-      elevationPrecisionComment:
-        type: string
-      samplingFeatureCode:
-        type: string
-      samplingFeatureDescription:
-        type: string
-      samplingFeatureID:
-        type: integer
-      samplingFeatureName:
-        type: string
-      samplingFeatureTypeCV:
-        type: string
-      samplingFeatureUUID:
-        type: integer
-    type: object
   model.Site:
     properties:
       latitude:
@@ -222,6 +203,17 @@ definitions:
       spatialReferenceID:
         type: integer
     type: object
+  model.Specimen:
+    properties:
+      isFieldSpecimen:
+        type: boolean
+      samplingFeatureID:
+        type: integer
+      specimenMediumCV:
+        type: string
+      specimenTypeCV:
+        type: string
+    type: object
 host: api-test.georoc.eu
 info:
   contact:
@@ -236,7 +228,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.1.0
+  version: 0.2.0
 paths:
   /geodata/sites:
     get:
@@ -503,8 +495,13 @@ paths:
       consumes:
       - application/json
       description: |-
-        Get all samples matching the current filters
-        Multiple values in a single filter must be comma separated
+        Get all samplingfeatureIDs matching the current filters
+        Filter DSL syntax:
+        FIELD=OPERATOR:VALUE
+        where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
+        Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+        The filters are evaluated conjunctively.
+        Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
       parameters:
       - description: limit
         in: query
@@ -530,33 +527,41 @@ paths:
         in: query
         name: location3
         type: string
-      - description: samplingfeature name
+      - description: rock type
         in: query
-        name: samplename
-        type: string
-      - description: sampling technique
-        in: query
-        name: sampletech
-        type: string
-      - description: land or sea
-        in: query
-        name: landorsea
+        name: rocktype
         type: string
       - description: taxonomic classifier name
         in: query
         name: rockclass
         type: string
-      - description: rock type
+      - description: mineral
         in: query
-        name: rocktype
+        name: mineral
         type: string
       - description: material
         in: query
         name: material
         type: string
+      - description: inclusion type
+        in: query
+        name: inclusiontype
+        type: string
+      - description: sampling technique
+        in: query
+        name: sampletech
+        type: string
       - description: chemical element
         in: query
-        name: majorelem
+        name: element
+        type: string
+      - description: element type
+        in: query
+        name: elementtype
+        type: string
+      - description: measured value
+        in: query
+        name: value
         type: string
       produces:
       - application/json
@@ -565,7 +570,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Sample'
+              $ref: '#/definitions/model.Specimen'
             type: array
         "401":
           description: Unauthorized
@@ -585,7 +590,7 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: Retrieve all samples filtered by a variety of fields
+      summary: Retrieve all samplingfeatureIDs filtered by a variety of fields
       tags:
       - samples
   /queries/sites:
@@ -674,6 +679,15 @@ paths:
       consumes:
       - application/json
       description: Get all geological settings
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:

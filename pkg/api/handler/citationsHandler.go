@@ -44,7 +44,7 @@ func (h *Handler) GetCitations(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &citations)
+	err = h.db.Query(query.GetQueryString(), &citations)
 	if err != nil {
 		logger.Errorf("Can not GetCitations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
@@ -76,8 +76,7 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 	}
 
 	citations := []model.Citation{}
-	query := sql.NewQuery(sql.CitationByIDQuery)
-	err := h.db.Query(query.String(), &citations, c.Param(QP_CITATIONID))
+	err := h.db.Query(sql.CitationByIDQuery, &citations, c.Param(QP_CITATIONID))
 	if err != nil {
 		logger.Errorf("Can not GetCitationByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
