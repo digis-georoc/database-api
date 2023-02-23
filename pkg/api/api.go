@@ -103,7 +103,5 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// Sites as GeoJSON
 	geoData.GET("/sites", h.GetGeoJSONSites)
 
-	queries.GET("/samples/test", h.TestQuery)
-
 	return e
 }

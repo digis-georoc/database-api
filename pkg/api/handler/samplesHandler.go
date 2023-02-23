@@ -244,33 +244,3 @@ func parseParam(queryParam string) (string, string, error) {
 	}
 	return value, operator, nil
 }
-
-func (h *Handler) TestQuery(c echo.Context) error {
-	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
-	if !ok {
-		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
-	}
-	query := `select distinct spec.samplingfeatureid
-	from odm2.specimens spec
-	join (
-		-- taxonomic classifiers
-		select stc.samplingfeatureid
-		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
-		left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
-		left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifierdescription  = 'Mineral Classification from GEOROC'
-	WHERE tax_type.taxonomicclassifiername = $1
-	) tax on tax.samplingfeatureid = spec.samplingfeatureid`
-	arg := c.QueryParam("arg")
-	specimen := []model.Specimen{}
-	err := h.db.Query(query, &specimen, fmt.Sprintf("'%s'", arg))
-	if err != nil {
-		logger.Errorf("Can not TEST: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve TEST data")
-	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(specimen), specimen}
-	return c.JSON(http.StatusOK, response)
-}
