@@ -95,13 +95,15 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// full data
 	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	// samples
-	queries.GET("/samples", h.GetSamplesByGeoSetting)
+	queries.GET("/samples", h.GetSamplesFiltered)
 
 	// GeoJSON
 	geoData := v1.Group("/geodata")
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))
 	// Sites as GeoJSON
 	geoData.GET("/sites", h.GetGeoJSONSites)
+
+	queries.GET("/samples/test", h.TestQuery)
 
 	return e
 }
