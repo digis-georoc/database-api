@@ -44,7 +44,7 @@ func (h *Handler) GetSites(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.String(), &sites)
+	err = h.db.Query(query.GetQueryString(), &sites)
 	if err != nil {
 		logger.Errorf("Can not GetSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -75,8 +75,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	sites := []model.Site{}
-	query := sql.NewQuery(sql.SiteByIDQuery)
-	err := h.db.Query(query.String(), &sites, c.Param(QP_SAMPFEATUREID))
+	err := h.db.Query(sql.SiteByIDQuery, &sites, c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSiteByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -99,10 +98,12 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 // @Tags        sites
 // @Accept      json
 // @Produce     json
-// @Success     200 {array}  model.Site
-// @Failure     401 {object} string
-// @Failure     404 {object} string
-// @Failure     500 {object} string
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Site
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     500    {object} string
 // @Router      /queries/sites/settings [get]
 func (h *Handler) GetGeoSettings(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -110,7 +111,15 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	sites := []model.Site{}
-	err := h.db.Query(sql.GeoSettingsQuery, &sites)
+	query := sql.NewQuery(sql.GeoSettingsQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &sites)
 	if err != nil {
 		logger.Errorf("Can not GetGeoSettings: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological settings data")

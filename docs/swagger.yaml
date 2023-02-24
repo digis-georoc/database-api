@@ -194,63 +194,8 @@ definitions:
     type: object
   model.Sample:
     properties:
-      elevationPrecision:
-        type: number
-      elevationPrecisionComment:
-        type: string
-      samplingFeatureCode:
-        type: string
-      samplingFeatureDescription:
-        type: string
       samplingFeatureID:
         type: integer
-      samplingFeatureName:
-        type: string
-      samplingFeatureTypeCV:
-        type: string
-      samplingFeatureUUID:
-        type: integer
-    type: object
-  model.SampleByGeoSettingResponse:
-    properties:
-      inclusion_type:
-        type: string
-      land_or_sea:
-        type: string
-      lat:
-        type: number
-      loc1:
-        type: string
-      loc2:
-        type: string
-      loc3:
-        type: string
-      long:
-        type: number
-      material:
-        type: string
-      mineral:
-        type: string
-      rim_or_core:
-        type: string
-      rock_class:
-        type: string
-      rock_type:
-        type: string
-      samp_technique:
-        type: string
-      sample_names:
-        items:
-          type: string
-        type: array
-      samplingFeatureID:
-        type: integer
-      setting:
-        type: string
-      specimen:
-        type: integer
-      texture:
-        type: string
     type: object
   model.SamplingTechnique:
     properties:
@@ -280,7 +225,13 @@ definitions:
     type: object
   model.Specimen:
     properties:
-      specimenType:
+      isFieldSpecimen:
+        type: boolean
+      samplingFeatureID:
+        type: integer
+      specimenMediumCV:
+        type: string
+      specimenTypeCV:
         type: string
     type: object
   model.TaxonomicClassifier:
@@ -302,7 +253,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.1.0
+  version: 0.2.0
 paths:
   /geodata/sites:
     get:
@@ -715,7 +666,14 @@ paths:
     get:
       consumes:
       - application/json
-      description: get all sample data
+      description: |-
+        Get all samplingfeatureIDs matching the current filters
+        Filter DSL syntax:
+        FIELD=OPERATOR:VALUE
+        where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
+        Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+        The filters are evaluated conjunctively.
+        Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
       parameters:
       - description: limit
         in: query
@@ -725,6 +683,58 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: tectonic setting
+        in: query
+        name: setting
+        type: string
+      - description: location level 1
+        in: query
+        name: location1
+        type: string
+      - description: location level 2
+        in: query
+        name: location2
+        type: string
+      - description: location level 3
+        in: query
+        name: location3
+        type: string
+      - description: rock type
+        in: query
+        name: rocktype
+        type: string
+      - description: taxonomic classifier name
+        in: query
+        name: rockclass
+        type: string
+      - description: mineral
+        in: query
+        name: mineral
+        type: string
+      - description: material
+        in: query
+        name: material
+        type: string
+      - description: inclusion type
+        in: query
+        name: inclusiontype
+        type: string
+      - description: sampling technique
+        in: query
+        name: sampletech
+        type: string
+      - description: chemical element
+        in: query
+        name: element
+        type: string
+      - description: element type
+        in: query
+        name: elementtype
+        type: string
+      - description: measured value
+        in: query
+        name: value
+        type: string
       produces:
       - application/json
       responses:
@@ -732,7 +742,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Sample'
+              $ref: '#/definitions/model.Specimen'
             type: array
         "401":
           description: Unauthorized
@@ -752,7 +762,7 @@ paths:
             type: string
       security:
       - ApiKeyAuth: []
-      summary: Retrieve all samples
+      summary: Retrieve all samplingfeatureIDs filtered by a variety of fields
       tags:
       - samples
   /queries/samples/{samplingfeatureID}:
@@ -790,96 +800,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve sample by samplingfeatureid
-      tags:
-      - samples
-  /queries/samples/bygeosetting:
-    get:
-      consumes:
-      - application/json
-      description: |-
-        Get all samples matching the current filters
-        Multiple values in a single filter must be comma separated
-      parameters:
-      - description: limit
-        in: query
-        name: limit
-        type: integer
-      - description: offset
-        in: query
-        name: offset
-        type: integer
-      - description: tectonic setting - choose from /queries/sites/settings
-        in: query
-        name: setting
-        type: string
-      - description: location level 1 - choose from /queries/locations/l1
-        in: query
-        name: location1
-        type: string
-      - description: location level 2 - choose from /queries/locations/l2
-        in: query
-        name: location2
-        type: string
-      - description: location level 3 - choose from /queries/locations/l3
-        in: query
-        name: location3
-        type: string
-      - description: samplingfeature name
-        in: query
-        name: samplename
-        type: string
-      - description: sampling technique - choose from /queries/samples/samplingtechniques
-        in: query
-        name: sampletech
-        type: string
-      - description: land or sea - choose from /queries/sites/landorsea
-        in: query
-        name: landorsea
-        type: string
-      - description: rock class - choose from /queries/samples/rockclasses
-        in: query
-        name: rockclass
-        type: string
-      - description: rock type - choose from /queries/samples/rocktypes
-        in: query
-        name: rocktype
-        type: string
-      - description: mineral - choose from /queries/samples/minerals
-        in: query
-        name: mineral
-        type: string
-      - description: chemical element
-        in: query
-        name: majorelem
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.SampleByGeoSettingResponse'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "422":
-          description: Unprocessable Entity
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Retrieve all samples filtered by a variety of fields
       tags:
       - samples
   /queries/samples/minerals:
@@ -1219,6 +1139,15 @@ paths:
       consumes:
       - application/json
       description: Get all geological settings
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:

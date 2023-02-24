@@ -1,18 +1,23 @@
 package model
 
-type Sample struct {
-	SamplingFeatureID          int
-	SamplingFeatureUUID        int
-	SamplingFeatureTypeCV      string
-	SamplingFeatureCode        string
-	SamplingFeatureName        string
-	SamplingFeatureDescription string
-	ElevationPrecision         float64
-	ElevationPrecisionComment  string
+type Specimen struct {
+	SamplingFeatureID int
+	SpecimenTypeCV    string
+	SpecimenMediumCV  string
+	IsFieldSpecimen   bool
 }
 
-type Specimen struct {
-	SpecimenType string
+type Sample struct {
+	SamplingFeatureID          int
+	SamplingFeatureUUID        string
+	SamplingFeatureName        string
+	SamplingFeatureDescription string
+	SamplingFeatureGeotypeCV   string
+	FeatureGeometryWKT         string
+	Elevation_m                float64
+	ElevationDatumCV           string
+	ElevationPrecision         float64
+	ElevationPrecisionComment  string
 }
 
 type SampleByGeoSettingResponse struct {
@@ -37,5 +42,13 @@ type SampleByGeoSettingResponse struct {
 }
 
 type SamplingTechnique struct {
+	Name string
+}
+
+type Material struct {
+	Name string
+}
+
+type InclusionType struct {
 	Name string
 }

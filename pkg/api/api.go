@@ -17,7 +17,7 @@ import (
 )
 
 // @title       DIGIS Database API
-// @version     0.1.0
+// @version     0.2.0
 // @description This is the database api for the new GeoROC datamodel
 // @description
 // @description Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
@@ -100,14 +100,18 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// full data
 	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	// samples
-	queries.GET("/samples", h.GetSamples)
+	queries.GET("/samples", h.GetSamplesFiltered)
 	queries.GET("/samples/:samplingfeatureID", h.GetSampleByID)
 	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
-	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
 	queries.GET("/samples/rockclasses", h.GetRockClasses)
 	queries.GET("/samples/rocktypes", h.GetRockTypes)
 	queries.GET("/samples/minerals", h.GetMinerals)
-	queries.GET("/samples/bygeosetting", h.GetSamplesByGeoSetting)
+	queries.GET("/samples/materials", h.GetMaterials)
+	queries.GET("/samples/inclusiontypes", h.GetInclusionTypes)
+	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
+	// results
+	queries.GET("/results/elements", h.GetElements)
+	queries.GET("/results/elementtypes", h.GetElementTypes)
 	// GeoJSON
 	geoData := v1.Group("/geodata")
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))

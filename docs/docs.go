@@ -666,7 +666,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get all sample data",
+                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\", \"gt\", \"eq\", \"in\" and VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -676,76 +676,7 @@ const docTemplate = `{
                 "tags": [
                     "samples"
                 ],
-                "summary": "Retrieve all samples",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "offset",
-                        "name": "offset",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Sample"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/queries/samples/bygeosetting": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get all samples matching the current filters\nMultiple values in a single filter must be comma separated",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "samples"
-                ],
-                "summary": "Retrieve all samples filtered by a variety of fields",
+                "summary": "Retrieve all samplingfeatureIDs filtered by a variety of fields",
                 "parameters": [
                     {
                         "type": "integer",
@@ -761,68 +692,80 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "tectonic setting - choose from /queries/sites/settings",
+                        "description": "tectonic setting",
                         "name": "setting",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 1 - choose from /queries/locations/l1",
+                        "description": "location level 1",
                         "name": "location1",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 2 - choose from /queries/locations/l2",
+                        "description": "location level 2",
                         "name": "location2",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 3 - choose from /queries/locations/l3",
+                        "description": "location level 3",
                         "name": "location3",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "samplingfeature name",
-                        "name": "samplename",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sampling technique - choose from /queries/samples/samplingtechniques",
-                        "name": "sampletech",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "land or sea - choose from /queries/sites/landorsea",
-                        "name": "landorsea",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "rock class - choose from /queries/samples/rockclasses",
-                        "name": "rockclass",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "rock type - choose from /queries/samples/rocktypes",
+                        "description": "rock type",
                         "name": "rocktype",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "mineral - choose from /queries/samples/minerals",
+                        "description": "taxonomic classifier name",
+                        "name": "rockclass",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "mineral",
                         "name": "mineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
+                        "description": "material",
+                        "name": "material",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion type",
+                        "name": "inclusiontype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "chemical element",
-                        "name": "majorelem",
+                        "name": "element",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "element type",
+                        "name": "elementtype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "measured value",
+                        "name": "value",
                         "in": "query"
                     }
                 ],
@@ -832,7 +775,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.SampleByGeoSettingResponse"
+                                "$ref": "#/definitions/model.Specimen"
                             }
                         }
                     },
@@ -1402,6 +1345,20 @@ const docTemplate = `{
                     "sites"
                 ],
                 "summary": "Retrieve all geological settings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1786,91 +1743,8 @@ const docTemplate = `{
         "model.Sample": {
             "type": "object",
             "properties": {
-                "elevationPrecision": {
-                    "type": "number"
-                },
-                "elevationPrecisionComment": {
-                    "type": "string"
-                },
-                "samplingFeatureCode": {
-                    "type": "string"
-                },
-                "samplingFeatureDescription": {
-                    "type": "string"
-                },
                 "samplingFeatureID": {
                     "type": "integer"
-                },
-                "samplingFeatureName": {
-                    "type": "string"
-                },
-                "samplingFeatureTypeCV": {
-                    "type": "string"
-                },
-                "samplingFeatureUUID": {
-                    "type": "integer"
-                }
-            }
-        },
-        "model.SampleByGeoSettingResponse": {
-            "type": "object",
-            "properties": {
-                "inclusion_type": {
-                    "type": "string"
-                },
-                "land_or_sea": {
-                    "type": "string"
-                },
-                "lat": {
-                    "type": "number"
-                },
-                "loc1": {
-                    "type": "string"
-                },
-                "loc2": {
-                    "type": "string"
-                },
-                "loc3": {
-                    "type": "string"
-                },
-                "long": {
-                    "type": "number"
-                },
-                "material": {
-                    "type": "string"
-                },
-                "mineral": {
-                    "type": "string"
-                },
-                "rim_or_core": {
-                    "type": "string"
-                },
-                "rock_class": {
-                    "type": "string"
-                },
-                "rock_type": {
-                    "type": "string"
-                },
-                "samp_technique": {
-                    "type": "string"
-                },
-                "sample_names": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "samplingFeatureID": {
-                    "type": "integer"
-                },
-                "setting": {
-                    "type": "string"
-                },
-                "specimen": {
-                    "type": "integer"
-                },
-                "texture": {
-                    "type": "string"
                 }
             }
         },
@@ -1917,7 +1791,16 @@ const docTemplate = `{
         "model.Specimen": {
             "type": "object",
             "properties": {
-                "specimenType": {
+                "isFieldSpecimen": {
+                    "type": "boolean"
+                },
+                "samplingFeatureID": {
+                    "type": "integer"
+                },
+                "specimenMediumCV": {
+                    "type": "string"
+                },
+                "specimenTypeCV": {
                     "type": "string"
                 }
             }
@@ -1943,7 +1826,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1.0",
+	Version:          "0.2.0",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
