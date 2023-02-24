@@ -31,6 +31,16 @@ definitions:
       volume:
         type: string
     type: object
+  model.Element:
+    properties:
+      name:
+        type: string
+    type: object
+  model.ElementType:
+    properties:
+      name:
+        type: string
+    type: object
   model.FullData:
     properties:
       age_Max:
@@ -173,12 +183,22 @@ definitions:
       type:
         type: string
     type: object
+  model.InclusionType:
+    properties:
+      name:
+        type: string
+    type: object
   model.LandOrSea:
     properties:
       name:
         type: string
     type: object
   model.Location:
+    properties:
+      name:
+        type: string
+    type: object
+  model.Material:
     properties:
       name:
         type: string
@@ -194,8 +214,26 @@ definitions:
     type: object
   model.Sample:
     properties:
+      elevation_m:
+        type: number
+      elevationDatumCV:
+        type: string
+      elevationPrecision:
+        type: number
+      elevationPrecisionComment:
+        type: string
+      featureGeometryWKT:
+        type: string
+      samplingFeatureDescription:
+        type: string
+      samplingFeatureGeotypeCV:
+        type: string
       samplingFeatureID:
         type: integer
+      samplingFeatureName:
+        type: string
+      samplingFeatureUUID:
+        type: string
     type: object
   model.SamplingTechnique:
     properties:
@@ -662,6 +700,94 @@ paths:
       summary: Retrieve locations of third level
       tags:
       - locations
+  /queries/results/elements:
+    get:
+      consumes:
+      - application/json
+      description: get chemical elements
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Element'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve chemical elements
+      tags:
+      - samples
+  /queries/results/elementtypes:
+    get:
+      consumes:
+      - application/json
+      description: get chemical element types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ElementType'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve chemical element types
+      tags:
+      - samples
   /queries/samples:
     get:
       consumes:
@@ -683,51 +809,51 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: tectonic setting
+      - description: tectonic setting - see /queries/sites/settings
         in: query
         name: setting
         type: string
-      - description: location level 1
+      - description: location level 1 - see /queries/locations/l1
         in: query
         name: location1
         type: string
-      - description: location level 2
+      - description: location level 2 - see /queries/locations/l2
         in: query
         name: location2
         type: string
-      - description: location level 3
+      - description: location level 3 - see /queries/locations/l3
         in: query
         name: location3
         type: string
-      - description: rock type
+      - description: rock type - see /queries/samples/rocktypes
         in: query
         name: rocktype
         type: string
-      - description: taxonomic classifier name
+      - description: taxonomic classifier name - see /queries/samples/rockclasses
         in: query
         name: rockclass
         type: string
-      - description: mineral
+      - description: mineral - see /queries/samples/minerals
         in: query
         name: mineral
         type: string
-      - description: material
+      - description: material - see /queries/samples/materials
         in: query
         name: material
         type: string
-      - description: inclusion type
+      - description: inclusion type - see /queries/samples/inclusiontypes
         in: query
         name: inclusiontype
         type: string
-      - description: sampling technique
+      - description: sampling technique - see /queries/samples/samplingtechniques
         in: query
         name: sampletech
         type: string
-      - description: chemical element
+      - description: chemical element - see /queries/samples/elements
         in: query
         name: element
         type: string
-      - description: element type
+      - description: element type - see /queries/samples/elementtypes
         in: query
         name: elementtype
         type: string
@@ -800,6 +926,94 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve sample by samplingfeatureid
+      tags:
+      - samples
+  /queries/samples/inclusiontypes:
+    get:
+      consumes:
+      - application/json
+      description: get inclusion types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.InclusionType'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve inclusion types
+      tags:
+      - samples
+  /queries/samples/materials:
+    get:
+      consumes:
+      - application/json
+      description: get materials
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Material'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve materials
       tags:
       - samples
   /queries/samples/minerals:
