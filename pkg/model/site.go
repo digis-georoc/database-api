@@ -11,7 +11,3 @@ type Site struct {
 	SiteDescription          string
 	Setting                  string
 }
-
-type LandOrSea struct {
-	Name string
-}
