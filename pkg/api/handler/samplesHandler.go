@@ -559,6 +559,41 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// GetRandomSamples godoc
+// @Summary     Retrieve a random set of specimen
+// @Description get random specimen
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit query    int false "limit"
+// @Success     200   {array}  model.Specimen
+// @Failure     401   {object} string
+// @Failure     404   {object} string
+// @Failure     422   {object} string
+// @Failure     500   {object} string
+// @Router      /queries/samples/random [get]
+func (h *Handler) GetRandomSamples(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	randomSpecimen := []model.Specimen{}
+	query := sql.NewQuery(sql.GetRandomSpecimensQuery)
+	limit := c.QueryParam(QP_LIMIT)
+	err := h.db.Query(query.GetQueryString(), &randomSpecimen, limit)
+	if err != nil {
+		logger.Errorf("Can not GetRandomSamples: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve random data sample")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(randomSpecimen), randomSpecimen}
+	return c.JSON(http.StatusOK, response)
+}
+
 // parseParam parses a given query parameter and validates the contents
 func parseParam(queryParam string) (string, string, error) {
 	if queryParam == "" {
