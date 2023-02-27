@@ -1,5 +1,10 @@
 package sql
 
+const GetSampleByIDQuery = `
+select * from odm2.samplingfeatures s
+where s.samplingfeatureid = $1
+`
+
 // Modular query to get specimenids filtered by various features
 // BaseQuery is extended with JOIN-modules depending on the selected filter options
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"

@@ -89,6 +89,10 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/sites", h.GetSites)
 	queries.GET("/sites/:samplingfeatureID", h.GetSiteByID)
 	queries.GET("/sites/settings", h.GetGeoSettings)
+	// locations
+	queries.GET("/locations/l1", h.GetLocationsL1)
+	queries.GET("/locations/l2", h.GetLocationsL2)
+	queries.GET("/locations/l3", h.GetLocationsL3)
 	// citations
 	queries.GET("/citations", h.GetCitations)
 	queries.GET("/citations/:citationID", h.GetCitationByID)
@@ -96,7 +100,17 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	// samples
 	queries.GET("/samples", h.GetSamplesFiltered)
-
+	queries.GET("/samples/:samplingfeatureID", h.GetSampleByID)
+	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
+	queries.GET("/samples/rockclasses", h.GetRockClasses)
+	queries.GET("/samples/rocktypes", h.GetRockTypes)
+	queries.GET("/samples/minerals", h.GetMinerals)
+	queries.GET("/samples/materials", h.GetMaterials)
+	queries.GET("/samples/inclusiontypes", h.GetInclusionTypes)
+	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
+	// results
+	queries.GET("/results/elements", h.GetElements)
+	queries.GET("/results/elementtypes", h.GetElementTypes)
 	// GeoJSON
 	geoData := v1.Group("/geodata")
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))

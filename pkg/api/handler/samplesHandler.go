@@ -30,6 +30,43 @@ const (
 	QP_VALUE    = "value"
 )
 
+// GetSampleByID godoc
+// @Summary     Retrieve sample by samplingfeatureid
+// @Description get sample by samplingfeatureid
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       samplingfeatureID path     string true "Sample ID"
+// @Success     200               {array}  model.Sample
+// @Failure     401               {object} string
+// @Failure     404               {object} string
+// @Failure     500               {object} string
+// @Router      /queries/samples/{samplingfeatureID} [get]
+func (h *Handler) GetSampleByID(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	samples := []model.Sample{}
+	query := sql.NewQuery(sql.GetSampleByIDQuery)
+	err := h.db.Query(query.GetQueryString(), &samples, c.Param(QP_SAMPFEATUREID))
+	if err != nil {
+		logger.Errorf("Can not GetSampleByID: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	num := len(samples)
+	if num == 0 {
+		return c.String(http.StatusNotFound, "No data found")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{num, samples}
+	return c.JSON(http.StatusOK, response)
+}
+
 // GetSamplesFiltered godoc
 // @Summary     Retrieve all samplingfeatureIDs filtered by a variety of fields
 // @Description Get all samplingfeatureIDs matching the current filters
@@ -45,18 +82,18 @@ const (
 // @Produce     json
 // @Param       limit         query    int    false "limit"
 // @Param       offset        query    int    false "offset"
-// @Param       setting       query    string false "tectonic setting"
-// @Param       location1     query    string false "location level 1"
-// @Param       location2     query    string false "location level 2"
-// @Param       location3     query    string false "location level 3"
-// @Param       rocktype      query    string false "rock type"
-// @Param       rockclass     query    string false "taxonomic classifier name"
-// @Param       mineral       query    string false "mineral"
-// @Param       material      query    string false "material"
-// @Param       inclusiontype query    string false "inclusion type"
-// @Param       sampletech    query    string false "sampling technique"
-// @Param       element       query    string false "chemical element"
-// @Param       elementtype   query    string false "element type"
+// @Param       setting       query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1     query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2     query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3     query    string false "location level 3 - see /queries/locations/l3"
+// @Param       rocktype      query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass     query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral       query    string false "mineral - see /queries/samples/minerals"
+// @Param       material      query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       sampletech    query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       element       query    string false "chemical element - see /queries/samples/elements"
+// @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
 // @Param       value         query    string false "measured value"
 // @Success     200           {array}  model.Specimen
 // @Failure     401           {object} string
@@ -225,6 +262,300 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		NumItems int
 		Data     interface{}
 	}{len(specimen), specimen}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetSpecimenTypes godoc
+// @Summary     Retrieve specimen types
+// @Description get specimen types
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Specimen
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/specimentypes [get]
+func (h *Handler) GetSpecimenTypes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	specimentypes := []model.Specimen{}
+	query := sql.NewQuery(sql.GetSpecimenTypesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &specimentypes)
+	if err != nil {
+		logger.Errorf("Can not GetSpecimenTypes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(specimentypes), specimentypes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetRockClasses godoc
+// @Summary     Retrieve rock classes
+// @Description get rock classes
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/rockclasses [get]
+func (h *Handler) GetRockClasses(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	rockclasses := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.RockClassQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &rockclasses)
+	if err != nil {
+		logger.Errorf("Can not GetRockClasses: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(rockclasses), rockclasses}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetRockTypes godoc
+// @Summary     Retrieve rock types
+// @Description get rock types
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/rocktypes [get]
+func (h *Handler) GetRockTypes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	rocktypes := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.RockTypeQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &rocktypes)
+	if err != nil {
+		logger.Errorf("Can not GetRockTypes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(rocktypes), rocktypes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetMinerals godoc
+// @Summary     Retrieve minerals
+// @Description get minerals
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.TaxonomicClassifier
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/minerals [get]
+func (h *Handler) GetMinerals(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	minerals := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.MineralQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &minerals)
+	if err != nil {
+		logger.Errorf("Can not GetMinerals: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(minerals), minerals}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetMaterials godoc
+// @Summary     Retrieve materials
+// @Description get materials
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Material
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/materials [get]
+func (h *Handler) GetMaterials(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	materials := []model.Material{}
+	query := sql.NewQuery(sql.MaterialsQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &materials)
+	if err != nil {
+		logger.Errorf("Can not GetMaterials: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve material data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(materials), materials}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetInclusionTypes godoc
+// @Summary     Retrieve inclusion types
+// @Description get inclusion types
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.InclusionType
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/inclusiontypes [get]
+func (h *Handler) GetInclusionTypes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	inclusionTypes := []model.InclusionType{}
+	query := sql.NewQuery(sql.InclusionTypesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &inclusionTypes)
+	if err != nil {
+		logger.Errorf("Can not GetInclusionTypes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion type data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(inclusionTypes), inclusionTypes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetSamplingTechniques godoc
+// @Summary     Retrieve sampling techniques
+// @Description get sampling techniques
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.SamplingTechnique
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/samplingtechniques [get]
+func (h *Handler) GetSamplingTechniques(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	samplingtechniques := []model.SamplingTechnique{}
+	query := sql.NewQuery(sql.SamplingTechniquesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &samplingtechniques)
+	if err != nil {
+		logger.Errorf("Can not GetSamplingTechniques: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(samplingtechniques), samplingtechniques}
 	return c.JSON(http.StatusOK, response)
 }
 

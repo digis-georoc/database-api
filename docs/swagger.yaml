@@ -31,6 +31,16 @@ definitions:
       volume:
         type: string
     type: object
+  model.Element:
+    properties:
+      name:
+        type: string
+    type: object
+  model.ElementType:
+    properties:
+      name:
+        type: string
+    type: object
   model.FullData:
     properties:
       age_Max:
@@ -173,6 +183,26 @@ definitions:
       type:
         type: string
     type: object
+  model.InclusionType:
+    properties:
+      name:
+        type: string
+    type: object
+  model.LandOrSea:
+    properties:
+      name:
+        type: string
+    type: object
+  model.Location:
+    properties:
+      name:
+        type: string
+    type: object
+  model.Material:
+    properties:
+      name:
+        type: string
+    type: object
   model.People:
     properties:
       personFirstName:
@@ -180,6 +210,34 @@ definitions:
       personId:
         type: integer
       personLastName:
+        type: string
+    type: object
+  model.Sample:
+    properties:
+      elevation_m:
+        type: number
+      elevationDatumCV:
+        type: string
+      elevationPrecision:
+        type: number
+      elevationPrecisionComment:
+        type: string
+      featureGeometryWKT:
+        type: string
+      samplingFeatureDescription:
+        type: string
+      samplingFeatureGeotypeCV:
+        type: string
+      samplingFeatureID:
+        type: integer
+      samplingFeatureName:
+        type: string
+      samplingFeatureUUID:
+        type: string
+    type: object
+  model.SamplingTechnique:
+    properties:
+      name:
         type: string
     type: object
   model.Site:
@@ -212,6 +270,11 @@ definitions:
       specimenMediumCV:
         type: string
       specimenTypeCV:
+        type: string
+    type: object
+  model.TaxonomicClassifier:
+    properties:
+      name:
         type: string
     type: object
 host: api-test.georoc.eu
@@ -271,7 +334,7 @@ paths:
       - ApiKeyAuth: []
       summary: Retrieve site data as GeoJSON
       tags:
-      - sites
+      - geodata
   /ping:
     get:
       consumes:
@@ -490,6 +553,241 @@ paths:
       summary: Retrieve full dataset by samplingfeatureid
       tags:
       - fulldata
+  /queries/locations/l1:
+    get:
+      consumes:
+      - application/json
+      description: get top level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of first level
+      tags:
+      - locations
+  /queries/locations/l2:
+    get:
+      consumes:
+      - application/json
+      description: get second level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of second level
+      tags:
+      - locations
+  /queries/locations/l3:
+    get:
+      consumes:
+      - application/json
+      description: get third level locations
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: Locationname Level 1
+        in: query
+        name: locationl1
+        required: true
+        type: string
+      - description: Locationname Level 2
+        in: query
+        name: locationl2
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Location'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve locations of third level
+      tags:
+      - locations
+  /queries/results/elements:
+    get:
+      consumes:
+      - application/json
+      description: get chemical elements
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Element'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve chemical elements
+      tags:
+      - samples
+  /queries/results/elementtypes:
+    get:
+      consumes:
+      - application/json
+      description: get chemical element types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.ElementType'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve chemical element types
+      tags:
+      - samples
   /queries/samples:
     get:
       consumes:
@@ -511,51 +809,51 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: tectonic setting
+      - description: tectonic setting - see /queries/sites/settings
         in: query
         name: setting
         type: string
-      - description: location level 1
+      - description: location level 1 - see /queries/locations/l1
         in: query
         name: location1
         type: string
-      - description: location level 2
+      - description: location level 2 - see /queries/locations/l2
         in: query
         name: location2
         type: string
-      - description: location level 3
+      - description: location level 3 - see /queries/locations/l3
         in: query
         name: location3
         type: string
-      - description: rock type
+      - description: rock type - see /queries/samples/rocktypes
         in: query
         name: rocktype
         type: string
-      - description: taxonomic classifier name
+      - description: taxonomic classifier name - see /queries/samples/rockclasses
         in: query
         name: rockclass
         type: string
-      - description: mineral
+      - description: mineral - see /queries/samples/minerals
         in: query
         name: mineral
         type: string
-      - description: material
+      - description: material - see /queries/samples/materials
         in: query
         name: material
         type: string
-      - description: inclusion type
+      - description: inclusion type - see /queries/samples/inclusiontypes
         in: query
         name: inclusiontype
         type: string
-      - description: sampling technique
+      - description: sampling technique - see /queries/samples/samplingtechniques
         in: query
         name: sampletech
         type: string
-      - description: chemical element
+      - description: chemical element - see /queries/samples/elements
         in: query
         name: element
         type: string
-      - description: element type
+      - description: element type - see /queries/samples/elementtypes
         in: query
         name: elementtype
         type: string
@@ -591,6 +889,351 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve all samplingfeatureIDs filtered by a variety of fields
+      tags:
+      - samples
+  /queries/samples/{samplingfeatureID}:
+    get:
+      consumes:
+      - application/json
+      description: get sample by samplingfeatureid
+      parameters:
+      - description: Sample ID
+        in: path
+        name: samplingfeatureID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Sample'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve sample by samplingfeatureid
+      tags:
+      - samples
+  /queries/samples/inclusiontypes:
+    get:
+      consumes:
+      - application/json
+      description: get inclusion types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.InclusionType'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve inclusion types
+      tags:
+      - samples
+  /queries/samples/materials:
+    get:
+      consumes:
+      - application/json
+      description: get materials
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Material'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve materials
+      tags:
+      - samples
+  /queries/samples/minerals:
+    get:
+      consumes:
+      - application/json
+      description: get minerals
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TaxonomicClassifier'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve minerals
+      tags:
+      - samples
+  /queries/samples/rockclasses:
+    get:
+      consumes:
+      - application/json
+      description: get rock classes
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TaxonomicClassifier'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve rock classes
+      tags:
+      - samples
+  /queries/samples/rocktypes:
+    get:
+      consumes:
+      - application/json
+      description: get rock types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.TaxonomicClassifier'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve rock types
+      tags:
+      - samples
+  /queries/samples/samplingtechniques:
+    get:
+      consumes:
+      - application/json
+      description: get sampling techniques
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.SamplingTechnique'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve sampling techniques
+      tags:
+      - samples
+  /queries/samples/specimentypes:
+    get:
+      consumes:
+      - application/json
+      description: get specimen types
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Specimen'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve specimen types
       tags:
       - samples
   /queries/sites:
@@ -672,6 +1315,37 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve sites by samplingfeatureID
+      tags:
+      - sites
+  /queries/sites/landorsea:
+    get:
+      consumes:
+      - application/json
+      description: Get land or sea options
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.LandOrSea'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve land or sea options
       tags:
       - sites
   /queries/sites/settings:
