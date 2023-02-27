@@ -101,6 +101,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// samples
 	queries.GET("/samples", h.GetSamplesFiltered)
 	queries.GET("/samples/:samplingfeatureID", h.GetSampleByID)
+	queries.GET("/samples/random", h.GetRandomSamples)
 	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
 	queries.GET("/samples/rockclasses", h.GetRockClasses)
 	queries.GET("/samples/rocktypes", h.GetRockTypes)

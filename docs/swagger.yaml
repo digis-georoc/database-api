@@ -188,11 +188,6 @@ definitions:
       name:
         type: string
     type: object
-  model.LandOrSea:
-    properties:
-      name:
-        type: string
-    type: object
   model.Location:
     properties:
       name:
@@ -1060,6 +1055,46 @@ paths:
       summary: Retrieve minerals
       tags:
       - samples
+  /queries/samples/random:
+    get:
+      consumes:
+      - application/json
+      description: get random specimen
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Specimen'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve a random set of specimen
+      tags:
+      - samples
   /queries/samples/rockclasses:
     get:
       consumes:
@@ -1315,37 +1350,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve sites by samplingfeatureID
-      tags:
-      - sites
-  /queries/sites/landorsea:
-    get:
-      consumes:
-      - application/json
-      description: Get land or sea options
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.LandOrSea'
-            type: array
-        "401":
-          description: Unauthorized
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      security:
-      - ApiKeyAuth: []
-      summary: Retrieve land or sea options
       tags:
       - sites
   /queries/sites/settings:
