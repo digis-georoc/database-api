@@ -74,6 +74,8 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Description FIELD=OPERATOR:VALUE
 // @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
 // @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+// @Description The OPERATORs "lt" and "gt" are only applicable to numerical values.
+// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR
 // @Description The filters are evaluated conjunctively.
 // @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
 // @Security    ApiKeyAuth
@@ -94,7 +96,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       sampletech    query    string false "sampling technique - see /queries/samples/samplingtechniques"
 // @Param       element       query    string false "chemical element - see /queries/samples/elements"
 // @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value         query    string false "measured value"
+// @Param       value         query    float false "measured value"
 // @Success     200           {array}  model.Specimen
 // @Failure     401           {object} string
 // @Failure     404           {object} string
@@ -601,7 +603,8 @@ func parseParam(queryParam string) (string, string, error) {
 	}
 	operator, value, found := strings.Cut(queryParam, ":")
 	if !found {
-		return "", "", fmt.Errorf("Invalid param format")
+		// if no operator is specified, "eq" is assumed as default
+		return queryParam, sql.OpEq, nil
 	}
 	// validate operator
 	operator, opIsValid := sql.OperatorMap[operator]
