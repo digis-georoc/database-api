@@ -74,27 +74,29 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Description FIELD=OPERATOR:VALUE
 // @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
 // @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+// @Description The OPERATORs "lt" and "gt" are only applicable to numerical values.
+// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR
 // @Description The filters are evaluated conjunctively.
 // @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
 // @Security    ApiKeyAuth
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit         query    int    false "limit"
-// @Param       offset        query    int    false "offset"
-// @Param       setting       query    string false "tectonic setting - see /queries/sites/settings"
-// @Param       location1     query    string false "location level 1 - see /queries/locations/l1"
-// @Param       location2     query    string false "location level 2 - see /queries/locations/l2"
-// @Param       location3     query    string false "location level 3 - see /queries/locations/l3"
-// @Param       rocktype      query    string false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass     query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral       query    string false "mineral - see /queries/samples/minerals"
-// @Param       material      query    string false "material - see /queries/samples/materials"
-// @Param       inclusiontype query    string false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech    query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element       query    string false "chemical element - see /queries/samples/elements"
-// @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value         query    string false "measured value"
+// @Param       limit         query    int     false "limit"
+// @Param       offset        query    int     false "offset"
+// @Param       setting       query    string  false "tectonic setting - see /queries/sites/settings"
+// @Param       location1     query    string  false "location level 1 - see /queries/locations/l1"
+// @Param       location2     query    string  false "location level 2 - see /queries/locations/l2"
+// @Param       location3     query    string  false "location level 3 - see /queries/locations/l3"
+// @Param       rocktype      query    string  false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass     query    string  false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral       query    string  false "mineral - see /queries/samples/minerals"
+// @Param       material      query    string  false "material - see /queries/samples/materials"
+// @Param       inclusiontype query    string  false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       sampletech    query    string  false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       element       query    string  false "chemical element - see /queries/samples/elements"
+// @Param       elementtype   query    string  false "element type - see /queries/samples/elementtypes"
+// @Param       value         query    decimal false "measured value"
 // @Success     200           {array}  model.Specimen
 // @Failure     401           {object} string
 // @Failure     404           {object} string
@@ -601,7 +603,8 @@ func parseParam(queryParam string) (string, string, error) {
 	}
 	operator, value, found := strings.Cut(queryParam, ":")
 	if !found {
-		return "", "", fmt.Errorf("Invalid param format")
+		// if no operator is specified, "eq" is assumed as default
+		return queryParam, sql.OpEq, nil
 	}
 	// validate operator
 	operator, opIsValid := sql.OperatorMap[operator]

@@ -44,7 +44,7 @@ from
 (
 	select samples.samplingfeatureid, 
 	samples.samplingfeatureuuid, 
-	(array_agg(batches.batches)) as batchids,
+	(array_agg(distinct batches.batches)) as batchids,
 	samples.samplingfeaturename,
 	(array_agg(tax_type.taxonomicclassifiername)) as rock_type,
 	(array_agg(tax_class.taxonomicclassifiername)) as rock_class,
@@ -150,22 +150,28 @@ left join (
 	select rel_res.relatedfeatureid as id,
 	array_agg(mv.variablecode) as items_measured,
 	array_agg(mv.variabletypecode) as item_types,
-	coalesce(array_agg(std.std_names), array['Unknown']) as standard_names,
-	coalesce(array_agg(std.std_values), array[-999]) as standard_values,
+	array_agg(std.std_names) as standard_names,
+	array_agg(std.std_values) as standard_values,
 	array_agg(mv.datavalue) as values_meas,
 	array_agg(mv.unitgeoroc) as units 
 	from odm2.relatedfeatures rel_res
-	left join odm2.measuredvalues mv on mv.samplingfeatureid = rel_res.samplingfeatureid
+	join odm2.measuredvalues mv on mv.samplingfeatureid = rel_res.samplingfeatureid
 	left join 
 	(
 		select relf.samplingfeatureid,
-		array_agg(standards.standardname) as std_names,
-		array_agg(standards.standardvalue) as std_values 
+		std.standardname as std_names,
+		std.standardvalue as std_values 
 		from odm2.relatedfeatures relf
-		join odm2.featureactions fa on fa.samplingfeatureid = relf.samplingfeatureid
-		left join odm2.standards standards on standards.actionid = fa.actionid
+		left join
+		(	
+			select fa.samplingfeatureid,
+			standards.standardname,
+			standards.standardvalue 
+			from odm2.featureactions fa 
+			left join odm2.standards standards on standards.actionid = fa.actionid
+			where standards.standardid is not null
+		) std on std.samplingfeatureid = relf.samplingfeatureid
 		where relf.relatedfeatureid = $1
-		group by relf.samplingfeatureid
 	)std on std.samplingfeatureid = rel_res.samplingfeatureid 
 	where rel_res.relatedfeatureid = $1
 	and rel_res.relationshiptypecv = 'Is child of'

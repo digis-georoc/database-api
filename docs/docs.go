@@ -804,7 +804,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\", \"gt\", \"eq\", \"in\" and VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
+                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\", \"gt\", \"eq\", \"in\" and VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\" and \"gt\" are only applicable to numerical values.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -898,12 +898,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "element type - see /queries/samples/elementtypes",
                         "name": "elementtype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "measured value",
-                        "name": "value",
                         "in": "query"
                     }
                 ],
