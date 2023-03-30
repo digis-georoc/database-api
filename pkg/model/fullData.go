@@ -33,8 +33,8 @@ type FullData struct {
 	Institution      string
 	Item_Name        []string
 	Item_Group       []string
-	Standard_Names   [][]string
-	Standard_Values  [][]float32
+	Standard_Names   []string
+	Standard_Values  []float32
 	Values           []float32
 	Units            []string
 }
