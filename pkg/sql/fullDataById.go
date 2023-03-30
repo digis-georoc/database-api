@@ -162,14 +162,13 @@ left join (
 		std.standardname as std_names,
 		std.standardvalue as std_values 
 		from odm2.relatedfeatures relf
-		left join
+		join
 		(	
 			select fa.samplingfeatureid,
 			standards.standardname,
 			standards.standardvalue 
 			from odm2.featureactions fa 
-			left join odm2.standards standards on standards.actionid = fa.actionid
-			where standards.standardid is not null
+			join odm2.standards standards on standards.actionid = fa.actionid
 		) std on std.samplingfeatureid = relf.samplingfeatureid
 		where relf.relatedfeatureid = $1
 	)std on std.samplingfeatureid = rel_res.samplingfeatureid 
