@@ -899,6 +899,12 @@ const docTemplate = `{
                         "description": "element type - see /queries/samples/elementtypes",
                         "name": "elementtype",
                         "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "measured value",
+                        "name": "value",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1925,19 +1931,13 @@ const docTemplate = `{
                 "standard_Names": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        }
+                        "type": "string"
                     }
                 },
                 "standard_Values": {
                     "type": "array",
                     "items": {
-                        "type": "array",
-                        "items": {
-                            "type": "number"
-                        }
+                        "type": "number"
                     }
                 },
                 "tectonic_Setting": {
