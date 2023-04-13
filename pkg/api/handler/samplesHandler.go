@@ -82,21 +82,21 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit         query    int     false "limit"
-// @Param       offset        query    int     false "offset"
-// @Param       setting       query    string  false "tectonic setting - see /queries/sites/settings"
-// @Param       location1     query    string  false "location level 1 - see /queries/locations/l1"
-// @Param       location2     query    string  false "location level 2 - see /queries/locations/l2"
-// @Param       location3     query    string  false "location level 3 - see /queries/locations/l3"
-// @Param       rocktype      query    string  false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass     query    string  false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral       query    string  false "mineral - see /queries/samples/minerals"
-// @Param       material      query    string  false "material - see /queries/samples/materials"
-// @Param       inclusiontype query    string  false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech    query    string  false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element       query    string  false "chemical element - see /queries/samples/elements"
-// @Param       elementtype   query    string  false "element type - see /queries/samples/elementtypes"
-// @Param       value         query    decimal false "measured value"
+// @Param       limit         query    int    false "limit"
+// @Param       offset        query    int    false "offset"
+// @Param       setting       query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1     query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2     query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3     query    string false "location level 3 - see /queries/locations/l3"
+// @Param       rocktype      query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass     query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral       query    string false "mineral - see /queries/samples/minerals"
+// @Param       material      query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       sampletech    query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       element       query    string false "chemical element - see /queries/samples/elements"
+// @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
+// @Param       value         query    number false "measured value"
 // @Success     200           {array}  model.Specimen
 // @Failure     401           {object} string
 // @Failure     404           {object} string

@@ -160,18 +160,20 @@ left join (
 	(
 		select relf.samplingfeatureid,
 		std.standardname as std_names,
-		std.standardvalue as std_values 
+		std.standardvalue as std_values,
+		std.standardvariable as std_var
 		from odm2.relatedfeatures relf
 		join
 		(	
 			select fa.samplingfeatureid,
 			standards.standardname,
-			standards.standardvalue 
+			standards.standardvalue,
+			standards.standardvariable
 			from odm2.featureactions fa 
 			join odm2.standards standards on standards.actionid = fa.actionid
 		) std on std.samplingfeatureid = relf.samplingfeatureid
 		where relf.relatedfeatureid = $1
-	)std on std.samplingfeatureid = rel_res.samplingfeatureid 
+	)std on std.samplingfeatureid = rel_res.samplingfeatureid and std.std_var = mv.variablecode
 	where rel_res.relatedfeatureid = $1
 	and rel_res.relationshiptypecv = 'Is child of'
 	group by rel_res.relatedfeatureid

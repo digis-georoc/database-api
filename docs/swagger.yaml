@@ -127,15 +127,11 @@ definitions:
         type: string
       standard_Names:
         items:
-          items:
-            type: string
-          type: array
+          type: string
         type: array
       standard_Values:
         items:
-          items:
-            type: number
-          type: array
+          type: number
         type: array
       tectonic_Setting:
         type: string
@@ -854,6 +850,10 @@ paths:
         in: query
         name: elementtype
         type: string
+      - description: measured value
+        in: query
+        name: value
+        type: number
       produces:
       - application/json
       responses:
