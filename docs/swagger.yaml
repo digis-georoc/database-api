@@ -226,6 +226,11 @@ definitions:
       samplingFeatureUUID:
         type: string
     type: object
+  model.SampleByFiltersResponse:
+    properties:
+      sampleID:
+        type: integer
+    type: object
   model.SamplingTechnique:
     properties:
       name:
@@ -861,7 +866,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Specimen'
+              $ref: '#/definitions/model.SampleByFiltersResponse'
             type: array
         "401":
           description: Unauthorized

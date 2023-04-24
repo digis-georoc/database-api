@@ -913,7 +913,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Specimen"
+                                "$ref": "#/definitions/model.SampleByFiltersResponse"
                             }
                         }
                     },
@@ -2080,6 +2080,14 @@ const docTemplate = `{
                 },
                 "samplingFeatureUUID": {
                     "type": "string"
+                }
+            }
+        },
+        "model.SampleByFiltersResponse": {
+            "type": "object",
+            "properties": {
+                "sampleID": {
+                    "type": "integer"
                 }
             }
         },

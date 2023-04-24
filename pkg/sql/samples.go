@@ -10,8 +10,9 @@ where s.samplingfeatureid = $1
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"
 const GetSamplingfeatureIdsByFilterBaseQuery = `
 -- modular query for specimenids with all filter options
-select distinct spec.samplingfeatureid
-from odm2.specimens spec
+select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid
+from odm2.samplingfeatures spec
+left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid 
 `
 
 // Filter query-module Locations
@@ -23,8 +24,8 @@ from odm2.specimens spec
 const GetSamplingfeatureIdsByFilterLocationsStart = `
 join (
 	-- location data
-	select r_sample.samplingfeatureid as samples,
-	r_batch.samplingfeatureid as batches
+	select r_sample.samplingfeatureid as sample,
+	r_batch.samplingfeatureid as batch
 	from odm2.sites s
 	left join 
 	(
@@ -54,7 +55,7 @@ join (
 	left join odm2.relatedfeatures r_batch on r_batch.relatedfeatureid = r_sample.samplingfeatureid -- batches for each sample
 `
 const GetSamplingfeatureIdsByFilterLocationsEnd = `
-) loc on loc.samples = spec.samplingfeatureid or loc.batches = spec.samplingfeatureid
+) loc on loc.sample = spec.samplingfeatureid or loc.batch = spec.samplingfeatureid
 `
 
 // Filter query-module TaxonomicClassifiers

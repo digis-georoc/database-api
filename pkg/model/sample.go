@@ -41,6 +41,10 @@ type SampleByGeoSettingResponse struct {
 	RimOrCore         string   `json:"rim_or_core"`
 }
 
+type SampleByFiltersResponse struct {
+	SampleID int
+}
+
 type SamplingTechnique struct {
 	Name string
 }
