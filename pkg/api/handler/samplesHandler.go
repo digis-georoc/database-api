@@ -97,7 +97,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       element       query    string false "chemical element - see /queries/samples/elements"
 // @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
 // @Param       value         query    number false "measured value"
-// @Success     200           {array}  model.Specimen
+// @Success     200           {array}  model.SampleByFiltersResponse
 // @Failure     401           {object} string
 // @Failure     404           {object} string
 // @Failure     422           {object} string
@@ -108,7 +108,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	specimen := []model.Specimen{}
+	specimen := []model.SampleByFiltersResponse{}
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 
 	limit, offset, err := handlePaginationParams(c)
