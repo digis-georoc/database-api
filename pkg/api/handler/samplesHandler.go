@@ -28,6 +28,11 @@ const (
 	QP_ELEM     = "element"
 	QP_ELEMTYPE = "elementtype"
 	QP_VALUE    = "value"
+
+	QP_AUTHOR  = "author"
+	QP_TITLE   = "title"
+	QP_PUBYEAR = "publicationyear"
+	QP_DOI     = "doi"
 )
 
 // GetSampleByID godoc
@@ -97,6 +102,10 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       element       query    string false "chemical element - see /queries/samples/elements"
 // @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
 // @Param       value         query    number false "measured value"
+// @Param       author         query    string false "author"
+// @Param       title         query    string false "title of publication"
+// @Param       publicationyear         query    number false "publication year"
+// @Param       doi         query    string false "DOI"
 // @Success     200           {array}  model.Specimen
 // @Failure     401           {object} string
 // @Failure     404           {object} string
@@ -253,6 +262,44 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 			query.AddFilter("mv.datavalue", value, opValue, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterResultsEnd)
+	}
+
+	//citation
+	junctor = sql.OpWhere
+	author, opAuthor, err := parseParam(c.QueryParam(QP_AUTHOR))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	title, opTitle, err := parseParam(c.QueryParam(QP_TITLE))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	pubYear, opPubYear, err := parseParam(c.QueryParam(QP_PUBYEAR))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	doi, opDOI, err := parseParam(c.QueryParam(QP_DOI))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if author != "" || title != "" || pubYear != "" || doi != "" {
+		// add query module results
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsStart)
+		if author != "" {
+			query.AddFilter("mv.variablecode", author, opAuthor, junctor)
+			junctor = sql.OpAnd
+		}
+		if title != "" {
+			query.AddFilter("mv.variabletypecode", title, opTitle, junctor)
+			junctor = sql.OpAnd
+		}
+		if pubYear != "" {
+			query.AddFilter("mv.datavalue", pubYear, opPubYear, junctor)
+		}
+		if doi != "" {
+			query.AddFilter("mv.datavalue", doi, opDOI, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsEnd)
 	}
 
 	err = h.db.Query(query.GetQueryString(), &specimen, query.GetFilterValues()...)
