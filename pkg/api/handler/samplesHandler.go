@@ -88,29 +88,31 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit         query    int    false "limit"
-// @Param       offset        query    int    false "offset"
-// @Param       setting       query    string false "tectonic setting - see /queries/sites/settings"
-// @Param       location1     query    string false "location level 1 - see /queries/locations/l1"
-// @Param       location2     query    string false "location level 2 - see /queries/locations/l2"
-// @Param       location3     query    string false "location level 3 - see /queries/locations/l3"
-// @Param       rocktype      query    string false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass     query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral       query    string false "mineral - see /queries/samples/minerals"
-// @Param       material      query    string false "material - see /queries/samples/materials"
-// @Param       inclusiontype query    string false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech    query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element       query    string false "chemical element - see /queries/samples/elements"
-// @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value         query    number false "measured value"
-// @Param       title         query    string false "title of publication"
-// @Param       publicationyear         query    number false "publication year"
-// @Param       doi         query    string false "DOI"
-// @Success     200           {array}  model.SampleByFiltersResponse
-// @Failure     401           {object} string
-// @Failure     404           {object} string
-// @Failure     422           {object} string
-// @Failure     500           {object} string
+// @Param       limit           query    int    false "limit"
+// @Param       offset          query    int    false "offset"
+// @Param       setting         query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
+// @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
+// @Param       material        query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       element         query    string false "chemical element - see /queries/samples/elements"
+// @Param       elementtype     query    string false "element type - see /queries/samples/elementtypes"
+// @Param       value           query    number false "measured value"
+// @Param       title           query    string false "title of publication"
+// @Param       publicationyear query    number false "publication year"
+// @Param       doi             query    string false "DOI"
+// @Param       firstname       query    string false "Author first name"
+// @Param       lastname        query    string false "Author last name"
+// @Success     200             {array}  model.SampleByFiltersResponse
+// @Failure     401             {object} string
+// @Failure     404             {object} string
+// @Failure     422             {object} string
+// @Failure     500             {object} string
 // @Router      /queries/samples [get]
 func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
