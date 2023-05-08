@@ -29,10 +29,12 @@ const (
 	QP_ELEMTYPE = "elementtype"
 	QP_VALUE    = "value"
 
-	QP_AUTHOR  = "author"
-	QP_TITLE   = "title"
-	QP_PUBYEAR = "publicationyear"
-	QP_DOI     = "doi"
+	QP_AUTHOR       = "author"
+	QP_TITLE        = "title"
+	QP_PUBYEAR      = "publicationyear"
+	QP_DOI          = "doi"
+	QP_AUTHOR_FIRST = "firstname"
+	QP_AUTHOR_LAST  = "lastname"
 )
 
 // GetSampleByID godoc
@@ -102,11 +104,10 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       element       query    string false "chemical element - see /queries/samples/elements"
 // @Param       elementtype   query    string false "element type - see /queries/samples/elementtypes"
 // @Param       value         query    number false "measured value"
-// @Param       author         query    string false "author"
 // @Param       title         query    string false "title of publication"
 // @Param       publicationyear         query    number false "publication year"
 // @Param       doi         query    string false "DOI"
-// @Success     200           {array}  model.Specimen
+// @Success     200           {array}  model.SampleByFiltersResponse
 // @Failure     401           {object} string
 // @Failure     404           {object} string
 // @Failure     422           {object} string
@@ -117,7 +118,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	specimen := []model.Specimen{}
+	specimen := []model.SampleByFiltersResponse{}
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 
 	limit, offset, err := handlePaginationParams(c)
@@ -153,7 +154,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		// add location filters
 		if setting != "" {
 			query.AddFilter("s.setting", setting, opSetting, junctor)
-			junctor = sql.OpAnd
+			junctor = sql.OpAnd // after first filter is added with "WHERE", change to "AND" for following filters
 		}
 		if location1 != "" {
 			query.AddFilter("toplevelloc.locationname", location1, opLoc1, junctor)
@@ -170,7 +171,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 
 	// taxonomic classifiers
-	junctor = sql.OpWhere
+	junctor = sql.OpWhere // reset junctor for new subquery
 	rockType, opRType, err := parseParam(c.QueryParam(QP_ROCKTYPE))
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
@@ -202,7 +203,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 
 	// annotations
-	junctor = sql.OpWhere
+	junctor = sql.OpWhere // reset junctor for new subquery
 	material, opMat, err := parseParam(c.QueryParam(QP_MATERIAL))
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
@@ -234,7 +235,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 
 	// results
-	junctor = sql.OpWhere
+	junctor = sql.OpWhere // reset junctor for new subquery
 	elem, opElem, err := parseParam(c.QueryParam(QP_ELEM))
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
@@ -265,11 +266,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 
 	//citation
-	junctor = sql.OpWhere
-	author, opAuthor, err := parseParam(c.QueryParam(QP_AUTHOR))
-	if err != nil {
-		return c.String(http.StatusUnprocessableEntity, err.Error())
-	}
+	junctor = sql.OpWhere // reset junctor for new subquery
 	title, opTitle, err := parseParam(c.QueryParam(QP_TITLE))
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
@@ -282,22 +279,36 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
-	if author != "" || title != "" || pubYear != "" || doi != "" {
+	authorFirst, opAuthorFirst, err := parseParam(c.QueryParam(QP_AUTHOR_FIRST))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	authorLast, opAuthorLast, err := parseParam(c.QueryParam(QP_AUTHOR_LAST))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if title != "" || pubYear != "" || doi != "" || authorFirst != "" || authorLast != "" {
 		// add query module results
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsStart)
-		if author != "" {
-			query.AddFilter("mv.variablecode", author, opAuthor, junctor)
-			junctor = sql.OpAnd
-		}
 		if title != "" {
-			query.AddFilter("mv.variabletypecode", title, opTitle, junctor)
+			query.AddFilter("c.title", title, opTitle, junctor)
 			junctor = sql.OpAnd
 		}
 		if pubYear != "" {
-			query.AddFilter("mv.datavalue", pubYear, opPubYear, junctor)
+			query.AddFilter("c.publicationyear", pubYear, opPubYear, junctor)
+			junctor = sql.OpAnd
 		}
 		if doi != "" {
-			query.AddFilter("mv.datavalue", doi, opDOI, junctor)
+			query.AddFilter("cid.citationexternalidentifier", doi, opDOI, junctor)
+			query.AddFilter("e.externalidentifiersystemname", "DOI", sql.OpEq, sql.OpAnd)
+			junctor = sql.OpAnd
+		}
+		if authorFirst != "" {
+			query.AddFilter("p.personfirstname", authorFirst, opAuthorFirst, junctor)
+			junctor = sql.OpAnd
+		}
+		if authorLast != "" {
+			query.AddFilter("p.personlastname", authorLast, opAuthorLast, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsEnd)
 	}

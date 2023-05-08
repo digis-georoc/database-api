@@ -910,7 +910,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Specimen"
+                                "$ref": "#/definitions/model.SampleByFiltersResponse"
                             }
                         }
                     },
@@ -2077,6 +2077,14 @@
                 },
                 "samplingFeatureUUID": {
                     "type": "string"
+                }
+            }
+        },
+        "model.SampleByFiltersResponse": {
+            "type": "object",
+            "properties": {
+                "sampleID": {
+                    "type": "integer"
                 }
             }
         },
