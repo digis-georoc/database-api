@@ -859,6 +859,26 @@ paths:
         in: query
         name: value
         type: number
+      - description: title of publication
+        in: query
+        name: title
+        type: string
+      - description: publication year
+        in: query
+        name: publicationyear
+        type: number
+      - description: DOI
+        in: query
+        name: doi
+        type: string
+      - description: Author first name
+        in: query
+        name: firstname
+        type: string
+      - description: Author last name
+        in: query
+        name: lastname
+        type: string
       produces:
       - application/json
       responses:

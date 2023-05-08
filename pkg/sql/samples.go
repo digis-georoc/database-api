@@ -110,3 +110,23 @@ join (
 const GetSamplingfeatureIdsByFilterResultsEnd = `
 ) results on results.samplingfeatureid = spec.samplingfeatureid
 `
+
+// Filter query-module Citations
+// Filter options are:
+// 		DOI
+// 		Title
+//		PublicationYear
+const GetSamplingfeatureIdsByFilterCitationsStart = `
+join (
+	select distinct cs.samplingfeatureid
+	from odm2.citations c
+	left join odm2.authorlists al on al.citationid = c.citationid
+	left join odm2.people p on p.personid = al.personid
+	left join odm2.citationexternalidentifiers cid on cid.citationid = c.citationid
+	left join odm2.externalidentifiersystems e on e.externalidentifiersystemid = cid.externalidentifiersystemid
+	left join odm2.citationsamplingfeatures cs on cs.citationid = c.citationid
+`
+
+const GetSamplingfeatureIdsByFilterCitationsEnd = `
+) citations on citations.samplingfeatureid = spec.samplingfeatureid
+`

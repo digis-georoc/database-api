@@ -905,6 +905,36 @@ const docTemplate = `{
                         "description": "measured value",
                         "name": "value",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "title of publication",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "publication year",
+                        "name": "publicationyear",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "DOI",
+                        "name": "doi",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author first name",
+                        "name": "firstname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author last name",
+                        "name": "lastname",
+                        "in": "query"
                     }
                 ],
                 "responses": {
