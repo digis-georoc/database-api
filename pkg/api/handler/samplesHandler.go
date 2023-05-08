@@ -29,7 +29,6 @@ const (
 	QP_ELEMTYPE = "elementtype"
 	QP_VALUE    = "value"
 
-	QP_AUTHOR       = "author"
 	QP_TITLE        = "title"
 	QP_PUBYEAR      = "publicationyear"
 	QP_DOI          = "doi"
