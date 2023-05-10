@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -78,10 +77,13 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Description Get all samplingfeatureIDs matching the current filters
 // @Description Filter DSL syntax:
 // @Description FIELD=OPERATOR:VALUE
-// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt", "gt", "eq", "in" and VALUE is an unquoted string, integer or decimal
+// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
+// @Description and VALUE is an unquoted string, integer or decimal
 // @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
-// @Description The OPERATORs "lt" and "gt" are only applicable to numerical values.
-// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR
+// @Description The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
+// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*` and `?`.
+// @Description The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
+// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
 // @Description The filters are evaluated conjunctively.
 // @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
 // @Security    ApiKeyAuth
@@ -653,22 +655,4 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 		Data     interface{}
 	}{len(randomSpecimen), randomSpecimen}
 	return c.JSON(http.StatusOK, response)
-}
-
-// parseParam parses a given query parameter and validates the contents
-func parseParam(queryParam string) (string, string, error) {
-	if queryParam == "" {
-		return "", "", nil
-	}
-	operator, value, found := strings.Cut(queryParam, ":")
-	if !found {
-		// if no operator is specified, "eq" is assumed as default
-		return queryParam, sql.OpEq, nil
-	}
-	// validate operator
-	operator, opIsValid := sql.OperatorMap[operator]
-	if !opIsValid {
-		return "", "", fmt.Errorf("Invalid operator")
-	}
-	return value, operator, nil
 }
