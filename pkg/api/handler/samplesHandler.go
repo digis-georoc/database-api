@@ -32,7 +32,7 @@ const (
 	QP_PUBYEAR      = "publicationyear"
 	QP_DOI          = "doi"
 	QP_AUTHOR_FIRST = "firstname"
-	QP_AUTHOR_LAST  = "lastname" // not recognized ????
+	QP_AUTHOR_LAST  = "lastname"
 )
 
 // GetSampleByID godoc
