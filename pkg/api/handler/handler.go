@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
 const (
@@ -62,4 +65,31 @@ func handlePaginationParams(c echo.Context) (int, int, error) {
 		}
 	}
 	return limVal, offVal, nil
+}
+
+// parseParam parses a given query parameter and validates the contents
+func parseParam(queryParam string) (string, string, error) {
+	if queryParam == "" {
+		return "", "", nil
+	}
+	operator, value, found := strings.Cut(queryParam, ":")
+	if !found {
+		// if no operator is specified, "eq" is assumed as default
+		return queryParam, sql.OpEq, nil
+	}
+	// validate operator
+	operator, opIsValid := sql.OperatorMap[operator]
+	if !opIsValid {
+		return "", "", fmt.Errorf("Invalid operator")
+	}
+	if operator == sql.OpLike {
+		// LIKE is not supported for numeric values
+		if f, err := strconv.ParseFloat(value, 64); err == nil {
+			return "", "", fmt.Errorf("Operator LIKE cannot be applied to numeric value: %f", f)
+		}
+		// replace url-compatible wildcards with sql wildcards
+		value = strings.ReplaceAll(value, "*", "%")
+		value = strings.ReplaceAll(value, "?", "_")
+	}
+	return value, operator, nil
 }

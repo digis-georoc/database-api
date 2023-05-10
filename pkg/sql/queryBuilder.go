@@ -30,17 +30,26 @@ const (
 	OpLt      FilterOperator = "<"
 	OpGt      FilterOperator = ">"
 	OpIn      FilterOperator = "IN"
-	OpAnd     FilterJunctor  = "AND"
-	OpOr      FilterJunctor  = "OR"
-	OpWhere   FilterJunctor  = "WHERE"
-	SEPARATOR string         = ","
+	OpLike    FilterOperator = "LIKE"
+	OpBetween FilterOperator = "BETWEEN"
+
+	OpAnd   FilterJunctor = "AND"
+	OpOr    FilterJunctor = "OR"
+	OpWhere FilterJunctor = "WHERE"
+
+	SEPARATOR string = ","
+
+	MIN_LOWER_BOUND = "0"
+	MAX_UPPER_BOUND = "9999999"
 )
 
 var OperatorMap map[string]FilterOperator = map[string]FilterOperator{
-	"eq": OpEq,
-	"in": OpIn,
-	"gt": OpGt,
-	"lt": OpLt,
+	"eq":  OpEq,
+	"in":  OpIn,
+	"gt":  OpGt,
+	"lt":  OpLt,
+	"lk":  OpLike,
+	"btw": OpBetween,
 }
 
 // Create a new Query
@@ -64,6 +73,10 @@ func (q *Query) AddFilter(key string, value string, operator FilterOperator, jun
 		q.AddLtFilter(key, value, junctor)
 	case OpIn:
 		q.AddInFilter(key, value, junctor)
+	case OpLike:
+		q.AddLikeFilter(key, value, junctor)
+	case OpBetween:
+		q.AddBetweenFilter(key, value, junctor)
 	}
 }
 
@@ -110,6 +123,34 @@ func (q *Query) AddInFilter(key string, values string, junctor FilterJunctor) {
 	placeholderString = fmt.Sprintf("%s)", placeholderString)
 
 	filterString := NewQueryFilter(key, placeholderString, OpIn, junctor)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
+// Add a filter with operator "LIKE" to the query
+func (q *Query) AddLikeFilter(key string, value string, junctor FilterJunctor) {
+	q.filterValues = append(q.filterValues, value)
+	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
+	filterString := NewQueryFilter(key, placeholder, OpLike, junctor)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
+// Add a filter for value range to the query
+func (q *Query) AddBetweenFilter(key string, value string, junctor FilterJunctor) {
+	lower, upper, _ := strings.Cut(value, SEPARATOR)
+	if upper == "" {
+		// assume max value
+		upper = MAX_UPPER_BOUND
+	}
+	if lower == "" {
+		// assume min value
+		lower = MIN_LOWER_BOUND
+	}
+	q.filterValues = append(q.filterValues, lower)
+	lowerPlaceholder := fmt.Sprintf("$%d", len(q.filterValues))
+	q.filterValues = append(q.filterValues, upper)
+	upperPlaceholder := fmt.Sprintf("$%d", len(q.filterValues))
+	operatorString := fmt.Sprintf("%s AND %s", lowerPlaceholder, upperPlaceholder)
+	filterString := NewQueryFilter(key, operatorString, OpBetween, junctor)
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
