@@ -56,3 +56,15 @@ type Material struct {
 type InclusionType struct {
 	Name string
 }
+
+type GeoAge struct {
+	Name string
+}
+
+type GeoAgePrefix struct {
+	Name string
+}
+
+type Organization struct {
+	Name string
+}

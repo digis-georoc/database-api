@@ -15,6 +15,8 @@ const (
 	QP_LOC1    = "location1"
 	QP_LOC2    = "location2"
 	QP_LOC3    = "location3"
+	QP_LAT     = "latitude"
+	QP_LONG    = "longitude"
 
 	QP_ROCKTYPE  = "rocktype"
 	QP_ROCKCLASS = "rockclass"
@@ -33,6 +35,13 @@ const (
 	QP_DOI          = "doi"
 	QP_AUTHOR_FIRST = "firstname"
 	QP_AUTHOR_LAST  = "lastname"
+
+	QP_AGE_MIN        = "agemin"
+	QP_AGE_MAX        = "agemax"
+	QP_GEO_AGE        = "geoage"
+	QP_GEO_AGE_PREFIX = "geoageprefix"
+
+	QP_LAB = "lab"
 )
 
 // GetSampleByID godoc
@@ -81,7 +90,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Description and VALUE is an unquoted string, integer or decimal
 // @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
 // @Description The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
-// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*` and `?`.
+// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
 // @Description The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
 // @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
 // @Description The filters are evaluated conjunctively.
@@ -96,6 +105,8 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
 // @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
 // @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
+// @Param       latitude        query    string false "latitude"
+// @Param       longitude       query    string false "longitude"
 // @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
 // @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
 // @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
@@ -104,12 +115,17 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
 // @Param       element         query    string false "chemical element - see /queries/samples/elements"
 // @Param       elementtype     query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value           query    number false "measured value"
+// @Param       value           query    string false "measured value"
 // @Param       title           query    string false "title of publication"
-// @Param       publicationyear query    number false "publication year"
+// @Param       publicationyear query    string false "publication year"
 // @Param       doi             query    string false "DOI"
 // @Param       firstname       query    string false "Author first name"
 // @Param       lastname        query    string false "Author last name"
+// @Param       agemin          query    string false "Specimen age min"
+// @Param       agemax          query    string false "Specimen age max"
+// @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
+// @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -151,7 +167,15 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
-	if setting != "" || location1 != "" || location2 != "" || location3 != "" {
+	lat, opLat, err := parseParam(c.QueryParam(QP_LAT))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	long, opLong, err := parseParam(c.QueryParam(QP_LONG))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if setting != "" || location1 != "" || location2 != "" || location3 != "" || lat != "" || long != "" {
 		// add query module Location
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsStart)
 		// add location filters
@@ -169,6 +193,14 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		}
 		if location3 != "" {
 			query.AddFilter("thirdlevelloc.locationname", location3, opLoc3, junctor)
+			junctor = sql.OpAnd
+		}
+		if lat != "" {
+			query.AddFilter("s.latitude", lat, opLat, junctor)
+			junctor = sql.OpAnd
+		}
+		if long != "" {
+			query.AddFilter("s.longitude", long, opLong, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsEnd)
 	}
@@ -291,7 +323,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 	if title != "" || pubYear != "" || doi != "" || authorFirst != "" || authorLast != "" {
-		// add query module results
+		// add query module citations
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsStart)
 		if title != "" {
 			query.AddFilter("c.title", title, opTitle, junctor)
@@ -314,6 +346,60 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 			query.AddFilter("p.personlastname", authorLast, opAuthorLast, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsEnd)
+	}
+
+	// Ages
+	junctor = sql.OpWhere // reset junctor for new subquery
+	ageMin, opAgeMin, err := parseParam(c.QueryParam(QP_AGE_MIN))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	ageMax, opAgeMax, err := parseParam(c.QueryParam(QP_AGE_MAX))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	geoAge, opGeoAge, err := parseParam(c.QueryParam(QP_GEO_AGE))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	geoPrefix, opGeoPrefix, err := parseParam(c.QueryParam(QP_GEO_AGE_PREFIX))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if ageMin != "" || ageMax != "" || geoAge != "" || geoPrefix != "" {
+		// add query module age
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAgesStart)
+		if ageMin != "" {
+			query.AddFilter("sa.specimenagemin", ageMin, opAgeMin, junctor)
+			junctor = sql.OpAnd
+		}
+		if ageMax != "" {
+			query.AddFilter("sa.specimenagemax", ageMax, opAgeMax, junctor)
+			junctor = sql.OpAnd
+		}
+		if geoAge != "" {
+			query.AddFilter("sa.specimengeolage", geoAge, opGeoAge, junctor)
+			junctor = sql.OpAnd
+		}
+		if geoPrefix != "" {
+			query.AddFilter("sa.specimengeolageprefix", geoPrefix, opGeoPrefix, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAgesEnd)
+	}
+
+	// Organizations
+	junctor = sql.OpWhere // reset junctor for new subquery
+	labName, opLabName, err := parseParam(c.QueryParam(QP_LAB))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if labName != "" {
+		// add query module organizations
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsStart)
+		if labName != "" {
+			query.AddFilter("o.organizationname", labName, opLabName, junctor)
+		}
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsEnd)
 	}
 
 	err = h.db.Query(query.GetQueryString(), &specimen, query.GetFilterValues()...)
@@ -654,5 +740,131 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 		NumItems int
 		Data     interface{}
 	}{len(randomSpecimen), randomSpecimen}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetGeoAges godoc
+// @Summary     Retrieve geological ages
+// @Description get geological ages
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.GeoAge
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/geoages [get]
+func (h *Handler) GetGeoAges(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	geoAges := []model.GeoAge{}
+	query := sql.NewQuery(sql.GetGeoAgesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &geoAges)
+	if err != nil {
+		logger.Errorf("Can not GetGeoAges: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve geological age data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(geoAges), geoAges}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetGeoAgePrefixes godoc
+// @Summary     Retrieve geological age prefixes
+// @Description get geological age prefixes
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.GeoAgePrefix
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/geoageprefixes [get]
+func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	geoAgePrefixes := []model.GeoAgePrefix{}
+	query := sql.NewQuery(sql.GetGeoAgePrefixesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &geoAgePrefixes)
+	if err != nil {
+		logger.Errorf("Can not GetGeoAgePrefixes: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve geological age prefix data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(geoAgePrefixes), geoAgePrefixes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetOrganizationNames godoc
+// @Summary     Retrieve organization names
+// @Description get organization names
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Organization
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/organizationnames [get]
+func (h *Handler) GetOrganizationNames(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	organizations := []model.Organization{}
+	query := sql.NewQuery(sql.GetOrganizationNamesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &organizations)
+	if err != nil {
+		logger.Errorf("Can not GetOrganizationNames: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(organizations), organizations}
 	return c.JSON(http.StatusOK, response)
 }

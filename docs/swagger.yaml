@@ -146,6 +146,16 @@ definitions:
           type: number
         type: array
     type: object
+  model.GeoAge:
+    properties:
+      name:
+        type: string
+    type: object
+  model.GeoAgePrefix:
+    properties:
+      name:
+        type: string
+    type: object
   model.GeoJSONFeature:
     properties:
       geometry:
@@ -190,6 +200,11 @@ definitions:
         type: string
     type: object
   model.Material:
+    properties:
+      name:
+        type: string
+    type: object
+  model.Organization:
     properties:
       name:
         type: string
@@ -287,7 +302,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.2.0
+  version: 0.2.1
 paths:
   /geodata/sites:
     get:
@@ -796,7 +811,7 @@ paths:
         and VALUE is an unquoted string, integer or decimal
         Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
         The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
-        The OPERATOR "lk" is only applicable to string values and supports wildcards `*` and `?`.
+        The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
         The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
         If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
         The filters are evaluated conjunctively.
@@ -825,6 +840,14 @@ paths:
       - description: location level 3 - see /queries/locations/l3
         in: query
         name: location3
+        type: string
+      - description: latitude
+        in: query
+        name: latitude
+        type: string
+      - description: longitude
+        in: query
+        name: longitude
         type: string
       - description: rock type - see /queries/samples/rocktypes
         in: query
@@ -861,7 +884,7 @@ paths:
       - description: measured value
         in: query
         name: value
-        type: number
+        type: string
       - description: title of publication
         in: query
         name: title
@@ -869,7 +892,7 @@ paths:
       - description: publication year
         in: query
         name: publicationyear
-        type: number
+        type: string
       - description: DOI
         in: query
         name: doi
@@ -881,6 +904,26 @@ paths:
       - description: Author last name
         in: query
         name: lastname
+        type: string
+      - description: Specimen age min
+        in: query
+        name: agemin
+        type: string
+      - description: Specimen age max
+        in: query
+        name: agemax
+        type: string
+      - description: Specimen geological age - see /queries/samples/geoages
+        in: query
+        name: geoage
+        type: string
+      - description: Specimen geological age prefix - see /queries/samples/geoageprefixes
+        in: query
+        name: geoageprefix
+        type: string
+      - description: Laboratory name - see /queries/samples/organizationnames
+        in: query
+        name: lab
         type: string
       produces:
       - application/json
@@ -947,6 +990,94 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve sample by samplingfeatureid
+      tags:
+      - samples
+  /queries/samples/geoageprefixes:
+    get:
+      consumes:
+      - application/json
+      description: get geological age prefixes
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.GeoAgePrefix'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve geological age prefixes
+      tags:
+      - samples
+  /queries/samples/geoages:
+    get:
+      consumes:
+      - application/json
+      description: get geological ages
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.GeoAge'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve geological ages
       tags:
       - samples
   /queries/samples/inclusiontypes:
@@ -1079,6 +1210,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve minerals
+      tags:
+      - samples
+  /queries/samples/organizationnames:
+    get:
+      consumes:
+      - application/json
+      description: get organization names
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Organization'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve organization names
       tags:
       - samples
   /queries/samples/random:

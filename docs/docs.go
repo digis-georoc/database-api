@@ -804,7 +804,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\" (\u003c), \"gt\" (\u003e), \"eq\" (=), \"in\" (IN), \"lk\" (LIKE), \"btw\" (BETWEEN)\nand VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\", \"gt\" and \"btw\" are only applicable to numerical values.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards ` + "`" + `*` + "`" + ` and ` + "`" + `?` + "`" + `.\nThe OPERATOR \"btw\" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
+                "description": "Get all samplingfeatureIDs matching the current filters\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\" (\u003c), \"gt\" (\u003e), \"eq\" (=), \"in\" (IN), \"lk\" (LIKE), \"btw\" (BETWEEN)\nand VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\", \"gt\" and \"btw\" are only applicable to numerical values.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards ` + "`" + `*` + "`" + `(0 or more chars) and ` + "`" + `?` + "`" + `(one char).\nThe OPERATOR \"btw\" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -850,6 +850,18 @@ const docTemplate = `{
                         "type": "string",
                         "description": "location level 3 - see /queries/locations/l3",
                         "name": "location3",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "latitude",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude",
+                        "name": "longitude",
                         "in": "query"
                     },
                     {
@@ -901,7 +913,7 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "number",
+                        "type": "string",
                         "description": "measured value",
                         "name": "value",
                         "in": "query"
@@ -913,7 +925,7 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "number",
+                        "type": "string",
                         "description": "publication year",
                         "name": "publicationyear",
                         "in": "query"
@@ -935,6 +947,36 @@ const docTemplate = `{
                         "description": "Author last name",
                         "name": "lastname",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age min",
+                        "name": "agemin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age max",
+                        "name": "agemax",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age - see /queries/samples/geoages",
+                        "name": "geoage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
+                        "name": "geoageprefix",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Laboratory name - see /queries/samples/organizationnames",
+                        "name": "lab",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -944,6 +986,144 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.SampleByFiltersResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/geoageprefixes": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get geological age prefixes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve geological age prefixes",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GeoAgePrefix"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/geoages": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get geological ages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve geological ages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.GeoAge"
                             }
                         }
                     },
@@ -1151,6 +1331,75 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.TaxonomicClassifier"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/organizationnames": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get organization names",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve organization names",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Organization"
                             }
                         }
                     },
@@ -1990,6 +2239,22 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GeoAge": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GeoAgePrefix": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "model.GeoJSONFeature": {
             "type": "object",
             "properties": {
@@ -2057,6 +2322,14 @@ const docTemplate = `{
             }
         },
         "model.Material": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Organization": {
             "type": "object",
             "properties": {
                 "name": {
@@ -2199,7 +2472,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.0",
+	Version:          "0.2.1",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

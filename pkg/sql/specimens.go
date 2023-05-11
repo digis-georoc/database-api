@@ -19,3 +19,13 @@ generate_series(1, $1 + ($1 / 10))
 join odm2.specimens s on s.samplingfeatureid = rand.id
 limit $1
 `
+
+const GetGeoAgesQuery = `
+select distinct specimengeolage as name
+from odm2.specimenages
+`
+
+const GetGeoAgePrefixesQuery = `
+select distinct specimengeolageprefix as name
+from odm2.specimenages
+`
