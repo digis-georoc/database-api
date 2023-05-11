@@ -103,8 +103,8 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
 // @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
 // @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
-// @Param latitude query string false "latitude"
-// @Param longitude query string false "longitude"
+// @Param       latitude        query    string false "latitude"
+// @Param       longitude       query    string false "longitude"
 // @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
 // @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
 // @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
@@ -119,10 +119,10 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       doi             query    string false "DOI"
 // @Param       firstname       query    string false "Author first name"
 // @Param       lastname        query    string false "Author last name"
-// @Param agemin query string false "Specimen age min"
-// @Param agemax query string false "Specimen age max"
-// @Param geoage query string false "Specimen geological age - see /queries/samples/geoages"
-// @Param geoageprefix query string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param       agemin          query    string false "Specimen age min"
+// @Param       agemax          query    string false "Specimen age max"
+// @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
+// @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
