@@ -40,6 +40,8 @@ const (
 	QP_AGE_MAX        = "agemax"
 	QP_GEO_AGE        = "geoage"
 	QP_GEO_AGE_PREFIX = "geoageprefix"
+
+	QP_LAB = "lab"
 )
 
 // GetSampleByID godoc
@@ -123,6 +125,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       agemax          query    string false "Specimen age max"
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param lab query string false "Laboratory name - see /queries/samples/organizations"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -382,6 +385,21 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 			query.AddFilter("sa.specimengeolageprefix", geoPrefix, opGeoPrefix, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAgesEnd)
+	}
+
+	// Organizations
+	junctor = sql.OpWhere // reset junctor for new subquery
+	labName, opLabName, err := parseParam(c.QueryParam(QP_LAB))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if labName != "" {
+		// add query module age
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsStart)
+		if labName != "" {
+			query.AddFilter("o.organizationname", labName, opLabName, junctor)
+		}
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsEnd)
 	}
 
 	err = h.db.Query(query.GetQueryString(), &specimen, query.GetFilterValues()...)
@@ -734,7 +752,7 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Specimen
+// @Success     200    {array}  model.GeoAge
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -746,7 +764,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAges := []model.Specimen{}
+	geoAges := []model.GeoAge{}
 	query := sql.NewQuery(sql.GetGeoAgesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -776,7 +794,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Specimen
+// @Success     200    {array}  model.GeoAgePrefix
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -788,7 +806,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAgePrefixes := []model.Specimen{}
+	geoAgePrefixes := []model.GeoAgePrefix{}
 	query := sql.NewQuery(sql.GetGeoAgePrefixesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -806,5 +824,47 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 		NumItems int
 		Data     interface{}
 	}{len(geoAgePrefixes), geoAgePrefixes}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetOrganizations godoc
+// @Summary     Retrieve organization names
+// @Description get organization names
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {array}  model.Organization
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/organizations [get]
+func (h *Handler) GetOrganizations(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	organizations := []model.Organization{}
+	query := sql.NewQuery(sql.GetOrganizationNamesQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &organizations)
+	if err != nil {
+		logger.Errorf("Can not GetOrganizations: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve organization data")
+	}
+	response := struct {
+		NumItems int
+		Data     interface{}
+	}{len(organizations), organizations}
 	return c.JSON(http.StatusOK, response)
 }

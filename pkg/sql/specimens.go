@@ -21,11 +21,11 @@ limit $1
 `
 
 const GetGeoAgesQuery = `
-select distinct specimengeolage
+select distinct specimengeolage as name
 from odm2.specimenages
 `
 
 const GetGeoAgePrefixesQuery = `
-select distinct specimengeolageprefix
+select distinct specimengeolageprefix as name
 from odm2.specimenages
 `

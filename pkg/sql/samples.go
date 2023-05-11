@@ -146,3 +146,18 @@ join (
 const GetSamplingfeatureIdsByFilterAgesEnd = `
 ) ages on ages.samplingfeatureid = spec.samplingfeatureid
 `
+
+// Filter query-module Organizations
+// Filter options are:
+// 		OrganizationName
+const GestSamplingfeatureIdsByFilterOrganizationsStart = `
+join (
+	select f.samplingfeatureid
+	from odm2.organizations o 
+	left join odm2.actionby a on a.organizationid = o.organizationid and a.roledescription != 'chief scientist'
+	left join odm2.featureactions f on f.actionid = a.actionid
+`
+
+const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
+) organizations on organizations.samplingfeatureid = spec.samplingfeatureid
+`
