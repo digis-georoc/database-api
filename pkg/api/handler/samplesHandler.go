@@ -394,7 +394,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 	if labName != "" {
-		// add query module age
+		// add query module organizations
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsStart)
 		if labName != "" {
 			query.AddFilter("o.organizationname", labName, opLabName, junctor)
