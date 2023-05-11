@@ -130,3 +130,19 @@ join (
 const GetSamplingfeatureIdsByFilterCitationsEnd = `
 ) citations on citations.samplingfeatureid = spec.samplingfeatureid
 `
+
+// Filter query-module Ages
+// Filter options are:
+//		AgeMin
+//		AgeMax
+//		GeologicalAge
+//		GeologicalAgePrefix
+const GetSamplingfeatureIdsByFilterAgesStart = `
+join (
+	select sa.samplingfeatureid
+	from odm2.specimenages sa
+`
+
+const GetSamplingfeatureIdsByFilterAgesEnd = `
+) ages on ages.samplingfeatureid = spec.samplingfeatureid
+`
