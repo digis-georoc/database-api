@@ -125,7 +125,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       agemax          query    string false "Specimen age max"
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
-// @Param lab query string false "Laboratory name - see /queries/samples/organizations"
+// @Param lab query string false "Laboratory name - see /queries/samples/organizationnames"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -827,7 +827,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-// GetOrganizations godoc
+// GetOrganizationNames godoc
 // @Summary     Retrieve organization names
 // @Description get organization names
 // @Security    ApiKeyAuth
@@ -841,8 +841,8 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 // @Failure     404    {object} string
 // @Failure     422    {object} string
 // @Failure     500    {object} string
-// @Router      /queries/samples/organizations [get]
-func (h *Handler) GetOrganizations(c echo.Context) error {
+// @Router      /queries/samples/organizationnames [get]
+func (h *Handler) GetOrganizationNames(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
@@ -859,8 +859,8 @@ func (h *Handler) GetOrganizations(c echo.Context) error {
 	query.AddOffset(offset)
 	err = h.db.Query(query.GetQueryString(), &organizations)
 	if err != nil {
-		logger.Errorf("Can not GetOrganizations: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve organization data")
+		logger.Errorf("Can not GetOrganizationNames: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")
 	}
 	response := struct {
 		NumItems int
