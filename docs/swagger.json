@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.2.0"
+        "version": "0.2.1"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
