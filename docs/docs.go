@@ -971,6 +971,12 @@ const docTemplate = `{
                         "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
                         "name": "geoageprefix",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Laboratory name - see /queries/samples/organizationnames",
+                        "name": "lab",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1048,7 +1054,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Specimen"
+                                "$ref": "#/definitions/model.GeoAgePrefix"
                             }
                         }
                     },
@@ -1117,7 +1123,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Specimen"
+                                "$ref": "#/definitions/model.GeoAge"
                             }
                         }
                     },
@@ -1325,6 +1331,75 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/model.TaxonomicClassifier"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/organizationnames": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get organization names",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve organization names",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.Organization"
                             }
                         }
                     },
@@ -2164,6 +2239,22 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GeoAge": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GeoAgePrefix": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "model.GeoJSONFeature": {
             "type": "object",
             "properties": {
@@ -2231,6 +2322,14 @@ const docTemplate = `{
             }
         },
         "model.Material": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Organization": {
             "type": "object",
             "properties": {
                 "name": {

@@ -146,6 +146,16 @@ definitions:
           type: number
         type: array
     type: object
+  model.GeoAge:
+    properties:
+      name:
+        type: string
+    type: object
+  model.GeoAgePrefix:
+    properties:
+      name:
+        type: string
+    type: object
   model.GeoJSONFeature:
     properties:
       geometry:
@@ -190,6 +200,11 @@ definitions:
         type: string
     type: object
   model.Material:
+    properties:
+      name:
+        type: string
+    type: object
+  model.Organization:
     properties:
       name:
         type: string
@@ -906,6 +921,10 @@ paths:
         in: query
         name: geoageprefix
         type: string
+      - description: Laboratory name - see /queries/samples/organizationnames
+        in: query
+        name: lab
+        type: string
       produces:
       - application/json
       responses:
@@ -994,7 +1013,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Specimen'
+              $ref: '#/definitions/model.GeoAgePrefix'
             type: array
         "401":
           description: Unauthorized
@@ -1038,7 +1057,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Specimen'
+              $ref: '#/definitions/model.GeoAge'
             type: array
         "401":
           description: Unauthorized
@@ -1191,6 +1210,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve minerals
+      tags:
+      - samples
+  /queries/samples/organizationnames:
+    get:
+      consumes:
+      - application/json
+      description: get organization names
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Organization'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve organization names
       tags:
       - samples
   /queries/samples/random:

@@ -125,7 +125,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       agemax          query    string false "Specimen age max"
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
-// @Param lab query string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
