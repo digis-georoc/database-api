@@ -3,10 +3,10 @@ package sql
 const FullDataByIdQuery = `
 select
 samples.SamplingFeatureID as sample_num,
-samples.SamplingFeatureUUID as unique_id,
+samples.uuid as unique_id,
 array(select unnest(samples.batchids)) as batches,
 refs.references,
-samples.samplingfeaturename as sampleids,
+samples.name as sampleids,
 coalesce (loc.loc_names, array['Unknown']) as location_names,
 coalesce (loc.loc_types, array['Unknown']) as location_types,
 loc.loc_data[1] as loc_data,
@@ -43,9 +43,9 @@ results.units as units
 from 
 (
 	select samples.samplingfeatureid, 
-	samples.samplingfeatureuuid, 
+	(array_agg(samples.samplingfeatureuuid))[1] as uuid, 
 	(array_agg(distinct batches.batches)) as batchids,
-	samples.samplingfeaturename,
+	(array_agg(samples.samplingfeaturename))[1] as name,
 	(array_agg(tax_type.taxonomicclassifiername)) as rock_type,
 	(array_agg(tax_class.taxonomicclassifiername)) as rock_class,
 	(array_agg(tax_min.taxonomicclassifiercommonname)) as mineral,
