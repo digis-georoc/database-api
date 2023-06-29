@@ -4,31 +4,87 @@ include:
     # trigger downstream cross-project pipeline to update the helm chart; triggered on pushing a new tag
     - 'ci-templates/trigger-downstream-pipeline.yml'
 
-# Override variables for included trigger job
+# prevent included job from running unconfigured
 trigger-downstream-pipeline:
-    variables:
-      IMAGE_TAG: ${CI_COMMIT_TAG}
-      REPOSITORY_PATH: fe/digis/database-api-helm
+  rules:
+    - when: never
 
 variables:
-  imageTag: "${CI_COMMIT_TAG}"
+  imageTag: ${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA} # set this value also for trigger-downstream-pipeline-dev - using the variable in the trigger job results in re-evaluation of the predefined variables in the downstream project leading to different tags
   harborPath: "sub-fe/digis"
-  dest: "harbor.gwdg.de/${harborPath}/${CI_PROJECT_NAME}:${imageTag}"
+  dest: "harbor.gwdg.de/${harborPath}/${CI_PROJECT_NAME}"
 
-build_image:
+.dev-rules:
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_TAG
+      when: never
+
+.staging-rules:
+  rules:
+    - if: $CI_COMMIT_TAG
+
+.kaniko_template: &kaniko
   stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
-    entrypoint:
-    - ''
+    entrypoint: [""]
+  before_script:
+    # add docker credentials
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"harbor.gwdg.de\":{\"auth\":\"$(printf "%s:%s" "robot\$sub-fe+sub-fe-digis" "${DIGIS_HARBOR_ROBOT_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
   script:
-  - echo "Pushing image to ${dest}"
-  - mkdir -p /kaniko/.docker
-  - echo "{\"auths\":{\"${CI_REGISTRY}\":{\"auth\":\"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${GITLAB_REGISTRY_TOKEN}" | base64 | tr -d '\n')\"},\"harbor.gwdg.de\":{\"auth\":\"$(printf "%s:%s" "robot\$sub-fe+sub-fe-digis" "${DIGIS_HARBOR_ROBOT_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
-  - /kaniko/executor 
-    --context "${CI_PROJECT_DIR}" 
-    --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
-    --build-arg build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
-    --destination ${dest}
-  only:
-  - tags
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}" 
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --build-arg build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+      --build-arg vcs_ref=${CI_COMMIT_SHORT_SHA}
+      --destination ${dest}
+
+build_image_dev:
+  <<: *kaniko
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}" 
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --build-arg build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+      --build-arg vcs_ref=${CI_COMMIT_SHORT_SHA}
+      --reproducible
+      --destination ${dest}:${imageTag}
+  rules:
+    - !reference [.dev-rules, rules]
+
+# Override variables and rules for included trigger job
+trigger-downstream-pipeline-dev:
+  extends: trigger-downstream-pipeline
+  variables:
+    REFERENCED_IMAGE: ${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA} # explicit interpolation of predefined variables here is necessary as using the global var wont work as expected
+    FILE_PATH: envs/values-staging.yaml
+    UPDATE_KEY: .image.tag
+    REPOSITORY_PATH: fe/digis/database-api-helm
+  rules:
+    - !reference [.dev-rules, rules]
+
+build_image_staging:
+  <<: *kaniko
+  script:
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}" 
+      --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
+      --build-arg build_date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+      --build-arg vcs_ref=${CI_COMMIT_SHORT_SHA}
+      --reproducible
+      --destination ${dest}:${CI_COMMIT_TAG}
+  rules:
+    - !reference [.staging-rules, rules]
+
+# Override variables and rules for included trigger job
+trigger-downstream-pipeline-staging:
+  extends: trigger-downstream-pipeline
+  variables:
+    REFERENCED_IMAGE: ${CI_COMMIT_TAG}
+    FILE_PATH: envs/values-staging.yaml
+    UPDATE_KEY: .image.tag
+    REPOSITORY_PATH: fe/digis/database-api-helm
+  rules:
+    - !reference [.staging-rules, rules]
