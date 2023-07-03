@@ -57,8 +57,8 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 func buildFeatures(sites []map[string]interface{}) []model.GeoJSONFeature {
 	featureList := []model.GeoJSONFeature{}
 	for i, result := range sites {
-		lat := result["lat"].([]interface{})[0]
-		long := result["long"].([]interface{})[0]
+		lat := result["latitude"].(float64)
+		long := result["longitude"].(float64)
 		feature := model.GeoJSONFeature{
 			Type: model.GEOJSONTYPE_FEATURE,
 			ID:   fmt.Sprintf("%d", i),
