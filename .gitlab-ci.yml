@@ -59,7 +59,7 @@ trigger-downstream-pipeline-dev:
   extends: trigger-downstream-pipeline
   variables:
     REFERENCED_IMAGE: ${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHORT_SHA} # explicit interpolation of predefined variables here is necessary as using the global var wont work as expected
-    FILE_PATH: envs/values-staging.yaml
+    FILE_PATH: envs/values-dev.yaml
     UPDATE_KEY: .image.tag
     REPOSITORY_PATH: fe/digis/database-api-helm
   rules:
