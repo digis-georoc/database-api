@@ -977,6 +977,12 @@ const docTemplate = `{
                         "description": "Laboratory name - see /queries/samples/organizationnames",
                         "name": "lab",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Add coordinates to each sample",
+                        "name": "addcoordinates",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2389,6 +2395,12 @@ const docTemplate = `{
         "model.SampleByFiltersResponse": {
             "type": "object",
             "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
                 "sampleID": {
                     "type": "integer"
                 }

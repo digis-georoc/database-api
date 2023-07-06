@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -42,6 +43,8 @@ const (
 	QP_GEO_AGE_PREFIX = "geoageprefix"
 
 	QP_LAB = "lab"
+
+	QP_ADD_COORDINATES = "addcoordinates"
 )
 
 // GetSampleByID godoc
@@ -126,6 +129,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -139,6 +143,13 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	specimen := []model.SampleByFiltersResponse{}
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
+
+	addCoords := c.QueryParam(QP_ADD_COORDINATES)
+	if addCoords != "" && strings.ToLower(addCoords) != "false" {
+		query = sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQueryWithCoords)
+	}
+
+	// select coordinates if requested
 
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -400,6 +411,12 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 			query.AddFilter("o.organizationname", labName, opLabName, junctor)
 		}
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsEnd)
+	}
+
+	// coordinates
+	if addCoords != "" && strings.ToLower(addCoords) != "false" {
+		// add query module coordinates
+		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
 	}
 
 	err = h.db.Query(query.GetQueryString(), &specimen, query.GetFilterValues()...)

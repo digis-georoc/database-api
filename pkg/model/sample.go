@@ -42,7 +42,9 @@ type SampleByGeoSettingResponse struct {
 }
 
 type SampleByFiltersResponse struct {
-	SampleID int
+	SampleID  int
+	Latitude  float64
+	Longitude float64
 }
 
 type SamplingTechnique struct {
