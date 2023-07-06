@@ -243,6 +243,10 @@ definitions:
     type: object
   model.SampleByFiltersResponse:
     properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
       sampleID:
         type: integer
     type: object
@@ -302,7 +306,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.2.1
+  version: 0.2.2
 paths:
   /geodata/sites:
     get:
@@ -925,6 +929,10 @@ paths:
         in: query
         name: lab
         type: string
+      - description: Add coordinates to each sample
+        in: query
+        name: addcoordinates
+        type: boolean
       produces:
       - application/json
       responses:

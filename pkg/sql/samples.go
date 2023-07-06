@@ -12,7 +12,17 @@ const GetSamplingfeatureIdsByFilterBaseQuery = `
 -- modular query for specimenids with all filter options
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid
 from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid 
+left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
+`
+
+// Same as GetSamplingfeatureIdsByFilterBaseQuery but with select on latitude and longitude
+const GetSamplingfeatureIdsByFilterBaseQueryWithCoords = `
+-- modular query for specimenids and coordinates with all filter options
+select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+coords.latitude,
+coords.longitude
+from odm2.samplingfeatures spec
+left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
 
 // Filter query-module Locations
@@ -160,4 +170,17 @@ join (
 
 const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
 ) organizations on organizations.samplingfeatureid = spec.samplingfeatureid
+`
+
+// Filter query-module coordinates
+// No filter option but adds coordinates to each sampleID
+const GetGestSamplingfeatureIdsByFilterCoordinates = `
+left join 
+(
+	select r.samplingfeatureid as sampleid,
+	s.latitude,
+	s.longitude
+	from odm2.sites s
+	join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid
+) coords on coords.sampleid = case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end
 `

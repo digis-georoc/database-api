@@ -977,6 +977,12 @@ const docTemplate = `{
                         "description": "Laboratory name - see /queries/samples/organizationnames",
                         "name": "lab",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Add coordinates to each sample",
+                        "name": "addcoordinates",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2389,6 +2395,12 @@ const docTemplate = `{
         "model.SampleByFiltersResponse": {
             "type": "object",
             "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
                 "sampleID": {
                     "type": "integer"
                 }
@@ -2472,7 +2484,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.1",
+	Version:          "0.2.2",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
