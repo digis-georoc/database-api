@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	emw "github.com/labstack/echo/v4/middleware"
@@ -68,6 +69,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 				"timestamp": values.StartTime,
 				"requestID": values.RequestID,
 				"userTrack": c.Request().Header.Get(middleware.HEADER_USER_TRACKING),
+				"duration":  time.Since(values.StartTime),
 			}).Info("request")
 
 			return nil
