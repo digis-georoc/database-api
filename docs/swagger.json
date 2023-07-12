@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.2.2"
+        "version": "0.2.3"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -973,6 +973,12 @@
                         "type": "string",
                         "description": "Laboratory name - see /queries/samples/organizationnames",
                         "name": "lab",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
+                        "name": "polygon",
                         "in": "query"
                     },
                     {

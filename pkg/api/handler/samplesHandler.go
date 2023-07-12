@@ -132,7 +132,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
-// @Param polygon query string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
