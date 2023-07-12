@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -43,6 +44,8 @@ const (
 	QP_GEO_AGE_PREFIX = "geoageprefix"
 
 	QP_LAB = "lab"
+
+	QP_POLY = "polygon"
 
 	QP_ADD_COORDINATES = "addcoordinates"
 )
@@ -129,6 +132,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param polygon query string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  model.SampleByFiltersResponse
 // @Failure     401             {object} string
@@ -411,6 +415,26 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 			query.AddFilter("o.organizationname", labName, opLabName, junctor)
 		}
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterOrganizationsEnd)
+	}
+
+	// Geometries
+	junctor = sql.OpWhere // reset junctor for new subquery
+	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	if polygonString != "" {
+		// add query module geometry
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryStart)
+		if polygonString != "" {
+			// format polygon string for postGIS/SQL syntax
+			polygonFormatted, err := formatPolygonArray(polygonString)
+			if err != nil {
+				return c.String(http.StatusUnprocessableEntity, err.Error())
+			}
+			query.AddFilter("sg.geometry", polygonFormatted, sql.OpInPolygon, junctor)
+		}
+		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryEnd)
 	}
 
 	// coordinates
@@ -884,4 +908,27 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 		Data     interface{}
 	}{len(organizations), organizations}
 	return c.JSON(http.StatusOK, response)
+}
+
+// formatPolygonArray formats a given input polygon for usage in postGIS/SQL syntax
+// Input is json formatted: [[val1,val2],[val1,val2],...]
+// Output is postGIS geometry syntax: (val1 val2, val1 val2, ...)
+func formatPolygonArray(polygonString string) (string, error) {
+	polygon := [][]float64{}
+	err := json.Unmarshal([]byte(polygonString), &polygon)
+	if err != nil {
+		return "", err
+	}
+	output := "("
+	for i, point := range polygon {
+		if i > 0 {
+			// add separator before adding next point
+			output += ","
+		}
+		for _, coordinate := range point {
+			output += fmt.Sprintf(" %f", coordinate)
+		}
+	}
+	output += ")"
+	return output, nil
 }

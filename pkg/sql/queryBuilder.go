@@ -26,12 +26,13 @@ type FilterJunctor = string
 
 // Operators for sql filters
 const (
-	OpEq      FilterOperator = "="
-	OpLt      FilterOperator = "<"
-	OpGt      FilterOperator = ">"
-	OpIn      FilterOperator = "IN"
-	OpLike    FilterOperator = "LIKE"
-	OpBetween FilterOperator = "BETWEEN"
+	OpEq        FilterOperator = "="
+	OpLt        FilterOperator = "<"
+	OpGt        FilterOperator = ">"
+	OpIn        FilterOperator = "IN"
+	OpLike      FilterOperator = "LIKE"
+	OpBetween   FilterOperator = "BETWEEN"
+	OpInPolygon FilterOperator = "INPOLYGON"
 
 	OpAnd   FilterJunctor = "AND"
 	OpOr    FilterJunctor = "OR"
@@ -77,6 +78,8 @@ func (q *Query) AddFilter(key string, value string, operator FilterOperator, jun
 		q.AddLikeFilter(key, value, junctor)
 	case OpBetween:
 		q.AddBetweenFilter(key, value, junctor)
+	case OpInPolygon:
+		q.AddInPolygonFilter(key, value, junctor)
 	}
 }
 
@@ -151,6 +154,14 @@ func (q *Query) AddBetweenFilter(key string, value string, junctor FilterJunctor
 	upperPlaceholder := fmt.Sprintf("$%d", len(q.filterValues))
 	operatorString := fmt.Sprintf("%s AND %s", lowerPlaceholder, upperPlaceholder)
 	filterString := NewQueryFilter(key, operatorString, OpBetween, junctor)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
+// Add a filter with to check for polygon to the query
+func (q *Query) AddInPolygonFilter(key string, value string, junctor FilterJunctor) {
+	q.filterValues = append(q.filterValues, fmt.Sprintf("POLYGON(%s)", value))
+	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
+	filterString := fmt.Sprintf("%s ST_WITHIN(%s, ST_GEOMETRYFROMTEXT(%s))", junctor, key, placeholder)
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
