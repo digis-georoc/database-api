@@ -979,6 +979,12 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
+                        "name": "polygon",
+                        "in": "query"
+                    },
+                    {
                         "type": "boolean",
                         "description": "Add coordinates to each sample",
                         "name": "addcoordinates",
@@ -2484,7 +2490,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.2",
+	Version:          "0.2.3",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

@@ -306,7 +306,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.2.2
+  version: 0.2.3
 paths:
   /geodata/sites:
     get:
@@ -928,6 +928,10 @@ paths:
       - description: Laboratory name - see /queries/samples/organizationnames
         in: query
         name: lab
+        type: string
+      - description: 'Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]'
+        in: query
+        name: polygon
         type: string
       - description: Add coordinates to each sample
         in: query

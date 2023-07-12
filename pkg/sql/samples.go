@@ -31,6 +31,8 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 //		Locationname lvl1
 //		Locationname lvl2
 //		Locationname lvl3
+//		Latitude
+//		Longitude
 const GetSamplingfeatureIdsByFilterLocationsStart = `
 join (
 	-- location data
@@ -162,14 +164,33 @@ const GetSamplingfeatureIdsByFilterAgesEnd = `
 // 		OrganizationName
 const GestSamplingfeatureIdsByFilterOrganizationsStart = `
 join (
-	select f.samplingfeatureid
+	select 
+	f.samplingfeatureid as fid,
+	s.samplingfeatureid as sid,
+	s.samplingfeaturedescription
 	from odm2.organizations o 
 	left join odm2.actionby a on a.organizationid = o.organizationid and a.roledescription != 'chief scientist'
 	left join odm2.featureactions f on f.actionid = a.actionid
+	left join odm2.relatedfeatures r on r.samplingfeatureid = f.samplingfeatureid
+	left join odm2.samplingfeatures s on s.samplingfeatureid = r.relatedfeatureid
 `
 
 const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
-) organizations on organizations.samplingfeatureid = spec.samplingfeatureid
+) organizations on spec.samplingfeatureid = case when organizations.samplingfeaturedescription = 'Sample' then organizations.sid else fid end
+`
+
+// Filter query-module Geometry
+// Filter options are:
+// 		ST_WITHIN(geometry, given-polygon)
+const GestSamplingfeatureIdsByFilterGeometryStart = `
+join (
+	select r.samplingfeatureid as sampleid
+	from odm2.sitegeometries sg 
+	join odm2.relatedfeatures r on r.relatedfeatureid = sg.samplingfeatureid
+`
+
+const GestSamplingfeatureIdsByFilterGeometryEnd = `
+) geom on geom.sampleid = spec.samplingfeatureid
 `
 
 // Filter query-module coordinates
