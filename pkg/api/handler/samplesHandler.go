@@ -145,7 +145,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	specimen := []model.SampleByFiltersResponse{}
+	specimen := []model.SampleByFilters{}
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 
 	addCoords := c.QueryParam(QP_ADD_COORDINATES)
@@ -448,10 +448,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(specimen), specimen}
+	response := model.SampleByFilterResponse{len(specimen), specimen}
 	return c.JSON(http.StatusOK, response)
 }
 

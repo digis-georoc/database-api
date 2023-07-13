@@ -41,10 +41,15 @@ type SampleByGeoSettingResponse struct {
 	RimOrCore         string   `json:"rim_or_core"`
 }
 
-type SampleByFiltersResponse struct {
-	SampleID  int
-	Latitude  float64
-	Longitude float64
+type SampleByFilterResponse struct {
+	NumItems int               `json:"numItems"`
+	Data     []SampleByFilters `json:"data"`
+}
+
+type SampleByFilters struct {
+	SampleID  int     `json:"sampleID"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 type SamplingTechnique struct {
