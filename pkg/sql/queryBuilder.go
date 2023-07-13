@@ -161,7 +161,7 @@ func (q *Query) AddBetweenFilter(key string, value string, junctor FilterJunctor
 func (q *Query) AddInPolygonFilter(key string, value string, junctor FilterJunctor) {
 	q.filterValues = append(q.filterValues, fmt.Sprintf("POLYGON(%s)", value))
 	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
-	filterString := fmt.Sprintf("%s ST_WITHIN(%s, ST_GEOMETRYFROMTEXT(%s))", junctor, key, placeholder)
+	filterString := fmt.Sprintf("%s ST_WITHIN(%s, ST_GEOMETRYFROMTEXT(%s, 4326))", junctor, key, placeholder)
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
