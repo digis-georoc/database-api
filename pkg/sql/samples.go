@@ -195,7 +195,7 @@ array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,
 	sg.geometry,
-	st_clusterkmeans(sg.geometry, 7, 100) over () as clusterid
+	st_clusterkmeans(sg.geometry, numClusters, maxDistance) over () as clusterid
 	from (
 `
 
