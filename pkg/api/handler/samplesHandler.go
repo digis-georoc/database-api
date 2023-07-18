@@ -137,7 +137,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Success     200             {array}  model.SampleByFiltersResponse
+// @Success     200             {array}  model.SampleByFilterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
 // @Failure     422             {object} string
@@ -217,8 +217,8 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param numClusters query int false "Number of clusters for k-means clustering. Can be more or less depending on maxDistance"
-// @Param maxDistance query int false "Max distance of points in cluster"
+// @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Can be more or less depending on maxDistance"
+// @Param       maxDistance     query    int    false "Max distance of points in cluster"
 // @Success     200             {array}  []model.ClusteredSample{}
 // @Failure     401             {object} string
 // @Failure     404             {object} string
