@@ -24,16 +24,25 @@ type GeoJSONFeatureCollection struct {
 	NumberReturned int                `json:"numberReturned"`
 }
 
-// GeoJSON Geometry
-type Geometry struct {
-	Type        GeoJSONFeatureType `json:"type"`
-	Coordinates []interface{}      `json:"coordinates"`
-}
-
 // GeoJSON Feature
 type GeoJSONFeature struct {
-	Type       GeoJSONGeometryType    `json:"type"`
+	Type       GeoJSONFeatureType     `json:"type"`
 	ID         string                 `json:"id"`
 	Geometry   Geometry               `json:"geometry"`
 	Properties map[string]interface{} `json:"properties"`
+}
+
+// GeoJSON Geometry
+type Geometry struct {
+	Type        GeoJSONGeometryType `json:"type"`
+	Coordinates []interface{}       `json:"coordinates"`
+}
+
+// GeoJSON Cluster of map locations
+type GeoJSONCluster struct {
+	ClusterID  int            `json:"clusterid"`
+	Centroid   GeoJSONFeature `json:"centroid"`
+	ConvexHull GeoJSONFeature `json:"convexHull"`
+	Points     GeoJSONFeature `json:"points"`
+	Samples    []int64        `json:"samples"`
 }

@@ -18,7 +18,7 @@ import (
 )
 
 // @title       DIGIS Database API
-// @version     0.2.3
+// @version     0.3.0
 // @description This is the database api for the new GeoROC datamodel
 // @description
 // @description Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
@@ -122,6 +122,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))
 	// Sites as GeoJSON
 	geoData.GET("/sites", h.GetGeoJSONSites)
+	geoData.GET("/samplesclustered", h.GetSamplesFilteredClustered)
 
 	return e
 }

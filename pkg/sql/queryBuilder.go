@@ -165,6 +165,12 @@ func (q *Query) AddInPolygonFilter(key string, value string, junctor FilterJunct
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
+// Wraps the current query in an SQL prefix and postfix
+// Do not enter user-provided values here as they are not sanitized.
+func (q *Query) WrapInSQL(prefix string, postfix string) {
+	q.baseQuery = fmt.Sprintf("%s %s %s", prefix, q.baseQuery, postfix)
+}
+
 // Add a subquery / sql block to the query
 // Do not enter user-provided values here as they are not sanitized.
 // For user values, use filters
