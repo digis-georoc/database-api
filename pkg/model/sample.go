@@ -47,9 +47,15 @@ type SampleByFilterResponse struct {
 }
 
 type SampleByFilters struct {
-	SampleID  int     `json:"sampleID"`
-	Latitude  float64 `json:"latitude"`
-	Longitude float64 `json:"longitude"`
+	SampleID int `json:"sampleID"`
+}
+
+type ClusteredSample struct {
+	ClusterID  int      `json:"clusterid"`
+	Centroid   Geometry `json:"centroid"`
+	ConvexHull Geometry `json:"convexHull"`
+	Points     Geometry `json:"points"`
+	Samples    []int64  `json:"samples"`
 }
 
 type SamplingTechnique struct {
