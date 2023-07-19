@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/geodata/samples": {
+        "/geodata/samplesclustered": {
             "get": {
                 "security": [
                     {
