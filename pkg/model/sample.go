@@ -47,7 +47,9 @@ type SampleByFilterResponse struct {
 }
 
 type SampleByFilters struct {
-	SampleID int `json:"sampleID"`
+	SampleID  int     `json:"sampleID"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
 
 type ClusteredSample struct {

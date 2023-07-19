@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -137,6 +138,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  model.SampleByFilterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -219,6 +221,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Can be more or less depending on maxDistance"
 // @Param       maxDistance     query    int    false "Max distance of points in cluster"
+// @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  []model.ClusteredSample{}
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -732,6 +735,10 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 // buildSampleFilterQuery constructs a query using filter params from the request
 func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
+	addCoords := c.QueryParam(QP_ADD_COORDINATES)
+	if addCoords != "" && strings.ToLower(addCoords) != "false" {
+		query = sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQueryWithCoords)
+	}
 
 	// add optional search filters
 	junctor := sql.OpWhere // junctor to connect a new filter clause to the query: can be "WHERE" or "AND/OR"
@@ -1006,6 +1013,13 @@ func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
 		}
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryEnd)
 	}
+
+	// coordinates
+	if addCoords != "" && strings.ToLower(addCoords) != "false" {
+		// add query module coordinates
+		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
+	}
+
 	return query, nil
 }
 

@@ -222,6 +222,12 @@ const docTemplate = `{
                         "description": "Max distance of points in cluster",
                         "name": "maxDistance",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Add coordinates to each sample",
+                        "name": "addcoordinates",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1222,6 +1228,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
                         "name": "polygon",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Add coordinates to each sample",
+                        "name": "addcoordinates",
                         "in": "query"
                     }
                 ],
@@ -2677,6 +2689,12 @@ const docTemplate = `{
         "model.SampleByFilters": {
             "type": "object",
             "properties": {
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
                 "sampleID": {
                     "type": "integer"
                 }
