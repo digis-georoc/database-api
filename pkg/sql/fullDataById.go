@@ -9,7 +9,6 @@ refs.references,
 samples.name as samplename,
 coalesce (loc.loc_names, array['Unknown']) as location_names,
 coalesce (loc.loc_types, array['Unknown']) as location_types,
-loc.loc_data[1] as loc_data,
 (regexp_match(loc.elevation[1], 'ELEVATION_MIN=(-?\d+\.?\d*);'))[1] as elevation_min,
 (regexp_match(loc.elevation[1], 'ELEVATION_MAX=(-?\d+\.?\d*)'))[1] as elevation_max,
 -- no samp_technique in odm2
@@ -133,8 +132,8 @@ left join
 left join (
 	-- query methods
 	select rel_meth.relatedfeatureid as id,
-	(array_agg(distinct meth.methodcode))[1] as method_acronyms,
-	(array_agg(distinct a_meth.actiondescription))[1] as method_comments,
+	(array_agg(distinct meth.methodcode)) as method_acronyms,
+	(array_agg(distinct a_meth.actiondescription)) as method_comments,
 	array_agg(distinct org.organizationname) as institution
 	from odm2.relatedfeatures rel_meth
 	left join odm2.featureactions f_meth on f_meth.samplingfeatureid = rel_meth.samplingfeatureid
