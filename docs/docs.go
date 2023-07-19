@@ -24,6 +24,246 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/geodata/samples": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all samplingfeatureIDs matching the current filters clustered\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\" (\u003c), \"gt\" (\u003e), \"eq\" (=), \"in\" (IN), \"lk\" (LIKE), \"btw\" (BETWEEN)\nand VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\", \"gt\" and \"btw\" are only applicable to numerical values.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards ` + "`" + `*` + "`" + `(0 or more chars) and ` + "`" + `?` + "`" + `(one char).\nThe OPERATOR \"btw\" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "geodata"
+                ],
+                "summary": "Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "tectonic setting - see /queries/sites/settings",
+                        "name": "setting",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 1 - see /queries/locations/l1",
+                        "name": "location1",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 2 - see /queries/locations/l2",
+                        "name": "location2",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 3 - see /queries/locations/l3",
+                        "name": "location3",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "latitude",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude",
+                        "name": "longitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rock type - see /queries/samples/rocktypes",
+                        "name": "rocktype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "taxonomic classifier name - see /queries/samples/rockclasses",
+                        "name": "rockclass",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "mineral - see /queries/samples/minerals",
+                        "name": "mineral",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "material - see /queries/samples/materials",
+                        "name": "material",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion type - see /queries/samples/inclusiontypes",
+                        "name": "inclusiontype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique - see /queries/samples/samplingtechniques",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "chemical element - see /queries/samples/elements",
+                        "name": "element",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "element type - see /queries/samples/elementtypes",
+                        "name": "elementtype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "measured value",
+                        "name": "value",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "title of publication",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "publication year",
+                        "name": "publicationyear",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "DOI",
+                        "name": "doi",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author first name",
+                        "name": "firstname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author last name",
+                        "name": "lastname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age min",
+                        "name": "agemin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age max",
+                        "name": "agemax",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age - see /queries/samples/geoages",
+                        "name": "geoage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
+                        "name": "geoageprefix",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Laboratory name - see /queries/samples/organizationnames",
+                        "name": "lab",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
+                        "name": "polygon",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of clusters for k-means clustering. Can be more or less depending on maxDistance",
+                        "name": "numClusters",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Max distance of points in cluster",
+                        "name": "maxDistance",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/model.ClusteredSample"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/geodata/sites": {
             "get": {
                 "security": [
@@ -418,246 +658,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/queries/geodata/samples": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Get all samplingfeatureIDs matching the current filters clustered\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\" (\u003c), \"gt\" (\u003e), \"eq\" (=), \"in\" (IN), \"lk\" (LIKE), \"btw\" (BETWEEN)\nand VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\", \"gt\" and \"btw\" are only applicable to numerical values.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards ` + "`" + `*` + "`" + `(0 or more chars) and ` + "`" + `?` + "`" + `(one char).\nThe OPERATOR \"btw\" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "geodata"
-                ],
-                "summary": "Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "tectonic setting - see /queries/sites/settings",
-                        "name": "setting",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "location level 1 - see /queries/locations/l1",
-                        "name": "location1",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "location level 2 - see /queries/locations/l2",
-                        "name": "location2",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "location level 3 - see /queries/locations/l3",
-                        "name": "location3",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "latitude",
-                        "name": "latitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "longitude",
-                        "name": "longitude",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "rock type - see /queries/samples/rocktypes",
-                        "name": "rocktype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "taxonomic classifier name - see /queries/samples/rockclasses",
-                        "name": "rockclass",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "mineral - see /queries/samples/minerals",
-                        "name": "mineral",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "material - see /queries/samples/materials",
-                        "name": "material",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "inclusion type - see /queries/samples/inclusiontypes",
-                        "name": "inclusiontype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "sampling technique - see /queries/samples/samplingtechniques",
-                        "name": "sampletech",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "chemical element - see /queries/samples/elements",
-                        "name": "element",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "element type - see /queries/samples/elementtypes",
-                        "name": "elementtype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "measured value",
-                        "name": "value",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "title of publication",
-                        "name": "title",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "publication year",
-                        "name": "publicationyear",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "DOI",
-                        "name": "doi",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Author first name",
-                        "name": "firstname",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Author last name",
-                        "name": "lastname",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Specimen age min",
-                        "name": "agemin",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Specimen age max",
-                        "name": "agemax",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Specimen geological age - see /queries/samples/geoages",
-                        "name": "geoage",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
-                        "name": "geoageprefix",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Laboratory name - see /queries/samples/organizationnames",
-                        "name": "lab",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
-                        "name": "polygon",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of clusters for k-means clustering. Can be more or less depending on maxDistance",
-                        "name": "numClusters",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Max distance of points in cluster",
-                        "name": "maxDistance",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.ClusteredSample"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "422": {
-                        "description": "Unprocessable Entity",
                         "schema": {
                             "type": "string"
                         }
