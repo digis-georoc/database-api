@@ -224,7 +224,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Failure     404             {object} string
 // @Failure     422             {object} string
 // @Failure     500             {object} string
-// @Router      /geodata/samples [get]
+// @Router      /geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

@@ -328,7 +328,7 @@ info:
   title: DIGIS Database API
   version: 0.3.0
 paths:
-  /geodata/samples:
+  /geodata/samplesclustered:
     get:
       consumes:
       - application/json

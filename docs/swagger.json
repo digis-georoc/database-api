@@ -21,7 +21,7 @@
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
     "paths": {
-        "/geodata/samples": {
+        "/geodata/samplesclustered": {
             "get": {
                 "security": [
                     {
