@@ -96,15 +96,16 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 const GetSamplingfeatureIdsByFilterAnnotationsStart = `
 join (
 	-- annotations
-	select sann.samplingfeatureid
+	select r.relatedfeatureid as sampleid
 	from odm2.samplingfeatureannotations sann
 	left join odm2.annotations ann_mat on ann_mat.annotationid = sann.annotationid and ann_mat.annotationcode = 'g_batches.material'
 	left join odm2.annotations ann_inc_type on ann_inc_type.annotationid = sann.annotationid and ann_inc_type.annotationcode = 'g_inclusions.inclusion_type'
 	left join odm2.annotations ann_samp_tech on ann_samp_tech.annotationid = sann.annotationid and ann_samp_tech.annotationcode = 'g_samples.samp_technique'
 	left join odm2.annotations ann_rim_or_core on ann_rim_or_core.annotationid = sann.annotationid and ann_rim_or_core.annotationcode = 'g_inclusions.rim_or_core_inc'
+	left join odm2.relatedfeatures r on r.samplingfeatureid = sann.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
 const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
-) ann on ann.samplingfeatureid = spec.samplingfeatureid
+) ann on ann.sampleid = spec.samplingfeatureid
 `
 
 // Filter query-module Results
@@ -171,7 +172,7 @@ join (
 	from odm2.organizations o 
 	left join odm2.actionby a on a.organizationid = o.organizationid and a.roledescription != 'chief scientist'
 	left join odm2.featureactions f on f.actionid = a.actionid
-	left join odm2.relatedfeatures r on r.samplingfeatureid = f.samplingfeatureid
+	left join odm2.relatedfeatures r on r.samplingfeatureid = f.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 	left join odm2.samplingfeatures s on s.samplingfeatureid = r.relatedfeatureid
 `
 
