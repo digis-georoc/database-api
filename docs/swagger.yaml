@@ -270,6 +270,10 @@ definitions:
     type: object
   model.SampleByFilters:
     properties:
+      latitude:
+        type: number
+      longitude:
+        type: number
       sampleID:
         type: integer
     type: object
@@ -470,6 +474,10 @@ paths:
         in: query
         name: maxDistance
         type: integer
+      - description: Add coordinates to each sample
+        in: query
+        name: addcoordinates
+        type: boolean
       produces:
       - application/json
       responses:
@@ -1128,6 +1136,10 @@ paths:
         in: query
         name: polygon
         type: string
+      - description: Add coordinates to each sample
+        in: query
+        name: addcoordinates
+        type: boolean
       produces:
       - application/json
       responses:
