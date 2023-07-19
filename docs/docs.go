@@ -2367,7 +2367,10 @@ const docTemplate = `{
                     }
                 },
                 "comment": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "elevation_Max": {
                     "type": "string"
@@ -2408,7 +2411,6 @@ const docTemplate = `{
                 "latitude_Min": {
                     "type": "string"
                 },
-                "loc_Data": {},
                 "location_Names": {
                     "type": "array",
                     "items": {
@@ -2440,7 +2442,10 @@ const docTemplate = `{
                     }
                 },
                 "method": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "minerals": {
                     "type": "array",

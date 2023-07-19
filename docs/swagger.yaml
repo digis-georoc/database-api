@@ -67,7 +67,9 @@ definitions:
           type: integer
         type: array
       comment:
-        type: string
+        items:
+          type: string
+        type: array
       elevation_Max:
         type: string
       elevation_Min:
@@ -94,7 +96,6 @@ definitions:
         type: string
       latitude_Min:
         type: string
-      loc_Data: {}
       location_Names:
         items:
           type: string
@@ -116,7 +117,9 @@ definitions:
           type: string
         type: array
       method:
-        type: string
+        items:
+          type: string
+        type: array
       minerals:
         items:
           type: string
