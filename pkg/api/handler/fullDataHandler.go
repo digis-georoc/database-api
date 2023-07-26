@@ -3,6 +3,8 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -23,10 +25,10 @@ const (
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureids path     string true "Samplingfeature identifier"
-// @Success     200               {array}  model.FullData
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     500               {object} string
+// @Success     200                {array}  model.FullData
+// @Failure     401                {object} string
+// @Failure     404                {object} string
+// @Failure     500                {object} string
 // @Router      /queries/fulldata/{samplingfeatureid} [get]
 func (h *Handler) GetFullDataByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -57,11 +59,11 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 // @Tags        fulldata
 // @Accept      json
 // @Produce     json
-// @Param       samplingfeatureids query     string true "List of Samplingfeature identifiers"
-// @Success     200               {array}  model.FullData
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     500               {object} string
+// @Param       samplingfeatureids query    string true "List of Samplingfeature identifiers"
+// @Success     200                {array}  model.FullData
+// @Failure     401                {object} string
+// @Failure     404                {object} string
+// @Failure     500                {object} string
 // @Router      /queries/fulldata [get]
 func (h *Handler) GetFullData(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -69,7 +71,16 @@ func (h *Handler) GetFullData(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	fullData := []model.FullData{}
-	err := h.db.Query(sql.FullDataByMultiIdQuery, &fullData, fmt.Sprintf("(%s)", c.QueryParam(QP_IDENTIFIER)))
+	identifierList := []int{}
+	identifiers := c.QueryParam(QP_IDENTIFIER_LIST)
+	for _, id := range strings.Split(identifiers, ",") {
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			return err
+		}
+		identifierList = append(identifierList, idInt)
+	}
+	err := h.db.Query(sql.FullDataByMultiIdQuery, &fullData, identifierList)
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")

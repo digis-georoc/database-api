@@ -31,7 +31,7 @@ loc.loc_data[1].longitude as longitude,
 (loc.setting)[1] as tectonic_setting,
 methods.method_acronyms as method,
 methods.method_comments as comment,
-(methods.institution)[1] as institution, -- actionBy seems to be sparsely filled
+(methods.institution) as institutions, -- actionBy seems to be sparsely filled
 results.items_measured as item_name,
 results.item_types as item_group,
 --rockmode_num not in odm2, 
@@ -179,6 +179,7 @@ left join (
 ) results on results.id = samples.samplingfeatureid
 `
 
+// "IN $1" wont work with array but "= ANY ($1)" does
 const FullDataByMultiIdQuery = `
 select
 samples.SamplingFeatureID as sample_num,
@@ -210,7 +211,7 @@ loc.loc_data[1].longitude as longitude,
 (loc.setting)[1] as tectonic_setting,
 methods.method_acronyms as method,
 methods.method_comments as comment,
-(methods.institution)[1] as institution, -- actionBy seems to be sparsely filled
+(methods.institution) as institution, -- actionBy seems to be sparsely filled
 results.items_measured as item_name,
 results.item_types as item_group,
 --rockmode_num not in odm2, 
@@ -239,7 +240,7 @@ from
 		array_agg(r.samplingfeatureid) as batches 
 		from odm2.samplingfeatures s 
 		left join odm2.relatedfeatures r on r.relatedfeatureid = s.SamplingFeatureID and r.relationshiptypecv = 'Is child of'
-		where s.samplingfeatureid in $1
+		where s.samplingfeatureid = any ($1)
 		group by s.samplingfeatureid
 	) batches on batches.samplingfeatureid = samples.samplingfeatureid 
 	left join odm2.specimens spec on spec.samplingfeatureid = samples.samplingfeatureid
@@ -269,7 +270,7 @@ from
 	left join odm2.annotations ann_mat on ann_mat.annotationid = sann.annotationid and ann_mat.annotationcode = 'g_batches.material'
 	left join odm2.annotations ann_inc_type on ann_inc_type.annotationid = sann.annotationid and ann_inc_type.annotationcode = 'g_inclusions.inclusion_type'
 	where samples.samplingfeaturedescription = 'Sample' 
-	and samples.samplingfeatureid in $1
+	and samples.samplingfeatureid = any ($1)
 	group by samples.samplingfeatureid 
 ) samples
 left join 
@@ -285,7 +286,7 @@ left join
 		left join odm2.authorlists a_ref on a_ref.citationid = c_ref.citationid
 		left join odm2.people p_ref on p_ref.personid = a_ref.personid 
 		left join odm2.affiliations af_ref on af_ref.personid = p_ref.personid
-		where stc_ref.samplingfeatureid in $1
+		where stc_ref.samplingfeatureid = any ($1)
 		group by stc_ref.samplingfeatureid, c_ref.citationid, c_ref.title, c_ref.journal, c_ref.firstpage, c_ref.lastpage, c_ref.publicationyear, cei_ref.citationexternalidentifier 
 	) q
 	group by q.samplingfeatureid
@@ -305,7 +306,7 @@ left join
 	left join odm2.sites si_loc on si_loc.samplingfeatureid = rel_loc.relatedfeatureid 
 	left join odm2.sitegeolocations sg_loc on sg_loc.samplingfeatureid  = si_loc.samplingfeatureid
 	left join odm2.geolocations g_loc on g_loc.geolocationid = sg_loc.geolocationid 
-	where rel_loc.samplingfeatureid in $1
+	where rel_loc.samplingfeatureid = any ($1)
 	group by rel_loc.samplingfeatureid 
 ) loc on loc.samplingfeatureid = samples.samplingfeatureid
 left join (
@@ -320,7 +321,7 @@ left join (
 	left join odm2.methods meth on meth.methodid = a_meth.methodid
 	left join odm2.actionby ab_meth on ab_meth.actionid = a_meth.actionid 
 	left join odm2.organizations org on org.organizationid = ab_meth.organizationid
-	where rel_meth.relatedfeatureid in $1
+	where rel_meth.relatedfeatureid = any ($1)
 	group by rel_meth.relatedfeatureid
 ) methods on methods.id = samples.samplingfeatureid
 left join (
@@ -350,9 +351,9 @@ left join (
 			from odm2.featureactions fa 
 			join odm2.standards standards on standards.actionid = fa.actionid
 		) std on std.samplingfeatureid = relf.samplingfeatureid
-		where relf.relatedfeatureid in $1
+		where relf.relatedfeatureid = any ($1)
 	)std on std.samplingfeatureid = rel_res.samplingfeatureid and std.std_var = mv.variablecode
-	where rel_res.relatedfeatureid in $1
+	where rel_res.relatedfeatureid = any ($1)
 	and rel_res.relationshiptypecv = 'Is child of'
 	group by rel_res.relatedfeatureid
 ) results on results.id = samples.samplingfeatureid

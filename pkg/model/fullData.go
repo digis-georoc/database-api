@@ -29,7 +29,7 @@ type FullData struct {
 	Tectonic_Setting string
 	Method           []string
 	Comment          []string
-	Institution      string
+	Institutions     []string
 	Item_Name        []string
 	Item_Group       []string
 	Standard_Names   []string

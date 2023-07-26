@@ -52,7 +52,7 @@ const (
 	QP_NUM_CLUSTERS      = "numClusters"
 	QP_MAX_DISTANCE      = "maxDistance"
 	DEFAULT_NUM_CLUSTERS = "7"
-	DEFAULT_MAX_DISTANCE = "100"
+	DEFAULT_MAX_DISTANCE = "50"
 )
 
 // GetSampleByID godoc
