@@ -78,8 +78,10 @@ definitions:
         items:
           type: string
         type: array
-      institution:
-        type: string
+      institutions:
+        items:
+          type: string
+        type: array
       item_Group:
         items:
           type: string
@@ -333,7 +335,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.0
+  version: 0.3.1
 paths:
   /geodata/samplesclustered:
     get:
@@ -734,6 +736,43 @@ paths:
       summary: Retrieve citations by citationID
       tags:
       - citations
+  /queries/fulldata:
+    get:
+      consumes:
+      - application/json
+      description: get full datasets by a list of samplingfeatureids
+      parameters:
+      - description: List of Samplingfeature identifiers
+        in: query
+        name: samplingfeatureids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.FullData'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve full datasets by a list of samplingfeatureids
+      tags:
+      - fulldata
   /queries/fulldata/{samplingfeatureid}:
     get:
       consumes:
@@ -742,7 +781,7 @@ paths:
       parameters:
       - description: Samplingfeature identifier
         in: path
-        name: samplingfeatureid
+        name: samplingfeatureids
         required: true
         type: string
       produces:

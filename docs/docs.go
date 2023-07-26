@@ -619,6 +619,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/queries/fulldata": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get full datasets by a list of samplingfeatureids",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "fulldata"
+                ],
+                "summary": "Retrieve full datasets by a list of samplingfeatureids",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "List of Samplingfeature identifiers",
+                        "name": "samplingfeatureids",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.FullData"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/queries/fulldata/{samplingfeatureid}": {
             "get": {
                 "security": [
@@ -641,7 +699,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Samplingfeature identifier",
-                        "name": "samplingfeatureid",
+                        "name": "samplingfeatureids",
                         "in": "path",
                         "required": true
                     }
@@ -2396,8 +2454,11 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "institution": {
-                    "type": "string"
+                "institutions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "item_Group": {
                     "type": "array",
@@ -2778,7 +2839,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.0",
+	Version:          "0.3.1",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
