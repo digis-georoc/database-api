@@ -211,7 +211,7 @@ loc.loc_data[1].longitude as longitude,
 (loc.setting)[1] as tectonic_setting,
 methods.method_acronyms as method,
 methods.method_comments as comment,
-(methods.institution) as institution, -- actionBy seems to be sparsely filled
+(methods.institution) as institutions, -- actionBy seems to be sparsely filled
 results.items_measured as item_name,
 results.item_types as item_group,
 --rockmode_num not in odm2, 
