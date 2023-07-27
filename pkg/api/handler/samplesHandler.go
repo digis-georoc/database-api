@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"strings"
 
@@ -49,10 +50,16 @@ const (
 
 	QP_ADD_COORDINATES = "addcoordinates"
 
+	QP_BBOX = "bbox"
+
 	QP_NUM_CLUSTERS      = "numClusters"
 	QP_MAX_DISTANCE      = "maxDistance"
 	DEFAULT_NUM_CLUSTERS = "7"
 	DEFAULT_MAX_DISTANCE = "50"
+	LONG_MIN             = -180.0
+	LONG_MAX             = 180.0
+	LAT_MIN              = -90.0
+	LAT_MAX              = 90.0
 )
 
 // GetSampleByID godoc
@@ -219,8 +226,9 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Can be more or less depending on maxDistance"
-// @Param       maxDistance     query    int    false "Max distance of points in cluster"
+// @Param       bbox            query    string false "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+// @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
 // @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {array}  []model.ClusteredSample{}
 // @Failure     401             {object} string
@@ -1000,16 +1008,44 @@ func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
 	if err != nil {
 		return nil, err
 	}
-	if polygonString != "" {
+	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
+	if err != nil {
+		return nil, err
+	}
+	if polygonString != "" || bboxString != "" {
 		// add query module geometry
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryStart)
 		if polygonString != "" {
-			// format polygon string for postGIS/SQL syntax
-			polygonFormatted, err := formatPolygonArray(polygonString)
+			polygon, err := parsePointArray(polygonString)
+			if err != nil {
+				return nil, err
+			}
+			// format polygon for postGIS/SQL syntax
+			polygonFormatted, err := formatPolygonArray(polygon)
 			if err != nil {
 				return nil, err
 			}
 			query.AddFilter("sg.geometry", polygonFormatted, sql.OpInPolygon, junctor)
+			junctor = sql.OpAnd
+		}
+		if bboxString != "" {
+			bbox, err := parsePointArray(bboxString)
+			if err != nil {
+				return nil, err
+			}
+			// add frame around bbox to avoid reloading on small panning
+			bbox, err = scaleBBox(bbox)
+			if err != nil {
+				return nil, err
+			}
+			// add first point again to make close polygon shape
+			bbox = append(bbox, bbox[0])
+			// format bbox string for postGIS/SQL syntax
+			bboxFormatted, err := formatPolygonArray(bbox)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("sg.geometry", bboxFormatted, sql.OpInPolygon, junctor)
 		}
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryEnd)
 	}
@@ -1024,14 +1060,9 @@ func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
 }
 
 // formatPolygonArray formats a given input polygon for usage in postGIS/SQL syntax
-// Input is json formatted: [[val1,val2],[val1,val2],...]
-// Output is postGIS geometry syntax: (val1 val2, val1 val2, ...)
-func formatPolygonArray(polygonString string) (string, error) {
-	polygon := [][]float64{}
-	err := json.Unmarshal([]byte(polygonString), &polygon)
-	if err != nil {
-		return "", err
-	}
+// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
+// Output is postGIS geometry syntax: (long1 lat1, long2 lat2, ...)
+func formatPolygonArray(polygon [][]float64) (string, error) {
 	output := "("
 	for i, point := range polygon {
 		if i > 0 {
@@ -1046,6 +1077,16 @@ func formatPolygonArray(polygonString string) (string, error) {
 	return output, nil
 }
 
+// parsePointArray parses a string representation of an array of float-points into a 2-dimensional array
+func parsePointArray(arrayString string) ([][]float64, error) {
+	polygon := [][]float64{}
+	err := json.Unmarshal([]byte(arrayString), &polygon)
+	if err != nil {
+		return nil, err
+	}
+	return polygon, nil
+}
+
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
 func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, error) {
 	geoJSON := make([]model.GeoJSONCluster, 0, len(clusterData))
@@ -1053,23 +1094,47 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 		centroid := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
 			Geometry: cluster.Centroid,
+			Properties: map[string]interface{}{
+				"clusterID": cluster.ClusterID,
+			},
+		}
+		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
+			centroid.Properties["sampleID"] = cluster.Samples[0]
 		}
 		convexHull := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
 			Geometry: cluster.ConvexHull,
 		}
-		points := model.GeoJSONFeature{
-			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.Points,
-		}
 		geoJSONCluster := model.GeoJSONCluster{
 			ClusterID:  cluster.ClusterID,
 			Centroid:   centroid,
 			ConvexHull: convexHull,
-			Points:     points,
-			Samples:    cluster.Samples,
 		}
 		geoJSON = append(geoJSON, geoJSONCluster)
 	}
 	return geoJSON, nil
+}
+
+// scaleBbox takes an array of coordinates for a bounding box and scales it around the center
+// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
+func scaleBBox(bbox [][]float64) ([][]float64, error) {
+	// calc width and height of bbox
+	width := bbox[1][0] - bbox[0][0]
+	height := bbox[3][1] - bbox[0][1]
+	scaleLong := width / 2
+	scaleLat := height / 2
+	// add half bbox on each side
+	// SW
+	bbox[0][0] = math.Max(LONG_MIN, bbox[0][0]-scaleLong)
+	bbox[0][1] = math.Max(LAT_MIN, bbox[0][1]-scaleLat)
+	// SE
+	bbox[1][0] = math.Min(LONG_MAX, bbox[1][0]+scaleLong)
+	bbox[1][1] = math.Max(LAT_MIN, bbox[1][1]-scaleLat)
+	// NE
+	bbox[2][0] = math.Min(LONG_MAX, bbox[2][0]+scaleLong)
+	bbox[2][1] = math.Min(LAT_MAX, bbox[2][1]+scaleLat)
+	// NW
+	bbox[3][0] = math.Max(LONG_MIN, bbox[3][0]-scaleLong)
+	bbox[3][1] = math.Min(LAT_MAX, bbox[3][1]+scaleLat)
+	return bbox, nil
 }
