@@ -214,7 +214,6 @@ select
 clusters.clusterid,
 st_convexhull(st_collect(clusters.geometry)) as convexHull,
 ST_Centroid(ST_Union(clusters.geometry)) as centroid,
-st_collect(clusters.geometry) as points,
 array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,

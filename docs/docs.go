@@ -212,14 +212,20 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]",
+                        "name": "bbox",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
-                        "description": "Number of clusters for k-means clustering. Can be more or less depending on maxDistance",
+                        "description": "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance",
                         "name": "numClusters",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Max distance of points in cluster",
+                        "description": "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -\u003e Zi = 50/i",
                         "name": "maxDistance",
                         "in": "query"
                     },
@@ -2839,7 +2845,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.1",
+	Version:          "0.3.2",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

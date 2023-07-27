@@ -43,6 +43,4 @@ type GeoJSONCluster struct {
 	ClusterID  int            `json:"clusterid"`
 	Centroid   GeoJSONFeature `json:"centroid"`
 	ConvexHull GeoJSONFeature `json:"convexHull"`
-	Points     GeoJSONFeature `json:"points"`
-	Samples    []int64        `json:"samples"`
 }
