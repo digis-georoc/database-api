@@ -31,19 +31,13 @@ definitions:
       volume:
         type: string
     type: object
-  model.ClusteredSample:
+  model.ClusterResponse:
     properties:
-      centroid:
-        $ref: '#/definitions/model.Geometry'
-      clusterid:
-        type: integer
-      convexHull:
-        $ref: '#/definitions/model.Geometry'
-      points:
-        $ref: '#/definitions/model.Geometry'
-      samples:
+      bbox:
+        $ref: '#/definitions/model.GeoJSONFeature'
+      clusters:
         items:
-          type: integer
+          $ref: '#/definitions/model.GeoJSONCluster'
         type: array
     type: object
   model.Element:
@@ -175,6 +169,15 @@ definitions:
     properties:
       name:
         type: string
+    type: object
+  model.GeoJSONCluster:
+    properties:
+      centroid:
+        $ref: '#/definitions/model.GeoJSONFeature'
+      clusterid:
+        type: integer
+      convexHull:
+        $ref: '#/definitions/model.GeoJSONFeature'
     type: object
   model.GeoJSONFeature:
     properties:
@@ -335,7 +338,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.2
+  version: 0.3.3
 paths:
   /geodata/samplesclustered:
     get:
@@ -491,11 +494,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              items:
-                $ref: '#/definitions/model.ClusteredSample'
-              type: array
-            type: array
+            $ref: '#/definitions/model.ClusterResponse'
         "401":
           description: Unauthorized
           schema:

@@ -230,7 +230,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
 // @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
-// @Success     200             {array}  []model.ClusteredSample{}
+// @Success     200             {object} model.ClusterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
 // @Failure     422             {object} string
@@ -277,11 +277,44 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	response, err := parseClusterToGeoJSON(clusterData)
+	// response object
+	response := model.ClusterResponse{}
+	// calc scaled bbox again to return new dimensions
+	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
+	}
+	if bboxString != "" {
+		bbox, err := parsePointArray(bboxString)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
+		}
+		// add frame around bbox to avoid reloading on small panning
+		bbox, err = scaleBBox(bbox)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
+		}
+		// add first point again to make close polygon shape
+		bbox = append(bbox, bbox[0])
+		// reformat to []interface{}
+		bboxI := []interface{}{}
+		for _, v := range bbox {
+			bboxI = append(bboxI, v)
+		}
+		response.Bbox = model.GeoJSONFeature{
+			Type: model.GEOJSONTYPE_FEATURE,
+			Geometry: model.Geometry{
+				Type:        model.GEOJSON_GEOMETRY_POLYGON,
+				Coordinates: bboxI,
+			},
+		}
+	}
+	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
 	}
+	response.Clusters = geoJSONClusters
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -1095,7 +1128,8 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 			Type:     model.GEOJSONTYPE_FEATURE,
 			Geometry: cluster.Centroid,
 			Properties: map[string]interface{}{
-				"clusterID": cluster.ClusterID,
+				"clusterID":   cluster.ClusterID,
+				"clusterSize": len(cluster.Samples),
 			},
 		}
 		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {

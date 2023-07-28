@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.3.2"
+        "version": "0.3.3"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -237,13 +237,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.ClusteredSample"
-                                }
-                            }
+                            "$ref": "#/definitions/model.ClusterResponse"
                         }
                     },
                     "401": {
@@ -2385,25 +2379,16 @@
                 }
             }
         },
-        "model.ClusteredSample": {
+        "model.ClusterResponse": {
             "type": "object",
             "properties": {
-                "centroid": {
-                    "$ref": "#/definitions/model.Geometry"
+                "bbox": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
                 },
-                "clusterid": {
-                    "type": "integer"
-                },
-                "convexHull": {
-                    "$ref": "#/definitions/model.Geometry"
-                },
-                "points": {
-                    "$ref": "#/definitions/model.Geometry"
-                },
-                "samples": {
+                "clusters": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/model.GeoJSONCluster"
                     }
                 }
             }
@@ -2602,6 +2587,20 @@
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GeoJSONCluster": {
+            "type": "object",
+            "properties": {
+                "centroid": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
+                },
+                "clusterid": {
+                    "type": "integer"
+                },
+                "convexHull": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
                 }
             }
         },
