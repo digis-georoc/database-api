@@ -60,6 +60,11 @@ type ClusteredSample struct {
 	Samples    []int64  `json:"samples"`
 }
 
+type ClusterResponse struct {
+	Clusters []GeoJSONCluster
+	Bbox     GeoJSONFeature
+}
+
 type SamplingTechnique struct {
 	Name string
 }

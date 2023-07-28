@@ -240,13 +240,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/model.ClusteredSample"
-                                }
-                            }
+                            "$ref": "#/definitions/model.ClusterResponse"
                         }
                     },
                     "401": {
@@ -2388,25 +2382,16 @@ const docTemplate = `{
                 }
             }
         },
-        "model.ClusteredSample": {
+        "model.ClusterResponse": {
             "type": "object",
             "properties": {
-                "centroid": {
-                    "$ref": "#/definitions/model.Geometry"
+                "bbox": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
                 },
-                "clusterid": {
-                    "type": "integer"
-                },
-                "convexHull": {
-                    "$ref": "#/definitions/model.Geometry"
-                },
-                "points": {
-                    "$ref": "#/definitions/model.Geometry"
-                },
-                "samples": {
+                "clusters": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "$ref": "#/definitions/model.GeoJSONCluster"
                     }
                 }
             }
@@ -2605,6 +2590,20 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GeoJSONCluster": {
+            "type": "object",
+            "properties": {
+                "centroid": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
+                },
+                "clusterid": {
+                    "type": "integer"
+                },
+                "convexHull": {
+                    "$ref": "#/definitions/model.GeoJSONFeature"
                 }
             }
         },
@@ -2845,7 +2844,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.2",
+	Version:          "0.3.3",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
