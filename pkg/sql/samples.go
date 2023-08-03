@@ -16,11 +16,22 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
 
 // Same as GetSamplingfeatureIdsByFilterBaseQuery but with select on latitude and longitude
+// Depends on QueryModule Coordinates being added
 const GetSamplingfeatureIdsByFilterBaseQueryWithCoords = `
 -- modular query for specimenids and coordinates with all filter options
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
 coords.latitude,
 coords.longitude
+from odm2.samplingfeatures spec
+left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
+`
+
+// Same as GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
+// Depends on QueryModule Geometry being added
+const GetSamplingFeatureIdsByFilteBaseQueryTranslated = `
+-- modular query for specimenids and translated geometries with all filter options
+select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+case when geom.isInOriginalBBOX then geom.geometry else st_translate(geom.geometry, 360 * translationFactor, 0) end as translatedGeom
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
@@ -182,12 +193,23 @@ const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
 
 // Filter query-module Geometry
 // Filter options are:
-// 		ST_WITHIN(geometry, given-polygon)
+// 		ST_WITHIN(geometry, st_wrapx(given-polygon))
 const GestSamplingfeatureIdsByFilterGeometryStart = `
 join (
-	select r.samplingfeatureid as sampleid
-	from odm2.sitegeometries sg 
-	join odm2.relatedfeatures r on r.relatedfeatureid = sg.samplingfeatureid
+select r.samplingfeatureid as sampleid,
+sg.geometry
+from odm2.sitegeometries sg 
+join odm2.relatedfeatures r on r.relatedfeatureid = sg.samplingfeatureid
+`
+
+// Same as GestSamplingfeatureIdsByFilterGeometryStart but with added check if geometries are in original bbox
+const GestSamplingfeatureIdsByFilterGeometryBBOXStart = `
+join (
+select r.samplingfeatureid as sampleid,
+sg.geometry,
+case when st_within(sg.geometry, ST_GEOMETRYFROMTEXT(bboxPolygon, 4326)) then true else false end as isInOriginalBBOX
+from odm2.sitegeometries sg 
+join odm2.relatedfeatures r on r.relatedfeatureid = sg.samplingfeatureid
 `
 
 const GestSamplingfeatureIdsByFilterGeometryEnd = `
@@ -212,20 +234,18 @@ const GetSamplesClusteredWrapperPrefix = `
 -- filter query with clustering
 select
 clusters.clusterid,
-st_convexhull(st_collect(clusters.geometry)) as convexHull,
-ST_Centroid(ST_Union(clusters.geometry)) as centroid,
+st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
+ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
 array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,
-	sg.geometry,
-	st_clusterkmeans(sg.geometry, numClusters, maxDistance) over () as clusterid
+	samples.translatedGeom,
+	st_clusterkmeans(samples.translatedGeom, numClusters, maxDistance) over () as clusterid
 	from (
 `
 
 const GetSamplesClusteredWrapperPostfix = `
-) samples
-	left join odm2.relatedfeatures r2 on r2.samplingfeatureid = samples.sampleid and r2.relationshiptypecv != 'Is identical to'
-	left join odm2.sitegeometries sg on sg.samplingfeatureid = r2.relatedfeatureid
+	) samples
 ) clusters
 group by clusters.clusterid
 `

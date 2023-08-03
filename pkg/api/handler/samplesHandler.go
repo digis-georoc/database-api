@@ -60,6 +60,13 @@ const (
 	LONG_MAX             = 180.0
 	LAT_MIN              = -90.0
 	LAT_MAX              = 90.0
+
+	KEY_BBOX                    = "key_bbox"
+	KEY_TRANSLATION_FACTOR      = "key_translation_factor"
+	KEY_BOUNDARY                = "key_boundary"
+	KEY_POLYGON                 = "key_polygon"
+	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
+	KEY_BOUNDARY_POLY           = "key_boundary_poly"
 )
 
 // GetSampleByID godoc
@@ -159,7 +166,26 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	specimen := []model.SampleByFilters{}
 
-	query, err := buildSampleFilterQuery(c)
+	// get polygon filter
+	coordData := map[string]interface{}{}
+	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse polygon")
+	}
+	if polygonString != "" {
+		polygon, err := parsePointArray(polygonString)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not parse polygon")
+		}
+		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+		}
+		coordData[KEY_POLYGON] = polygon
+		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
+		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
+	}
+	query, err := buildSampleFilterQuery(c, coordData)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -226,10 +252,9 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox            query    string false "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       bbox            query    string true "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 // @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
 // @Success     200             {object} model.ClusterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -243,7 +268,61 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 	clusterData := []model.ClusteredSample{}
 
-	query, err := buildSampleFilterQuery(c)
+	// response object
+	response := model.ClusterResponse{}
+
+	coordData := map[string]interface{}{}
+	// get the bbox
+	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse bbox")
+	}
+	if bboxString == "" {
+		return c.String(http.StatusInternalServerError, "No bbox provided")
+	}
+	bbox, err := parsePointArray(bboxString)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse bbox")
+	}
+	// calc clustering param relative to original (visible) bbox size
+	width := bbox[1][0] - bbox[0][0]
+	kmeansMaxDistance := width / 4
+	// scale bbox
+	if !isZoom0(bbox) {
+		// add frame around bbox to avoid reloading on small panning
+		bbox, err = scaleBBox(bbox)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not scale bbox")
+		}
+	}
+	boundary, translationFactor, err := calcTranslation(bbox)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+	}
+	coordData[KEY_BBOX] = bbox
+	coordData[KEY_TRANSLATION_FACTOR] = translationFactor
+	coordData[KEY_BOUNDARY] = boundary
+
+	// get polygon filter
+	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse polygon")
+	}
+	if polygonString != "" {
+		polygon, err := parsePointArray(polygonString)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not parse polygon")
+		}
+		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+		}
+		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
+		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
+	}
+
+	// build query string
+	query, err := buildSampleFilterQuery(c, coordData)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -254,7 +333,8 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 	maxDistance := c.QueryParam(QP_MAX_DISTANCE)
 	if maxDistance == "" {
-		maxDistance = DEFAULT_MAX_DISTANCE
+		// set relative to bbox size
+		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
 	}
 
 	// wrap query in clustering postGIS-sql with parameters
@@ -277,37 +357,17 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	// response object
-	response := model.ClusterResponse{}
-	// calc scaled bbox again to return new dimensions
-	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
-	}
-	if bboxString != "" {
-		bbox, err := parsePointArray(bboxString)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
-		}
-		// add frame around bbox to avoid reloading on small panning
-		bbox, err = scaleBBox(bbox)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not calculate scaled bbox")
-		}
-		// add first point again to make close polygon shape
-		bbox = append(bbox, bbox[0])
-		// reformat to []interface{}
-		bboxI := []interface{}{}
-		for _, v := range bbox {
-			bboxI = append(bboxI, v)
-		}
-		response.Bbox = model.GeoJSONFeature{
-			Type: model.GEOJSONTYPE_FEATURE,
-			Geometry: model.Geometry{
-				Type:        model.GEOJSON_GEOMETRY_POLYGON,
-				Coordinates: bboxI,
-			},
-		}
+
+	// add first point again to make closed polygon shape
+	bbox = append(bbox, bbox[0])
+	// wrap in []interface{} for geoJSON polygon
+	bboxIWrap := []interface{}{bbox}
+	response.Bbox = model.GeoJSONFeature{
+		Type: model.GEOJSONTYPE_FEATURE,
+		Geometry: model.Geometry{
+			Type:        model.GEOJSON_GEOMETRY_POLYGON,
+			Coordinates: bboxIWrap,
+		},
 	}
 	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
 	if err != nil {
@@ -774,11 +834,20 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 }
 
 // buildSampleFilterQuery constructs a query using filter params from the request
-func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
+func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*sql.Query, error) {
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 	addCoords := c.QueryParam(QP_ADD_COORDINATES)
 	if addCoords != "" && strings.ToLower(addCoords) != "false" {
 		query = sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQueryWithCoords)
+	}
+	bbox := coordData[KEY_BBOX]
+	if bbox != nil {
+		query = sql.NewQuery("")
+		factor := coordData[KEY_TRANSLATION_FACTOR].(float64)
+		params := map[string]interface{}{
+			"translationFactor": -factor,
+		}
+		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilteBaseQueryTranslated, params)
 	}
 
 	// add optional search filters
@@ -1037,48 +1106,40 @@ func buildSampleFilterQuery(c echo.Context) (*sql.Query, error) {
 
 	// Geometries
 	junctor = sql.OpWhere // reset junctor for new subquery
-	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
-	if err != nil {
-		return nil, err
-	}
-	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
-	if err != nil {
-		return nil, err
-	}
-	if polygonString != "" || bboxString != "" {
+	polygon := coordData[KEY_POLYGON]
+	if polygon != nil || bbox != nil {
 		// add query module geometry
-		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryStart)
-		if polygonString != "" {
-			polygon, err := parsePointArray(polygonString)
-			if err != nil {
-				return nil, err
-			}
-			// format polygon for postGIS/SQL syntax
-			polygonFormatted, err := formatPolygonArray(polygon)
-			if err != nil {
-				return nil, err
-			}
-			query.AddFilter("sg.geometry", polygonFormatted, sql.OpInPolygon, junctor)
-			junctor = sql.OpAnd
-		}
-		if bboxString != "" {
-			bbox, err := parsePointArray(bboxString)
-			if err != nil {
-				return nil, err
-			}
-			// add frame around bbox to avoid reloading on small panning
-			bbox, err = scaleBBox(bbox)
-			if err != nil {
-				return nil, err
-			}
+		if bbox != nil {
+			bboxSlice := bbox.([][]float64)
 			// add first point again to make close polygon shape
-			bbox = append(bbox, bbox[0])
+			bboxSlice = append(bboxSlice, bboxSlice[0])
 			// format bbox string for postGIS/SQL syntax
-			bboxFormatted, err := formatPolygonArray(bbox)
+			bboxFormatted, err := formatPolygonArray(bboxSlice)
 			if err != nil {
 				return nil, err
 			}
-			query.AddFilter("sg.geometry", bboxFormatted, sql.OpInPolygon, junctor)
+			params := map[string]interface{}{
+				"bboxPolygon": fmt.Sprintf("POLYGON(%s)", bboxFormatted),
+			}
+			query.AddSQLBlockParametrized(sql.GestSamplingfeatureIdsByFilterGeometryBBOXStart, params)
+			boundary := coordData[KEY_BOUNDARY].(float64)
+			translationFactor := coordData[KEY_TRANSLATION_FACTOR].(float64)
+			query.AddInTranslatedPolygonFilter("sg.geometry", bboxFormatted, junctor, boundary, translationFactor)
+			junctor = sql.OpAnd
+		} else {
+			// if no bbox is supplied, use filter block without bbox check
+			query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryStart)
+		}
+		if polygon != nil {
+			polygonSlice := polygon.([][]float64)
+			// format polygon for postGIS/SQL syntax
+			polygonFormatted, err := formatPolygonArray(polygonSlice)
+			if err != nil {
+				return nil, err
+			}
+			boundary := coordData[KEY_BOUNDARY_POLY].(float64)
+			translationFactor := coordData[KEY_TRANSLATION_FACTOR_POLY].(float64)
+			query.AddInTranslatedPolygonFilter("sg.geometry", polygonFormatted, junctor, boundary, translationFactor)
 		}
 		query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryEnd)
 	}
@@ -1120,6 +1181,69 @@ func parsePointArray(arrayString string) ([][]float64, error) {
 	return polygon, nil
 }
 
+// isZoom0 returns true if the given bbox is big enough to fit the whole world view (zoom = 0); false if it is smaller.
+func isZoom0(bbox [][]float64) bool {
+	// check if height of bbox is >= |LAT_MIN| + LAT_MAX and width of bbox is |LONG_MIN| + LONG_MAX
+	return bbox[3][1]-bbox[0][1] >= math.Abs(LAT_MIN)+LAT_MAX && bbox[1][0]-bbox[0][0] >= math.Abs(LONG_MIN)+LONG_MAX
+}
+
+// scaleBbox takes an array of coordinates for a bounding box and scales it around the center
+// Scales latitudes up to LAT_MIN/LAT_MAX only
+// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
+func scaleBBox(bbox [][]float64) ([][]float64, error) {
+	// calc width and height of bbox
+	width := bbox[1][0] - bbox[0][0]
+	height := bbox[3][1] - bbox[0][1]
+	scaleLong := width / 2
+	scaleLat := height / 2
+	// add half bbox on each side
+	// SW
+	bbox[0][0] = bbox[0][0] - scaleLong
+	bbox[0][1] = math.Max(LAT_MIN, bbox[0][1]-scaleLat)
+	// SE
+	bbox[1][0] = bbox[1][0] + scaleLong
+	bbox[1][1] = math.Max(LAT_MIN, bbox[1][1]-scaleLat)
+	// NE
+	bbox[2][0] = bbox[2][0] + scaleLong
+	bbox[2][1] = math.Min(LAT_MAX, bbox[2][1]+scaleLat)
+	// NW
+	bbox[3][0] = bbox[3][0] - scaleLong
+	bbox[3][1] = math.Min(LAT_MAX, bbox[3][1]+scaleLat)
+	return bbox, nil
+}
+
+// calcTranslation calculates the longitudinal translation and crossed bound of a polygon
+// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
+// Max polygon size is limited to 180 height and 360 width. Scale polygon accordingly before this calculations.
+func calcTranslation(polygon [][]float64) (float64, float64, error) {
+	var left, right, top, bottom float64
+	for i, point := range polygon {
+		if i == 0 || left > point[0] {
+			left = point[0]
+		}
+		if i == 0 || right < point[0] {
+			right = point[0]
+		}
+		if i == 0 || top < point[1] {
+			top = point[1]
+		}
+		if i == 0 || bottom > point[1] {
+			bottom = point[1]
+		}
+	}
+	if right-left > 360 || top-bottom > 180 {
+		return 0, 0, fmt.Errorf("Polygon dimensions ouot of bounds")
+	}
+	// since max width is 360, all points have the same translation and only one boundary can be crossed (-180 or +180)
+	boundary := 180.0
+	if left < -180 {
+		boundary = -180.0
+	}
+	translationFactor := math.Floor(left / 360)
+
+	return boundary, translationFactor, nil
+}
+
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
 func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, error) {
 	geoJSON := make([]model.GeoJSONCluster, 0, len(clusterData))
@@ -1147,28 +1271,4 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 		geoJSON = append(geoJSON, geoJSONCluster)
 	}
 	return geoJSON, nil
-}
-
-// scaleBbox takes an array of coordinates for a bounding box and scales it around the center
-// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-func scaleBBox(bbox [][]float64) ([][]float64, error) {
-	// calc width and height of bbox
-	width := bbox[1][0] - bbox[0][0]
-	height := bbox[3][1] - bbox[0][1]
-	scaleLong := width / 2
-	scaleLat := height / 2
-	// add half bbox on each side
-	// SW
-	bbox[0][0] = math.Max(LONG_MIN, bbox[0][0]-scaleLong)
-	bbox[0][1] = math.Max(LAT_MIN, bbox[0][1]-scaleLat)
-	// SE
-	bbox[1][0] = math.Min(LONG_MAX, bbox[1][0]+scaleLong)
-	bbox[1][1] = math.Max(LAT_MIN, bbox[1][1]-scaleLat)
-	// NE
-	bbox[2][0] = math.Min(LONG_MAX, bbox[2][0]+scaleLong)
-	bbox[2][1] = math.Min(LAT_MAX, bbox[2][1]+scaleLat)
-	// NW
-	bbox[3][0] = math.Max(LONG_MIN, bbox[3][0]-scaleLong)
-	bbox[3][1] = math.Min(LAT_MAX, bbox[3][1]+scaleLat)
-	return bbox, nil
 }

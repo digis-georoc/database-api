@@ -165,6 +165,14 @@ func (q *Query) AddInPolygonFilter(key string, value string, junctor FilterJunct
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
+// Add a filter with to check for polygon translated to -180/+180 bounds to the query
+func (q *Query) AddInTranslatedPolygonFilter(key string, value string, junctor FilterJunctor, boundary float64, factor float64) {
+	q.filterValues = append(q.filterValues, fmt.Sprintf("POLYGON(%s)", value))
+	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
+	filterString := fmt.Sprintf("%s ST_WITHIN(%s, ST_WRAPX(ST_GEOMETRYFROMTEXT(%s, 4326), %f, 360 * %f))", junctor, key, placeholder, boundary, factor)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
 // Wraps the current query in an SQL prefix and postfix
 // Do not enter user-provided values here as they are not sanitized.
 func (q *Query) WrapInSQL(prefix string, postfix string) {
@@ -188,8 +196,23 @@ func (q *Query) WrapInSQLParametrized(prefix string, postfix string, params map[
 }
 
 // Add a subquery / sql block to the query
+// Successively replaces all occurrences of param.keys in the sql-block with the params.values
+func (q *Query) AddSQLBlockParametrized(sql string, params map[string]interface{}) {
+	replacements := []string{}
+	for k, v := range params {
+		q.filterValues = append(q.filterValues, v)
+		placeholder := fmt.Sprintf("$%d", len(q.filterValues))
+		replacements = append(replacements, k)
+		replacements = append(replacements, placeholder)
+	}
+	repl := strings.NewReplacer(replacements...)
+	sql = repl.Replace(sql)
+	q.AddSQLBlock(sql)
+}
+
+// Add a subquery / sql block to the query
 // Do not enter user-provided values here as they are not sanitized.
-// For user values, use filters
+// For user values, use filters; for calculated values, use AddSQLBlockParametrized
 func (q *Query) AddSQLBlock(sql string) {
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, sql)
 }
