@@ -215,7 +215,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]",
                         "name": "bbox",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -227,12 +228,6 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -\u003e Zi = 50/i",
                         "name": "maxDistance",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Add coordinates to each sample",
-                        "name": "addcoordinates",
                         "in": "query"
                     }
                 ],
@@ -2844,7 +2839,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.3",
+	Version:          "0.3.4",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

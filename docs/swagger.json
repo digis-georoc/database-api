@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.3.3"
+        "version": "0.3.4"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -212,7 +212,8 @@
                         "type": "string",
                         "description": "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]",
                         "name": "bbox",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -224,12 +225,6 @@
                         "type": "integer",
                         "description": "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -\u003e Zi = 50/i",
                         "name": "maxDistance",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "Add coordinates to each sample",
-                        "name": "addcoordinates",
                         "in": "query"
                     }
                 ],
