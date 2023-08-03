@@ -338,7 +338,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.3
+  version: 0.3.4
 paths:
   /geodata/samplesclustered:
     get:
@@ -473,6 +473,7 @@ paths:
       - description: 'BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]'
         in: query
         name: bbox
+        required: true
         type: string
       - description: Number of clusters for k-means clustering. Default is 7. Can
           be more depending on maxDistance
@@ -484,10 +485,6 @@ paths:
         in: query
         name: maxDistance
         type: integer
-      - description: Add coordinates to each sample
-        in: query
-        name: addcoordinates
-        type: boolean
       produces:
       - application/json
       responses:

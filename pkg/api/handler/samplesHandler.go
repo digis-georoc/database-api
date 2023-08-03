@@ -252,7 +252,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox            query    string true "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       bbox            query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 // @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
 // @Success     200             {object} model.ClusterResponse
