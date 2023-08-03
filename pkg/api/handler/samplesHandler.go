@@ -295,6 +295,8 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 			return c.String(http.StatusInternalServerError, "Can not scale bbox")
 		}
 	}
+	// add first point again to make close polygon shape
+	bbox = append(bbox, bbox[0])
 	boundary, translationFactor, err := calcTranslation(bbox)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
@@ -358,8 +360,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	// add first point again to make closed polygon shape
-	bbox = append(bbox, bbox[0])
 	// wrap in []interface{} for geoJSON polygon
 	bboxIWrap := []interface{}{bbox}
 	response.Bbox = model.GeoJSONFeature{
@@ -1111,8 +1111,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		// add query module geometry
 		if bbox != nil {
 			bboxSlice := bbox.([][]float64)
-			// add first point again to make close polygon shape
-			bboxSlice = append(bboxSlice, bboxSlice[0])
 			// format bbox string for postGIS/SQL syntax
 			bboxFormatted, err := formatPolygonArray(bboxSlice)
 			if err != nil {
