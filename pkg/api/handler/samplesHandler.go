@@ -179,7 +179,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		}
 		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
 		}
 		coordData[KEY_POLYGON] = polygon
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
@@ -290,11 +290,10 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	// scale bbox
 	if !isZoom0(bbox) {
 		// add frame around bbox to avoid reloading on small panning
-		bbox, err = scaleBBox(bbox)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not scale bbox")
-		}
+		bbox = scaleBBox(bbox)
 	}
+	// truncate bbox so it contains at most one whole world
+	bbox = truncateBBox(bbox)
 	// add first point again to make close polygon shape
 	bbox = append(bbox, bbox[0])
 	boundary, translationFactor, err := calcTranslation(bbox)
@@ -317,7 +316,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		}
 		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
 		}
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
 		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
@@ -1188,7 +1187,7 @@ func isZoom0(bbox [][]float64) bool {
 // scaleBbox takes an array of coordinates for a bounding box and scales it around the center
 // Scales latitudes up to LAT_MIN/LAT_MAX only
 // Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-func scaleBBox(bbox [][]float64) ([][]float64, error) {
+func scaleBBox(bbox [][]float64) [][]float64 {
 	// calc width and height of bbox
 	width := bbox[1][0] - bbox[0][0]
 	height := bbox[3][1] - bbox[0][1]
@@ -1207,12 +1206,39 @@ func scaleBBox(bbox [][]float64) ([][]float64, error) {
 	// NW
 	bbox[3][0] = bbox[3][0] - scaleLong
 	bbox[3][1] = math.Min(LAT_MAX, bbox[3][1]+scaleLat)
-	return bbox, nil
+	return bbox
+}
+
+// truncateBBox truncates a given bbox to at most 360 width and 180 height by reducing the size equally from both sides
+func truncateBBox(bbox [][]float64) [][]float64 {
+	width := bbox[1][0] - bbox[0][0]
+	height := bbox[3][1] - bbox[0][1]
+	if width <= LONG_MAX*2 && height <= LAT_MAX*2 {
+		// no need to truncate
+		return bbox
+	}
+	// calc middle longitude and latitude
+	middleLong := (bbox[1][0] + bbox[0][0]) / 2
+	middleLat := (bbox[3][1] + bbox[0][1]) / 2
+	// truncate bbox by keeping only middle +- LONG/LAT_MAX
+	// SW
+	bbox[0][0] = math.Max(bbox[0][0], middleLong-LONG_MAX)
+	bbox[0][1] = math.Max(bbox[0][1], middleLat-LAT_MAX)
+	// SE
+	bbox[1][0] = math.Min(bbox[1][0], middleLong+LONG_MAX)
+	bbox[1][1] = math.Max(bbox[1][1], middleLat-LAT_MAX)
+	// NE
+	bbox[2][0] = math.Min(bbox[2][0], middleLong+LONG_MAX)
+	bbox[2][1] = math.Min(bbox[2][1], middleLat+LAT_MAX)
+	// NW
+	bbox[3][0] = math.Max(bbox[3][0], middleLong-LONG_MAX)
+	bbox[3][1] = math.Min(bbox[3][1], middleLat+LAT_MAX)
+	return bbox
 }
 
 // calcTranslation calculates the longitudinal translation and crossed bound of a polygon
 // Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-// Max polygon size is limited to 180 height and 360 width. Scale polygon accordingly before this calculations.
+// Max polygon size is limited to 180 height and 360 width. Scale polygon accordingly before these calculations.
 func calcTranslation(polygon [][]float64) (float64, float64, error) {
 	var left, right, top, bottom float64
 	for i, point := range polygon {
@@ -1230,7 +1256,7 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 		}
 	}
 	if right-left > 360 || top-bottom > 180 {
-		return 0, 0, fmt.Errorf("Polygon dimensions ouot of bounds")
+		return 0, 0, fmt.Errorf("Polygon dimensions out of bounds")
 	}
 	// since max width is 360, all points have the same translation and only one boundary can be crossed (-180 or +180)
 	boundary := 180.0
