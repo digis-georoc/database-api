@@ -1263,7 +1263,7 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 	if left < -180 {
 		boundary = -180.0
 	}
-	translationFactor := math.Floor(left / 360)
+	translationFactor := -math.Floor(left / 360)
 
 	return boundary, translationFactor, nil
 }
