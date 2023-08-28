@@ -1258,12 +1258,14 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 	if right-left > 360 || top-bottom > 180 {
 		return 0, 0, fmt.Errorf("Polygon dimensions out of bounds")
 	}
-	// since max width is 360, all points have the same translation and only one boundary can be crossed (-180 or +180)
+	// since max width is 360, all points have the same translation (postGIS' wrapx handles cases where part of the bbox is within the bounds an thus should have a factor of 0)
+	// and only one boundary can be crossed (-180 or +180)
 	boundary := 180.0
+	translationFactor := -math.Floor((right + 180) / 360)
 	if left < -180 {
 		boundary = -180.0
+		translationFactor = -math.Floor((left + 180) / 360)
 	}
-	translationFactor := -math.Floor(left / 360)
 
 	return boundary, translationFactor, nil
 }
