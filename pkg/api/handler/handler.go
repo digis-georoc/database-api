@@ -77,6 +77,8 @@ func parseParam(queryParam string) (string, string, error) {
 		// if no operator is specified, "eq" is assumed as default
 		return queryParam, sql.OpEq, nil
 	}
+	// make operator lowercase
+	operator = strings.ToLower(operator)
 	// validate operator
 	operator, opIsValid := sql.OperatorMap[operator]
 	if !opIsValid {
