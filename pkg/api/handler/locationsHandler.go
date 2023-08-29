@@ -24,7 +24,7 @@ const (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Location
+// @Success     200    {object} model.LocationResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -49,10 +49,10 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 		logger.Errorf("Can not GetLocationsL1: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve first level locations")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(locations), locations}
+	response := model.LocationResponse{
+		NumItems: len(locations),
+		Data:     locations,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -66,7 +66,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 // @Param       limit      query    int    false "limit"
 // @Param       offset     query    int    false "offset"
 // @Param       locationl1 query    string true  "Locationname Level 1"
-// @Success     200        {array}  model.Location
+// @Success     200        {object} model.LocationResponse
 // @Failure     401        {object} string
 // @Failure     404        {object} string
 // @Failure     422        {object} string
@@ -92,10 +92,10 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 		logger.Errorf("Can not GetLocationsL2: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve second level locations")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(locations), locations}
+	response := model.LocationResponse{
+		NumItems: len(locations),
+		Data:     locations,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -110,7 +110,7 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 // @Param       offset     query    int    false "offset"
 // @Param       locationl1 query    string true  "Locationname Level 1"
 // @Param       locationl2 query    string true  "Locationname Level 2"
-// @Success     200        {array}  model.Location
+// @Success     200        {object} model.LocationResponse
 // @Failure     401        {object} string
 // @Failure     404        {object} string
 // @Failure     422        {object} string
@@ -137,9 +137,9 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 		logger.Errorf("Can not GetLocationsL3: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve third level locations")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(locations), locations}
+	response := model.LocationResponse{
+		NumItems: len(locations),
+		Data:     locations,
+	}
 	return c.JSON(http.StatusOK, response)
 }

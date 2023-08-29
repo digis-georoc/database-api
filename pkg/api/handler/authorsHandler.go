@@ -23,7 +23,7 @@ const (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.People
+// @Success     200    {object} model.PeopleResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -34,7 +34,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	authors := []model.People{}
+	authors := []model.Person{}
 	query := sql.NewQuery(sql.AuthorsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -48,10 +48,10 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 		logger.Errorf("Can not GetAuthors: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(authors), authors}
+	response := model.PeopleResponse{
+		NumItems: len(authors),
+		Data:     authors,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -63,7 +63,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       personID path     string true "Person ID"
-// @Success     200      {array}  model.People
+// @Success     200      {object} model.PeopleResponse
 // @Failure     401      {object} string
 // @Failure     404      {object} string
 // @Failure     500      {object} string
@@ -74,7 +74,7 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	authors := []model.People{}
+	authors := []model.Person{}
 	err := h.db.Query(sql.AuthorByIDQuery, &authors, c.Param(QP_PERSONID))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
@@ -84,9 +84,9 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{num, authors}
+	response := model.PeopleResponse{
+		NumItems: num,
+		Data:     authors,
+	}
 	return c.JSON(http.StatusOK, response)
 }

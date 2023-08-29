@@ -19,7 +19,7 @@ import (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Element
+// @Success     200    {object} model.ElementResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -45,10 +45,10 @@ func (h *Handler) GetElements(c echo.Context) error {
 		logger.Errorf("Can not GetElements: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(elements), elements}
+	response := model.ElementResponse{
+		NumItems: len(elements),
+		Data:     elements,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -61,7 +61,7 @@ func (h *Handler) GetElements(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.ElementType
+// @Success     200    {object} model.ElementTypeResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -87,9 +87,9 @@ func (h *Handler) GetElementTypes(c echo.Context) error {
 		logger.Errorf("Can not GetElementTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element type data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(elementTypes), elementTypes}
+	response := model.ElementTypeResponse{
+		NumItems: len(elementTypes),
+		Data:     elementTypes,
+	}
 	return c.JSON(http.StatusOK, response)
 }

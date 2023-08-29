@@ -40,7 +40,7 @@ type Geometry struct {
 
 // GeoJSON Cluster of map locations
 type GeoJSONCluster struct {
-	ClusterID  int            `json:"clusterid"`
+	ClusterID  int            `json:"clusterID"`
 	Centroid   GeoJSONFeature `json:"centroid"`
 	ConvexHull GeoJSONFeature `json:"convexHull"`
 }

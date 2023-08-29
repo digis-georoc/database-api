@@ -25,7 +25,7 @@ const (
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureids path     string true "Samplingfeature identifier"
-// @Success     200                {array}  model.FullData
+// @Success     200                {object} model.FullDataResponse
 // @Failure     401                {object} string
 // @Failure     404                {object} string
 // @Failure     500                {object} string
@@ -45,10 +45,10 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{num, fullData}
+	response := model.FullDataResponse{
+		NumItems: num,
+		Data:     fullData,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -60,7 +60,7 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureids query    string true "List of Samplingfeature identifiers"
-// @Success     200                {array}  model.FullData
+// @Success     200                {object} model.FullDataResponse
 // @Failure     401                {object} string
 // @Failure     404                {object} string
 // @Failure     500                {object} string
@@ -85,9 +85,9 @@ func (h *Handler) GetFullData(c echo.Context) error {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(fullData), fullData}
+	response := model.FullDataResponse{
+		NumItems: len(fullData),
+		Data:     fullData,
+	}
 	return c.JSON(http.StatusOK, response)
 }

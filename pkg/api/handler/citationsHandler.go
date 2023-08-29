@@ -23,7 +23,7 @@ const (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Citation
+// @Success     200    {object} model.CitationResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -49,10 +49,10 @@ func (h *Handler) GetCitations(c echo.Context) error {
 		logger.Errorf("Can not GetCitations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(citations), citations}
+	response := model.CitationResponse{
+		NumItems: len(citations),
+		Data:     citations,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -64,7 +64,7 @@ func (h *Handler) GetCitations(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       citationID path     string true "Citation ID"
-// @Success     200        {array}  model.Citation
+// @Success     200        {object} model.CitationResponse
 // @Failure     401        {object} string
 // @Failure     404        {object} string
 // @Failure     500        {object} string
@@ -85,9 +85,9 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{num, citations}
+	response := model.CitationResponse{
+		NumItems: num,
+		Data:     citations,
+	}
 	return c.JSON(http.StatusOK, response)
 }

@@ -77,7 +77,7 @@ const (
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureID path     string true "Sample ID"
-// @Success     200               {array}  model.Sample
+// @Success     200               {object} model.SampleResponse
 // @Failure     401               {object} string
 // @Failure     404               {object} string
 // @Failure     500               {object} string
@@ -99,10 +99,10 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{num, samples}
+	response := model.SampleResponse{
+		NumItems: num,
+		Data:     samples,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -153,7 +153,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
 // @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
-// @Success     200             {array}  model.SampleByFilterResponse
+// @Success     200             {object} model.SampleByFilterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
 // @Failure     422             {object} string
@@ -386,7 +386,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Specimen
+// @Success     200    {object} model.SpecimenResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -412,10 +412,10 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 		logger.Errorf("Can not GetSpecimenTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(specimentypes), specimentypes}
+	response := model.SpecimenResponse{
+		NumItems: len(specimentypes),
+		Data:     specimentypes,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -428,7 +428,7 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.TaxonomicClassifier
+// @Success     200    {object} model.TaxonomicClassifierResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -454,10 +454,10 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 		logger.Errorf("Can not GetRockClasses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(rockclasses), rockclasses}
+	response := model.TaxonomicClassifierResponse{
+		NumItems: len(rockclasses),
+		Data:     rockclasses,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -470,7 +470,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.TaxonomicClassifier
+// @Success     200    {object} model.TaxonomicClassifierResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -496,10 +496,10 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 		logger.Errorf("Can not GetRockTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(rocktypes), rocktypes}
+	response := model.TaxonomicClassifierResponse{
+		NumItems: len(rocktypes),
+		Data:     rocktypes,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -512,7 +512,7 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.TaxonomicClassifier
+// @Success     200    {object} model.TaxonomicClassifierResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -538,10 +538,10 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 		logger.Errorf("Can not GetMinerals: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(minerals), minerals}
+	response := model.TaxonomicClassifierResponse{
+		NumItems: len(minerals),
+		Data:     minerals,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -554,7 +554,7 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Material
+// @Success     200    {object} model.MaterialResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -580,10 +580,10 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 		logger.Errorf("Can not GetMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve material data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(materials), materials}
+	response := model.MaterialResponse{
+		NumItems: len(materials),
+		Data:     materials,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -596,7 +596,7 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.InclusionType
+// @Success     200    {object} model.InclusionTypeResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -622,10 +622,10 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 		logger.Errorf("Can not GetInclusionTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion type data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(inclusionTypes), inclusionTypes}
+	response := model.InclusionTypeResponse{
+		NumItems: len(inclusionTypes),
+		Data:     inclusionTypes,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -638,7 +638,7 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.SamplingTechnique
+// @Success     200    {object} model.SamplingTechniqueResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -664,10 +664,10 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 		logger.Errorf("Can not GetSamplingTechniques: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(samplingtechniques), samplingtechniques}
+	response := model.SamplingTechniqueResponse{
+		NumItems: len(samplingtechniques),
+		Data:     samplingtechniques,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -679,7 +679,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       limit query    int false "limit"
-// @Success     200   {array}  model.Specimen
+// @Success     200   {array}  model.SpecimenResponse
 // @Failure     401   {object} string
 // @Failure     404   {object} string
 // @Failure     422   {object} string
@@ -699,10 +699,10 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 		logger.Errorf("Can not GetRandomSamples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve random data sample")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(randomSpecimen), randomSpecimen}
+	response := model.SpecimenResponse{
+		NumItems: len(randomSpecimen),
+		Data:     randomSpecimen,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -715,7 +715,7 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.GeoAge
+// @Success     200    {object} model.GeoAgeResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -741,10 +741,10 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 		logger.Errorf("Can not GetGeoAges: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(geoAges), geoAges}
+	response := model.GeoAgeResponse{
+		NumItems: len(geoAges),
+		Data:     geoAges,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -757,7 +757,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.GeoAgePrefix
+// @Success     200    {object} model.GeoAgePrefixResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -783,10 +783,10 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 		logger.Errorf("Can not GetGeoAgePrefixes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age prefix data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(geoAgePrefixes), geoAgePrefixes}
+	response := model.GeoAgePrefixResponse{
+		NumItems: len(geoAgePrefixes),
+		Data:     geoAgePrefixes,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -799,7 +799,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Organization
+// @Success     200    {object} model.OrganizationResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -825,10 +825,10 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 		logger.Errorf("Can not GetOrganizationNames: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(organizations), organizations}
+	response := model.OrganizationResponse{
+		NumItems: len(organizations),
+		Data:     organizations,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
