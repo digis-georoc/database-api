@@ -23,7 +23,7 @@ const (
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Site
+// @Success     200    {object} model.SiteResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -49,10 +49,10 @@ func (h *Handler) GetSites(c echo.Context) error {
 		logger.Errorf("Can not GetSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(sites), sites}
+	response := model.SiteResponse{
+		NumItems: len(sites),
+		Data:     sites,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -64,7 +64,7 @@ func (h *Handler) GetSites(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureID path     string true "samplingfeatureID"
-// @Success     200               {array}  model.Site
+// @Success     200               {object} model.SiteResponse
 // @Failure     401               {object} string
 // @Failure     404               {object} string
 // @Failure     500               {object} string
@@ -84,10 +84,10 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{num, sites}
+	response := model.SiteResponse{
+		NumItems: num,
+		Data:     sites,
+	}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -100,7 +100,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {array}  model.Site
+// @Success     200    {object} model.SiteResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     500    {object} string
@@ -124,9 +124,9 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 		logger.Errorf("Can not GetGeoSettings: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological settings data")
 	}
-	response := struct {
-		NumItems int
-		Data     interface{}
-	}{len(sites), sites}
+	response := model.SiteResponse{
+		NumItems: len(sites),
+		Data:     sites,
+	}
 	return c.JSON(http.StatusOK, response)
 }

@@ -4,7 +4,7 @@ definitions:
     properties:
       authors:
         items:
-          $ref: '#/definitions/model.People'
+          $ref: '#/definitions/model.Person'
         type: array
       bookTitle:
         type: string
@@ -22,7 +22,7 @@ definitions:
         type: string
       lastPage:
         type: string
-      publicationyear:
+      publicationYear:
         type: integer
       publisher:
         type: string
@@ -30,6 +30,15 @@ definitions:
         type: string
       volume:
         type: string
+    type: object
+  model.CitationResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Citation'
+        type: array
+      numItems:
+        type: integer
     type: object
   model.ClusterResponse:
     properties:
@@ -45,16 +54,34 @@ definitions:
       name:
         type: string
     type: object
+  model.ElementResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Element'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.ElementType:
     properties:
       name:
         type: string
     type: object
+  model.ElementTypeResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.ElementType'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.FullData:
     properties:
-      age_Max:
+      ageMax:
         type: integer
-      age_Min:
+      ageMin:
         type: integer
       batches:
         items:
@@ -64,11 +91,11 @@ definitions:
         items:
           type: string
         type: array
-      elevation_Max:
+      elevationMax:
         type: string
-      elevation_Min:
+      elevationMin:
         type: string
-      inclusion_Types:
+      inclusionTypes:
         items:
           type: string
         type: array
@@ -76,37 +103,37 @@ definitions:
         items:
           type: string
         type: array
-      item_Group:
+      itemGroup:
         items:
           type: string
         type: array
-      item_Name:
+      itemName:
         items:
           type: string
         type: array
-      land_Or_Sea:
+      landOrSea:
         type: string
       latitude:
         type: number
-      latitude_Max:
+      latitudeMax:
         type: string
-      latitude_Min:
+      latitudeMin:
         type: string
-      location_Names:
+      locationNames:
         items:
           type: string
         type: array
-      location_Num:
+      locationNum:
         type: integer
-      location_Types:
+      locationTypes:
         items:
           type: string
         type: array
       longitude:
         type: number
-      longitude_Max:
+      longitudeMax:
         type: string
-      longitude_Min:
+      longitudeMin:
         type: string
       materials:
         items:
@@ -123,33 +150,33 @@ definitions:
       references:
         items: {}
         type: array
-      rock_Classes:
+      rockClasses:
         items:
           type: string
         type: array
-      rock_Textures:
+      rockTextures:
         items:
           type: string
         type: array
-      rock_Types:
+      rockTypes:
         items:
           type: string
         type: array
-      sample_Num:
-        type: integer
       sampleName:
         type: string
-      standard_Names:
+      sampleNum:
+        type: integer
+      standardNames:
         items:
           type: string
         type: array
-      standard_Values:
+      standardValues:
         items:
           type: number
         type: array
-      tectonic_Setting:
+      tectonicSetting:
         type: string
-      unique_id:
+      uniqueID:
         type: string
       units:
         items:
@@ -159,6 +186,15 @@ definitions:
         items:
           type: number
         type: array
+    type: object
+  model.FullDataResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.FullData'
+        type: array
+      numItems:
+        type: integer
     type: object
   model.GeoAge:
     properties:
@@ -170,11 +206,29 @@ definitions:
       name:
         type: string
     type: object
+  model.GeoAgePrefixResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.GeoAgePrefix'
+        type: array
+      numItems:
+        type: integer
+    type: object
+  model.GeoAgeResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.GeoAge'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.GeoJSONCluster:
     properties:
       centroid:
         $ref: '#/definitions/model.GeoJSONFeature'
-      clusterid:
+      clusterID:
         type: integer
       convexHull:
         $ref: '#/definitions/model.GeoJSONFeature'
@@ -217,26 +271,71 @@ definitions:
       name:
         type: string
     type: object
+  model.InclusionTypeResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.InclusionType'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.Location:
     properties:
       name:
         type: string
+    type: object
+  model.LocationResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Location'
+        type: array
+      numItems:
+        type: integer
     type: object
   model.Material:
     properties:
       name:
         type: string
     type: object
+  model.MaterialResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Material'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.Organization:
     properties:
       name:
         type: string
     type: object
-  model.People:
+  model.OrganizationResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Organization'
+        type: array
+      numItems:
+        type: integer
+    type: object
+  model.PeopleResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Person'
+        type: array
+      numItems:
+        type: integer
+    type: object
+  model.Person:
     properties:
       personFirstName:
         type: string
-      personId:
+      personID:
         type: integer
       personLastName:
         type: string
@@ -255,7 +354,7 @@ definitions:
         type: string
       samplingFeatureDescription:
         type: string
-      samplingFeatureGeotypeCV:
+      samplingFeatureGeoTypeCV:
         type: string
       samplingFeatureID:
         type: integer
@@ -282,10 +381,28 @@ definitions:
       sampleID:
         type: integer
     type: object
+  model.SampleResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Sample'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.SamplingTechnique:
     properties:
       name:
         type: string
+    type: object
+  model.SamplingTechniqueResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.SamplingTechnique'
+        type: array
+      numItems:
+        type: integer
     type: object
   model.Site:
     properties:
@@ -308,6 +425,15 @@ definitions:
       spatialReferenceID:
         type: integer
     type: object
+  model.SiteResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Site'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.Specimen:
     properties:
       isFieldSpecimen:
@@ -319,10 +445,30 @@ definitions:
       specimenTypeCV:
         type: string
     type: object
+  model.SpecimenResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.Specimen'
+        type: array
+      numItems:
+        type: integer
+    type: object
   model.TaxonomicClassifier:
     properties:
-      name:
+      label:
         type: string
+      value:
+        type: string
+    type: object
+  model.TaxonomicClassifierResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/model.TaxonomicClassifier'
+        type: array
+      numItems:
+        type: integer
     type: object
 host: api-test.georoc.eu
 info:
@@ -595,9 +741,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.People'
-            type: array
+            $ref: '#/definitions/model.PeopleResponse'
         "401":
           description: Unauthorized
           schema:
@@ -636,9 +780,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.People'
-            type: array
+            $ref: '#/definitions/model.PeopleResponse'
         "401":
           description: Unauthorized
           schema:
@@ -676,9 +818,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Citation'
-            type: array
+            $ref: '#/definitions/model.CitationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -717,9 +857,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Citation'
-            type: array
+            $ref: '#/definitions/model.CitationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -754,9 +892,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.FullData'
-            type: array
+            $ref: '#/definitions/model.FullDataResponse'
         "401":
           description: Unauthorized
           schema:
@@ -791,9 +927,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.FullData'
-            type: array
+            $ref: '#/definitions/model.FullDataResponse'
         "401":
           description: Unauthorized
           schema:
@@ -831,9 +965,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
+            $ref: '#/definitions/model.LocationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -880,9 +1012,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
+            $ref: '#/definitions/model.LocationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -934,9 +1064,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Location'
-            type: array
+            $ref: '#/definitions/model.LocationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -978,9 +1106,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Element'
-            type: array
+            $ref: '#/definitions/model.ElementResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1022,9 +1148,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.ElementType'
-            type: array
+            $ref: '#/definitions/model.ElementTypeResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1186,9 +1310,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.SampleByFilterResponse'
-            type: array
+            $ref: '#/definitions/model.SampleByFilterResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1227,9 +1349,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Sample'
-            type: array
+            $ref: '#/definitions/model.SampleResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1267,9 +1387,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.GeoAgePrefix'
-            type: array
+            $ref: '#/definitions/model.GeoAgePrefixResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1311,9 +1429,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.GeoAge'
-            type: array
+            $ref: '#/definitions/model.GeoAgeResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1355,9 +1471,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.InclusionType'
-            type: array
+            $ref: '#/definitions/model.InclusionTypeResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1399,9 +1513,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Material'
-            type: array
+            $ref: '#/definitions/model.MaterialResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1443,9 +1555,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.TaxonomicClassifier'
-            type: array
+            $ref: '#/definitions/model.TaxonomicClassifierResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1487,9 +1597,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Organization'
-            type: array
+            $ref: '#/definitions/model.OrganizationResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1527,9 +1635,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Specimen'
-            type: array
+            $ref: '#/definitions/model.SpecimenResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1571,9 +1677,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.TaxonomicClassifier'
-            type: array
+            $ref: '#/definitions/model.TaxonomicClassifierResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1615,9 +1719,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.TaxonomicClassifier'
-            type: array
+            $ref: '#/definitions/model.TaxonomicClassifierResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1659,9 +1761,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.SamplingTechnique'
-            type: array
+            $ref: '#/definitions/model.SamplingTechniqueResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1703,9 +1803,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Specimen'
-            type: array
+            $ref: '#/definitions/model.SpecimenResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1747,9 +1845,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Site'
-            type: array
+            $ref: '#/definitions/model.SiteResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1788,9 +1884,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Site'
-            type: array
+            $ref: '#/definitions/model.SiteResponse'
         "401":
           description: Unauthorized
           schema:
@@ -1828,9 +1922,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Site'
-            type: array
+            $ref: '#/definitions/model.SiteResponse'
         "401":
           description: Unauthorized
           schema:

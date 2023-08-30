@@ -1,39 +1,44 @@
 package model
 
 type FullData struct {
-	Sample_Num       int
-	UniqueId         string `json:"unique_id"`
-	Batches          []*int
-	References       []interface{}
-	SampleName       string
-	Location_Names   []string
-	Location_Types   []string
-	Elevation_Min    string
-	Elevation_Max    string
-	Land_Or_Sea      string
-	Rock_Types       []string
-	Rock_Classes     []string
-	Rock_Textures    []string
-	Age_Min          *int
-	Age_Max          *int
-	Materials        []string
-	Minerals         []string
-	Inclusion_Types  []string
-	Location_Num     *int
-	Latitude         *float32
-	Longitude        *float32
-	Latitude_Min     string
-	Latitude_Max     string
-	Longitude_Min    string
-	Longitude_Max    string
-	Tectonic_Setting string
-	Method           []string
-	Comment          []string
-	Institutions     []string
-	Item_Name        []string
-	Item_Group       []string
-	Standard_Names   []string
-	Standard_Values  []*float32
-	Values           []*float32
-	Units            []string
+	SampleNum       int           `json:"sampleNum"`
+	UniqueID        string        `json:"uniqueID"`
+	Batches         []*int        `json:"batches"`
+	References      []interface{} `json:"references"`
+	SampleName      string        `json:"sampleName"`
+	LocationNames   []string      `json:"locationNames"`
+	LocationTypes   []string      `json:"locationTypes"`
+	ElevationMin    string        `json:"elevationMin"`
+	ElevationMax    string        `json:"elevationMax"`
+	LandOrSea       string        `json:"landOrSea"`
+	RockTypes       []string      `json:"rockTypes"`
+	RockClasses     []string      `json:"rockClasses"`
+	RockTextures    []string      `json:"rockTextures"`
+	AgeMin          *int          `json:"ageMin"`
+	AgeMax          *int          `json:"ageMax"`
+	Materials       []string      `json:"materials"`
+	Minerals        []string      `json:"minerals"`
+	InclusionTypes  []string      `json:"inclusionTypes"`
+	LocationNum     *int          `json:"locationNum"`
+	Latitude        *float32      `json:"latitude"`
+	Longitude       *float32      `json:"longitude"`
+	LatitudeMin     string        `json:"latitudeMin"`
+	LatitudeMax     string        `json:"latitudeMax"`
+	LongitudeMin    string        `json:"longitudeMin"`
+	LongitudeMax    string        `json:"longitudeMax"`
+	TectonicSetting string        `json:"tectonicSetting"`
+	Method          []string      `json:"method"`
+	Comment         []string      `json:"comment"`
+	Institutions    []string      `json:"institutions"`
+	ItemName        []string      `json:"itemName"`
+	ItemGroup       []string      `json:"itemGroup"`
+	StandardNames   []string      `json:"standardNames"`
+	StandardValues  []*float32    `json:"standardValues"`
+	Values          []*float32    `json:"values"`
+	Units           []string      `json:"units"`
+}
+
+type FullDataResponse struct {
+	NumItems int        `json:"numItems"`
+	Data     []FullData `json:"data"`
 }

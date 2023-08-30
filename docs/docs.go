@@ -396,10 +396,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.People"
-                            }
+                            "$ref": "#/definitions/model.PeopleResponse"
                         }
                     },
                     "401": {
@@ -460,10 +457,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.People"
-                            }
+                            "$ref": "#/definitions/model.PeopleResponse"
                         }
                     },
                     "401": {
@@ -523,10 +517,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Citation"
-                            }
+                            "$ref": "#/definitions/model.CitationResponse"
                         }
                     },
                     "401": {
@@ -587,10 +578,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Citation"
-                            }
+                            "$ref": "#/definitions/model.CitationResponse"
                         }
                     },
                     "401": {
@@ -645,10 +633,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.FullData"
-                            }
+                            "$ref": "#/definitions/model.FullDataResponse"
                         }
                     },
                     "401": {
@@ -703,10 +688,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.FullData"
-                            }
+                            "$ref": "#/definitions/model.FullDataResponse"
                         }
                     },
                     "401": {
@@ -766,10 +748,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Location"
-                            }
+                            "$ref": "#/definitions/model.LocationResponse"
                         }
                     },
                     "401": {
@@ -842,10 +821,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Location"
-                            }
+                            "$ref": "#/definitions/model.LocationResponse"
                         }
                     },
                     "401": {
@@ -925,10 +901,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Location"
-                            }
+                            "$ref": "#/definitions/model.LocationResponse"
                         }
                     },
                     "401": {
@@ -994,10 +967,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Element"
-                            }
+                            "$ref": "#/definitions/model.ElementResponse"
                         }
                     },
                     "401": {
@@ -1063,10 +1033,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.ElementType"
-                            }
+                            "$ref": "#/definitions/model.ElementTypeResponse"
                         }
                     },
                     "401": {
@@ -1294,10 +1261,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.SampleByFilterResponse"
-                            }
+                            "$ref": "#/definitions/model.SampleByFilterResponse"
                         }
                     },
                     "401": {
@@ -1363,10 +1327,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.GeoAgePrefix"
-                            }
+                            "$ref": "#/definitions/model.GeoAgePrefixResponse"
                         }
                     },
                     "401": {
@@ -1432,10 +1393,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.GeoAge"
-                            }
+                            "$ref": "#/definitions/model.GeoAgeResponse"
                         }
                     },
                     "401": {
@@ -1501,10 +1459,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.InclusionType"
-                            }
+                            "$ref": "#/definitions/model.InclusionTypeResponse"
                         }
                     },
                     "401": {
@@ -1570,10 +1525,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Material"
-                            }
+                            "$ref": "#/definitions/model.MaterialResponse"
                         }
                     },
                     "401": {
@@ -1639,10 +1591,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.TaxonomicClassifier"
-                            }
+                            "$ref": "#/definitions/model.TaxonomicClassifierResponse"
                         }
                     },
                     "401": {
@@ -1708,10 +1657,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Organization"
-                            }
+                            "$ref": "#/definitions/model.OrganizationResponse"
                         }
                     },
                     "401": {
@@ -1771,10 +1717,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Specimen"
-                            }
+                            "$ref": "#/definitions/model.SpecimenResponse"
                         }
                     },
                     "401": {
@@ -1840,10 +1783,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.TaxonomicClassifier"
-                            }
+                            "$ref": "#/definitions/model.TaxonomicClassifierResponse"
                         }
                     },
                     "401": {
@@ -1909,10 +1849,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.TaxonomicClassifier"
-                            }
+                            "$ref": "#/definitions/model.TaxonomicClassifierResponse"
                         }
                     },
                     "401": {
@@ -1978,10 +1915,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.SamplingTechnique"
-                            }
+                            "$ref": "#/definitions/model.SamplingTechniqueResponse"
                         }
                     },
                     "401": {
@@ -2047,10 +1981,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Specimen"
-                            }
+                            "$ref": "#/definitions/model.SpecimenResponse"
                         }
                     },
                     "401": {
@@ -2111,10 +2042,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Sample"
-                            }
+                            "$ref": "#/definitions/model.SampleResponse"
                         }
                     },
                     "401": {
@@ -2174,10 +2102,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Site"
-                            }
+                            "$ref": "#/definitions/model.SiteResponse"
                         }
                     },
                     "401": {
@@ -2243,10 +2168,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Site"
-                            }
+                            "$ref": "#/definitions/model.SiteResponse"
                         }
                     },
                     "401": {
@@ -2301,10 +2223,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Site"
-                            }
+                            "$ref": "#/definitions/model.SiteResponse"
                         }
                     },
                     "401": {
@@ -2336,7 +2255,7 @@ const docTemplate = `{
                 "authors": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.People"
+                        "$ref": "#/definitions/model.Person"
                     }
                 },
                 "bookTitle": {
@@ -2363,7 +2282,7 @@ const docTemplate = `{
                 "lastPage": {
                     "type": "string"
                 },
-                "publicationyear": {
+                "publicationYear": {
                     "type": "integer"
                 },
                 "publisher": {
@@ -2374,6 +2293,20 @@ const docTemplate = `{
                 },
                 "volume": {
                     "type": "string"
+                }
+            }
+        },
+        "model.CitationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Citation"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -2399,6 +2332,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ElementResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Element"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.ElementType": {
             "type": "object",
             "properties": {
@@ -2407,13 +2354,27 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ElementTypeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ElementType"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.FullData": {
             "type": "object",
             "properties": {
-                "age_Max": {
+                "ageMax": {
                     "type": "integer"
                 },
-                "age_Min": {
+                "ageMin": {
                     "type": "integer"
                 },
                 "batches": {
@@ -2428,13 +2389,13 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "elevation_Max": {
+                "elevationMax": {
                     "type": "string"
                 },
-                "elevation_Min": {
+                "elevationMin": {
                     "type": "string"
                 },
-                "inclusion_Types": {
+                "inclusionTypes": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2446,40 +2407,40 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "item_Group": {
+                "itemGroup": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "item_Name": {
+                "itemName": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "land_Or_Sea": {
+                "landOrSea": {
                     "type": "string"
                 },
                 "latitude": {
                     "type": "number"
                 },
-                "latitude_Max": {
+                "latitudeMax": {
                     "type": "string"
                 },
-                "latitude_Min": {
+                "latitudeMin": {
                     "type": "string"
                 },
-                "location_Names": {
+                "locationNames": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "location_Num": {
+                "locationNum": {
                     "type": "integer"
                 },
-                "location_Types": {
+                "locationTypes": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2488,10 +2449,10 @@ const docTemplate = `{
                 "longitude": {
                     "type": "number"
                 },
-                "longitude_Max": {
+                "longitudeMax": {
                     "type": "string"
                 },
-                "longitude_Min": {
+                "longitudeMin": {
                     "type": "string"
                 },
                 "materials": {
@@ -2516,19 +2477,19 @@ const docTemplate = `{
                     "type": "array",
                     "items": {}
                 },
-                "rock_Classes": {
+                "rockClasses": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "rock_Textures": {
+                "rockTextures": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "rock_Types": {
+                "rockTypes": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2537,25 +2498,25 @@ const docTemplate = `{
                 "sampleName": {
                     "type": "string"
                 },
-                "sample_Num": {
+                "sampleNum": {
                     "type": "integer"
                 },
-                "standard_Names": {
+                "standardNames": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "standard_Values": {
+                "standardValues": {
                     "type": "array",
                     "items": {
                         "type": "number"
                     }
                 },
-                "tectonic_Setting": {
+                "tectonicSetting": {
                     "type": "string"
                 },
-                "unique_id": {
+                "uniqueID": {
                     "type": "string"
                 },
                 "units": {
@@ -2569,6 +2530,20 @@ const docTemplate = `{
                     "items": {
                         "type": "number"
                     }
+                }
+            }
+        },
+        "model.FullDataResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FullData"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -2588,13 +2563,41 @@ const docTemplate = `{
                 }
             }
         },
+        "model.GeoAgePrefixResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeoAgePrefix"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.GeoAgeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeoAge"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.GeoJSONCluster": {
             "type": "object",
             "properties": {
                 "centroid": {
                     "$ref": "#/definitions/model.GeoJSONFeature"
                 },
-                "clusterid": {
+                "clusterID": {
                     "type": "integer"
                 },
                 "convexHull": {
@@ -2660,11 +2663,39 @@ const docTemplate = `{
                 }
             }
         },
+        "model.InclusionTypeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.InclusionType"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Location": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.LocationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Location"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -2676,6 +2707,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.MaterialResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Material"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Organization": {
             "type": "object",
             "properties": {
@@ -2684,13 +2729,41 @@ const docTemplate = `{
                 }
             }
         },
-        "model.People": {
+        "model.OrganizationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Organization"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.PeopleResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Person"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Person": {
             "type": "object",
             "properties": {
                 "personFirstName": {
                     "type": "string"
                 },
-                "personId": {
+                "personID": {
                     "type": "integer"
                 },
                 "personLastName": {
@@ -2719,7 +2792,7 @@ const docTemplate = `{
                 "samplingFeatureDescription": {
                     "type": "string"
                 },
-                "samplingFeatureGeotypeCV": {
+                "samplingFeatureGeoTypeCV": {
                     "type": "string"
                 },
                 "samplingFeatureID": {
@@ -2761,11 +2834,39 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SampleResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Sample"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.SamplingTechnique": {
             "type": "object",
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "model.SamplingTechniqueResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SamplingTechnique"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -2801,6 +2902,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SiteResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Site"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Specimen": {
             "type": "object",
             "properties": {
@@ -2818,11 +2933,42 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SpecimenResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Specimen"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.TaxonomicClassifier": {
             "type": "object",
             "properties": {
-                "name": {
+                "label": {
                     "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.TaxonomicClassifierResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TaxonomicClassifier"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         }

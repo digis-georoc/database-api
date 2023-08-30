@@ -1,49 +1,33 @@
 package model
 
 type Specimen struct {
-	SamplingFeatureID int
-	SpecimenTypeCV    string
-	SpecimenMediumCV  string
-	IsFieldSpecimen   bool
+	SamplingFeatureID int    `json:"samplingFeatureID"`
+	SpecimenTypeCV    string `json:"specimenTypeCV"`
+	SpecimenMediumCV  string `json:"specimenMediumCV"`
+	IsFieldSpecimen   bool   `json:"isFieldSpecimen"`
+}
+
+type SpecimenResponse struct {
+	NumItems int        `json:"numItems"`
+	Data     []Specimen `json:"data"`
 }
 
 type Sample struct {
-	SamplingFeatureID          int
-	SamplingFeatureUUID        string
-	SamplingFeatureName        string
-	SamplingFeatureDescription string
-	SamplingFeatureGeotypeCV   string
-	FeatureGeometryWKT         string
-	Elevation_m                float64
-	ElevationDatumCV           string
-	ElevationPrecision         float64
-	ElevationPrecisionComment  string
+	SamplingFeatureID          int     `json:"samplingFeatureID"`
+	SamplingFeatureUUID        string  `json:"samplingFeatureUUID"`
+	SamplingFeatureName        string  `json:"samplingFeatureName"`
+	SamplingFeatureDescription string  `json:"samplingFeatureDescription"`
+	SamplingFeatureGeotypeCV   string  `json:"samplingFeatureGeoTypeCV"`
+	FeatureGeometryWKT         string  `json:"featureGeometryWKT"`
+	Elevation_m                float64 `json:"elevation_m"`
+	ElevationDatumCV           string  `json:"elevationDatumCV"`
+	ElevationPrecision         float64 `json:"elevationPrecision"`
+	ElevationPrecisionComment  string  `json:"elevationPrecisionComment"`
 }
 
-type SampleByGeoSettingResponse struct {
-	SamplingFeatureID int
-	Specimen          int
-	Latitude          float64 `json:"lat"`
-	Longitude         float64 `json:"long"`
-	Setting           string
-	Location1         string `json:"loc1"`
-	Location2         string `json:"loc2"`
-	Location3         string `json:"loc3"`
-	Texture           string
-	RockType          string `json:"rock_type"`
-	RockClass         string `json:"rock_class"`
-	Mineral           string
-	Material          string
-	InclusionType     string   `json:"inclusion_type"`
-	SamplingTechnique string   `json:"samp_technique"`
-	SampleNames       []string `json:"sample_names"`
-	LandOrSea         string   `json:"land_or_sea"`
-	RimOrCore         string   `json:"rim_or_core"`
-}
-
-type SampleByFilterResponse struct {
-	NumItems int               `json:"numItems"`
-	Data     []SampleByFilters `json:"data"`
+type SampleResponse struct {
+	NumItems int      `json:"numItems"`
+	Data     []Sample `json:"data"`
 }
 
 type SampleByFilters struct {
@@ -52,8 +36,13 @@ type SampleByFilters struct {
 	Longitude float64 `json:"longitude"`
 }
 
+type SampleByFilterResponse struct {
+	NumItems int               `json:"numItems"`
+	Data     []SampleByFilters `json:"data"`
+}
+
 type ClusteredSample struct {
-	ClusterID  int      `json:"clusterid"`
+	ClusterID  int      `json:"clusterID"`
 	Centroid   Geometry `json:"centroid"`
 	ConvexHull Geometry `json:"convexHull"`
 	Points     Geometry `json:"points"`
@@ -69,22 +58,52 @@ type SamplingTechnique struct {
 	Name string
 }
 
+type SamplingTechniqueResponse struct {
+	NumItems int                 `json:"numItems"`
+	Data     []SamplingTechnique `json:"data"`
+}
+
 type Material struct {
 	Name string
+}
+
+type MaterialResponse struct {
+	NumItems int        `json:"numItems"`
+	Data     []Material `json:"data"`
 }
 
 type InclusionType struct {
 	Name string
 }
 
+type InclusionTypeResponse struct {
+	NumItems int             `json:"numItems"`
+	Data     []InclusionType `json:"data"`
+}
+
 type GeoAge struct {
 	Name string
+}
+
+type GeoAgeResponse struct {
+	NumItems int      `json:"numItems"`
+	Data     []GeoAge `json:"data"`
 }
 
 type GeoAgePrefix struct {
 	Name string
 }
 
+type GeoAgePrefixResponse struct {
+	NumItems int            `json:"numItems"`
+	Data     []GeoAgePrefix `json:"data"`
+}
+
 type Organization struct {
 	Name string
+}
+
+type OrganizationResponse struct {
+	NumItems int            `json:"numItems"`
+	Data     []Organization `json:"data"`
 }
