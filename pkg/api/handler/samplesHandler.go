@@ -679,7 +679,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       limit query    int false "limit"
-// @Success     200   {array}  model.SpecimenResponse
+// @Success     200   {object} model.SpecimenResponse
 // @Failure     401   {object} string
 // @Failure     404   {object} string
 // @Failure     422   {object} string

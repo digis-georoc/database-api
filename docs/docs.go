@@ -1717,10 +1717,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.SpecimenResponse"
-                            }
+                            "$ref": "#/definitions/model.SpecimenResponse"
                         }
                     },
                     "401": {
@@ -2953,7 +2950,10 @@ const docTemplate = `{
         "model.TaxonomicClassifier": {
             "type": "object",
             "properties": {
-                "name": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }

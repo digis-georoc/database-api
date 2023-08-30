@@ -456,7 +456,9 @@ definitions:
     type: object
   model.TaxonomicClassifier:
     properties:
-      name:
+      label:
+        type: string
+      value:
         type: string
     type: object
   model.TaxonomicClassifierResponse:
@@ -1633,9 +1635,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.SpecimenResponse'
-            type: array
+            $ref: '#/definitions/model.SpecimenResponse'
         "401":
           description: Unauthorized
           schema:
