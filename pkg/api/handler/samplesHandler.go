@@ -318,6 +318,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
 		}
+		coordData[KEY_POLYGON] = polygon
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
 		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
 	}
