@@ -456,6 +456,8 @@ definitions:
     type: object
   model.TaxonomicClassifier:
     properties:
+      count:
+        type: integer
       label:
         type: string
       value:

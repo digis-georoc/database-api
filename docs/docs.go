@@ -2950,6 +2950,9 @@ const docTemplate = `{
         "model.TaxonomicClassifier": {
             "type": "object",
             "properties": {
+                "count": {
+                    "type": "integer"
+                },
                 "label": {
                     "type": "string"
                 },
