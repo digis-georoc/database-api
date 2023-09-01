@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -328,6 +330,16 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	// wrap in []interface{} for geoJSON polygon
+	bboxIWrap := []interface{}{bbox}
+	response.Bbox = model.GeoJSONFeature{
+		Type: model.GEOJSONTYPE_FEATURE,
+		Geometry: model.Geometry{
+			Type:        model.GEOJSON_GEOMETRY_POLYGON,
+			Coordinates: bboxIWrap,
+		},
+	}
+
 	// get filtered samples
 	filteredSamplesList := []model.FilteredSample{}
 	err = h.db.Query(query.GetQueryString(), &filteredSamplesList, query.GetFilterValues()...)
@@ -338,7 +350,11 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	filteredSamples := filteredSamplesList[0]
 	if filteredSamples.NumSamples < clusteringThreshold {
 		// return individual points
-		// TODO: format points for geoJSON ClusterResponseModel
+		points, err := parseFilteredSampleStrings(filteredSamples.ValuesString)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not parse individual points")
+		}
+		response.Points = points
 		return c.JSON(http.StatusOK, response)
 	}
 
@@ -368,15 +384,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	// wrap in []interface{} for geoJSON polygon
-	bboxIWrap := []interface{}{bbox}
-	response.Bbox = model.GeoJSONFeature{
-		Type: model.GEOJSONTYPE_FEATURE,
-		Geometry: model.Geometry{
-			Type:        model.GEOJSON_GEOMETRY_POLYGON,
-			Coordinates: bboxIWrap,
-		},
-	}
 	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
@@ -1310,4 +1317,33 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 		geoJSON = append(geoJSON, geoJSONCluster)
 	}
 	return geoJSON, nil
+}
+
+// parseFilteredSampleStrings takes aggregated point strings and returns a slice of model.GeoJSONFeatures
+func parseFilteredSampleStrings(sampleString string) ([]model.GeoJSONFeature, error) {
+	geoPoints := []model.GeoJSONFeature{}
+	samples := strings.Split(sampleString, "),")
+	sampleRegex := regexp.MustCompile(`(\d+),'POINT ?\((-?[\.\d]+ -?[\.\d]+)\)`)
+	for _, sample := range samples {
+		matches := sampleRegex.FindAllStringSubmatch(sample, -1)
+		longString, latString, _ := strings.Cut(matches[0][2], " ")
+		long, err := strconv.ParseFloat(longString, 64)
+		if err != nil {
+			return nil, err
+		}
+		lat, err := strconv.ParseFloat(latString, 64)
+		if err != nil {
+			return nil, err
+		}
+		point := model.GeoJSONFeature{
+			Type: model.GEOJSONTYPE_FEATURE,
+			ID:   matches[0][1],
+			Geometry: model.Geometry{
+				Type:        model.GEOJSON_GEOMETRY_POINT,
+				Coordinates: []interface{}{long, lat},
+			},
+		}
+		geoPoints = append(geoPoints, point)
+	}
+	return geoPoints, nil
 }
