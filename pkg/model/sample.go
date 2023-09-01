@@ -41,6 +41,11 @@ type SampleByFilterResponse struct {
 	Data     []SampleByFilters `json:"data"`
 }
 
+type FilteredSample struct {
+	ValuesString string `json:"valuesString"`
+	NumSamples   int    `json:"numSamples"`
+}
+
 type ClusteredSample struct {
 	ClusterID  int      `json:"clusterID"`
 	Centroid   Geometry `json:"centroid"`

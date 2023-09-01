@@ -26,14 +26,24 @@ from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
 
-// Same as GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
+// Alternative query beginning to GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
+// and refactored for two-step clustering
 // Depends on QueryModule Geometry being added
-const GetSamplingFeatureIdsByFilteBaseQueryTranslated = `
+const GetSamplingFeatureIdsByFilterBaseQueryTranslated = `
 -- modular query for specimenids and translated geometries with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
-case when geom.isInOriginalBBOX then geom.geometry else st_translate(geom.geometry, 360 * translationFactor, 0) end as translatedGeom
-from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
+select string_agg(tmp.SampleString, ',') as valuesString,
+count(tmp.SampleID) as numSamples
+from (
+	select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid::varchar else r.relatedfeatureid::varchar end) as sampleid,
+	case when geom.isInOriginalBBOX then st_astext(geom.geometry) else st_astext(st_translate(geom.geometry, 360 * translationFactor, 0)) end as translatedGeom,
+	'('||(case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid::varchar else r.relatedfeatureid::varchar end)||','''||
+	case when geom.isInOriginalBBOX then st_astext(geom.geometry) else st_astext(st_translate(geom.geometry, 360 * 1, 0)) end || ''')' as SampleString
+	from odm2.samplingfeatures spec
+	left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
+`
+
+const GetSamplingFeatureIdsByFilterBaseQueryTranslatedEnd = `
+) tmp
 `
 
 // Filter query-module Locations
@@ -245,7 +255,7 @@ from (
 `
 
 const GetSamplesClusteredWrapperPostfix = `
-	) samples
+	) as samples (sampleid, translatedGeom)
 ) clusters
 group by clusters.clusterid
 `

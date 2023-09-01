@@ -52,14 +52,15 @@ const (
 
 	QP_BBOX = "bbox"
 
-	QP_NUM_CLUSTERS      = "numClusters"
-	QP_MAX_DISTANCE      = "maxDistance"
-	DEFAULT_NUM_CLUSTERS = "7"
-	DEFAULT_MAX_DISTANCE = "50"
-	LONG_MIN             = -180.0
-	LONG_MAX             = 180.0
-	LAT_MIN              = -90.0
-	LAT_MAX              = 90.0
+	QP_NUM_CLUSTERS              = "numClusters"
+	QP_MAX_DISTANCE              = "maxDistance"
+	DEFAULT_NUM_CLUSTERS         = "7"
+	DEFAULT_MAX_DISTANCE         = "50"
+	LONG_MIN                     = -180.0
+	LONG_MAX                     = 180.0
+	LAT_MIN                      = -90.0
+	LAT_MAX                      = 90.0
+	DEFAULT_CLUSTERING_THRESHOLD = 50
 
 	KEY_BBOX                    = "key_bbox"
 	KEY_TRANSLATION_FACTOR      = "key_translation_factor"
@@ -224,8 +225,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Tags        geodata
 // @Accept      json
 // @Produce     json
-// @Param       limit           query    int    false "limit"
-// @Param       offset          query    int    false "offset"
 // @Param       setting         query    string false "tectonic setting - see /queries/sites/settings"
 // @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
 // @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
@@ -266,11 +265,11 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	clusterData := []model.ClusteredSample{}
 
 	// response object
 	response := model.ClusterResponse{}
 
+	clusteringThreshold := DEFAULT_CLUSTERING_THRESHOLD
 	coordData := map[string]interface{}{}
 	// get the bbox
 	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
@@ -329,6 +328,20 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 
+	// get filtered samples
+	filteredSamplesList := []model.FilteredSample{}
+	err = h.db.Query(query.GetQueryString(), &filteredSamplesList, query.GetFilterValues()...)
+	if err != nil || len(filteredSamplesList) == 0 {
+		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	filteredSamples := filteredSamplesList[0]
+	if filteredSamples.NumSamples < clusteringThreshold {
+		// return individual points
+		// TODO: format points for geoJSON ClusterResponseModel
+		return c.JSON(http.StatusOK, response)
+	}
+
 	numClusters := c.QueryParam(QP_NUM_CLUSTERS)
 	if numClusters == "" {
 		numClusters = DEFAULT_NUM_CLUSTERS
@@ -339,21 +352,16 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
 	}
 
-	// wrap query in clustering postGIS-sql with parameters
+	// generate cluster postGIS-sql with parameters over filteredSamples
 	params := map[string]interface{}{
 		"numClusters": numClusters,
 		"maxDistance": maxDistance,
 	}
+
+	query = sql.NewQuery(fmt.Sprintf("values %s", filteredSamples.ValuesString))
 	query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
 
-	limit, offset, err := handlePaginationParams(c)
-	if err != nil {
-		logger.Errorf("Invalid pagination params: %v", err)
-		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
-	}
-	query.AddLimit(limit)
-	query.AddOffset(offset)
-
+	clusterData := []model.ClusteredSample{}
 	err = h.db.Query(query.GetQueryString(), &clusterData, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
@@ -847,7 +855,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		params := map[string]interface{}{
 			"translationFactor": -factor,
 		}
-		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilteBaseQueryTranslated, params)
+		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilterBaseQueryTranslated, params)
 	}
 
 	// add optional search filters
@@ -1148,6 +1156,10 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
 	}
 
+	if bbox != nil {
+		// add closing parenthesis for clustering query first step
+		query.AddSQLBlock(sql.GetSamplingFeatureIdsByFilterBaseQueryTranslatedEnd)
+	}
 	return query, nil
 }
 
