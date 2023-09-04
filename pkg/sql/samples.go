@@ -29,7 +29,7 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 // Alternative query beginning to GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
 // and refactored for two-step clustering
 // Depends on QueryModule Geometry being added
-const GetSamplingFeatureIdsByFilterBaseQueryTranslated = `
+const GetSamplingFeatureIdsByFilterBaseQueryForClusters = `
 -- modular query for specimenids and translated geometries with all filter options
 select string_agg(tmp.SampleString, ',') as valuesString,
 count(tmp.SampleID) as numSamples
@@ -246,7 +246,8 @@ select
 clusters.clusterid,
 st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
 ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
-array_agg(clusters.sampleid) as samples
+array_agg(clusters.sampleid) as samples,
+array_agg(clusters.sampleid || ',' || clusters.translatedGeom) as pointsWithIds
 from (
 	select samples.sampleid,
 	samples.translatedGeom,

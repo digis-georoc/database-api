@@ -47,11 +47,11 @@ type FilteredSample struct {
 }
 
 type ClusteredSample struct {
-	ClusterID  int      `json:"clusterID"`
-	Centroid   Geometry `json:"centroid"`
-	ConvexHull Geometry `json:"convexHull"`
-	Points     Geometry `json:"points"`
-	Samples    []int64  `json:"samples"`
+	ClusterID    int      `json:"clusterID"`
+	Centroid     Geometry `json:"centroid"`
+	ConvexHull   Geometry `json:"convexHull"`
+	PointStrings []string `json:"pointsWithIds"`
+	Samples      []int64  `json:"samples"`
 }
 
 type ClusterResponse struct {

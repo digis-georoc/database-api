@@ -62,6 +62,7 @@ const (
 	LONG_MAX                     = 180.0
 	LAT_MIN                      = -90.0
 	LAT_MAX                      = 90.0
+	QP_CLUSTERING_THRESHOLD      = "clusteringThreshold"
 	DEFAULT_CLUSTERING_THRESHOLD = 50
 
 	KEY_BBOX                    = "key_bbox"
@@ -256,6 +257,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       bbox            query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 // @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Param clusteringThreshold query int false "Min number of points to cluster. Points below are returned individually"
 // @Success     200             {object} model.ClusterResponse
 // @Failure     401             {object} string
 // @Failure     404             {object} string
@@ -271,7 +273,12 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	// response object
 	response := model.ClusterResponse{}
 
-	clusteringThreshold := DEFAULT_CLUSTERING_THRESHOLD
+	thresholdString := c.QueryParam(QP_CLUSTERING_THRESHOLD)
+	clusteringThreshold, err := strconv.Atoi(thresholdString)
+	if thresholdString == "" || err != nil {
+		clusteringThreshold = DEFAULT_CLUSTERING_THRESHOLD
+	}
+
 	coordData := map[string]interface{}{}
 	// get the bbox
 	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
@@ -350,7 +357,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	filteredSamples := filteredSamplesList[0]
 	if filteredSamples.NumSamples < clusteringThreshold {
 		// return individual points
-		points, err := parseFilteredSampleStrings(filteredSamples.ValuesString)
+		points, err := parsePointIDStrings(filteredSamples.ValuesString)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not parse individual points")
 		}
@@ -384,12 +391,13 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
+	geoJSONClusters, geoJSONPoints, err := parseClusterToGeoJSON(clusterData, clusteringThreshold)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
 	}
 	response.Clusters = geoJSONClusters
+	response.Points = append(response.Points, geoJSONPoints...)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -862,7 +870,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		params := map[string]interface{}{
 			"translationFactor": -factor,
 		}
-		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilterBaseQueryTranslated, params)
+		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilterBaseQueryForClusters, params)
 	}
 
 	// add optional search filters
@@ -1291,39 +1299,51 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
-func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, error) {
-	geoJSON := make([]model.GeoJSONCluster, 0, len(clusterData))
+func parseClusterToGeoJSON(clusterData []model.ClusteredSample, clusteringThreshold int) ([]model.GeoJSONCluster, []model.GeoJSONFeature, error) {
+	geoJSONClusters := make([]model.GeoJSONCluster, 0, len(clusterData))
+	geoJSONPoints := []model.GeoJSONFeature{}
 	for _, cluster := range clusterData {
-		centroid := model.GeoJSONFeature{
-			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.Centroid,
-			Properties: map[string]interface{}{
-				"clusterID":   cluster.ClusterID,
-				"clusterSize": len(cluster.Samples),
-			},
+		if len(cluster.Samples) < clusteringThreshold {
+			// parse data to individual points
+			var err error
+			geoJSONPoints, err = parsePointIDStrings(strings.Join(cluster.PointStrings, ","))
+			if err != nil {
+				return nil, nil, err
+			}
+		} else {
+			// parse data into cluster objects
+			centroid := model.GeoJSONFeature{
+				Type:     model.GEOJSONTYPE_FEATURE,
+				Geometry: cluster.Centroid,
+				Properties: map[string]interface{}{
+					"clusterID":   cluster.ClusterID,
+					"clusterSize": len(cluster.Samples),
+				},
+			}
+			if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
+				centroid.Properties["sampleID"] = cluster.Samples[0]
+			}
+			convexHull := model.GeoJSONFeature{
+				Type:     model.GEOJSONTYPE_FEATURE,
+				Geometry: cluster.ConvexHull,
+			}
+			geoJSONCluster := model.GeoJSONCluster{
+				ClusterID:  cluster.ClusterID,
+				Centroid:   centroid,
+				ConvexHull: convexHull,
+			}
+			geoJSONClusters = append(geoJSONClusters, geoJSONCluster)
 		}
-		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
-			centroid.Properties["sampleID"] = cluster.Samples[0]
-		}
-		convexHull := model.GeoJSONFeature{
-			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.ConvexHull,
-		}
-		geoJSONCluster := model.GeoJSONCluster{
-			ClusterID:  cluster.ClusterID,
-			Centroid:   centroid,
-			ConvexHull: convexHull,
-		}
-		geoJSON = append(geoJSON, geoJSONCluster)
 	}
-	return geoJSON, nil
+	return geoJSONClusters, geoJSONPoints, nil
 }
 
-// parseFilteredSampleStrings takes aggregated point strings and returns a slice of model.GeoJSONFeatures
-func parseFilteredSampleStrings(sampleString string) ([]model.GeoJSONFeature, error) {
+// parsePointIDStrings takes aggregated strings of samplingfeatureids with their points and returns a slice of model.GeoJSONFeatures
+// e.g. "1234,'POINT(56,-45)'"
+func parsePointIDStrings(sampleString string) ([]model.GeoJSONFeature, error) {
 	geoPoints := []model.GeoJSONFeature{}
 	samples := strings.Split(sampleString, "),")
-	sampleRegex := regexp.MustCompile(`(\d+),'POINT ?\((-?[\.\d]+ -?[\.\d]+)\)`)
+	sampleRegex := regexp.MustCompile(`(\d+),'?POINT ?\((-?[\.\d]+ -?[\.\d]+)`)
 	for _, sample := range samples {
 		matches := sampleRegex.FindAllStringSubmatch(sample, -1)
 		longString, latString, _ := strings.Cut(matches[0][2], " ")
