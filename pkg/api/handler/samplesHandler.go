@@ -1305,11 +1305,11 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample, clusteringThresh
 	for _, cluster := range clusterData {
 		if len(cluster.Samples) < clusteringThreshold {
 			// parse data to individual points
-			var err error
-			geoJSONPoints, err = parsePointIDStrings(strings.Join(cluster.PointStrings, ","))
+			points, err := parsePointIDStrings(strings.Join(cluster.PointStrings, ","))
 			if err != nil {
 				return nil, nil, err
 			}
+			geoJSONPoints = append(geoJSONPoints, points...)
 		} else {
 			// parse data into cluster objects
 			centroid := model.GeoJSONFeature{
@@ -1320,7 +1320,7 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample, clusteringThresh
 					"clusterSize": len(cluster.Samples),
 				},
 			}
-			if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
+			if len(cluster.Samples) == 1 {
 				centroid.Properties["sampleID"] = cluster.Samples[0]
 			}
 			convexHull := model.GeoJSONFeature{

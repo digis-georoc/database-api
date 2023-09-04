@@ -247,7 +247,7 @@ clusters.clusterid,
 st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
 ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
 array_agg(clusters.sampleid) as samples,
-array_agg(clusters.sampleid || ',' || clusters.translatedGeom) as pointsWithIds
+array_agg(clusters.sampleid || ',' || clusters.translatedGeom) as pointsWithIds -- point geodata strings formatted like the output of GetSamplingFeatureIdsByFilterBaseQueryForClusters
 from (
 	select samples.sampleid,
 	samples.translatedGeom,
