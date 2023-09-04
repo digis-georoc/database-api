@@ -44,18 +44,6 @@ const docTemplate = `{
                 "summary": "Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "limit",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "offset",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
                         "type": "string",
                         "description": "tectonic setting - see /queries/sites/settings",
                         "name": "setting",
@@ -228,6 +216,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -\u003e Zi = 50/i",
                         "name": "maxDistance",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Min number of points to cluster. Points below are returned individually",
+                        "name": "clusteringThreshold",
                         "in": "query"
                     }
                 ],
@@ -2320,6 +2314,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.GeoJSONCluster"
+                    }
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeoJSONFeature"
                     }
                 }
             }
