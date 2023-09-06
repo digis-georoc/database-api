@@ -26,24 +26,14 @@ from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
 
-// Alternative query beginning to GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
-// and refactored for two-step clustering
+// Same as GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
 // Depends on QueryModule Geometry being added
-const GetSamplingFeatureIdsByFilterBaseQueryForClusters = `
+const GetSamplingFeatureIdsByFilteBaseQueryTranslated = `
 -- modular query for specimenids and translated geometries with all filter options
-select string_agg(tmp.SampleString, ',') as valuesString,
-count(tmp.SampleID) as numSamples
-from (
-	select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid::varchar else r.relatedfeatureid::varchar end) as sampleid,
-	case when geom.isInOriginalBBOX then st_astext(geom.geometry) else st_astext(st_translate(geom.geometry, 360 * translationFactor, 0)) end as translatedGeom,
-	'('||(case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid::varchar else r.relatedfeatureid::varchar end)||','''||
-	case when geom.isInOriginalBBOX then st_astext(geom.geometry) else st_astext(st_translate(geom.geometry, 360 * 1, 0)) end || ''')' as SampleString
-	from odm2.samplingfeatures spec
-	left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
-`
-
-const GetSamplingFeatureIdsByFilterBaseQueryTranslatedEnd = `
-) tmp
+select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+case when geom.isInOriginalBBOX then geom.geometry else st_translate(geom.geometry, 360 * translationFactor, 0) end as translatedGeom
+from odm2.samplingfeatures spec
+left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
 
 // Filter query-module Locations
@@ -246,8 +236,7 @@ select
 clusters.clusterid,
 st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
 ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
-array_agg(clusters.sampleid) as samples,
-array_agg(clusters.sampleid || ',' || clusters.translatedGeom) as pointsWithIds -- point geodata strings formatted like the output of GetSamplingFeatureIdsByFilterBaseQueryForClusters
+array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,
 	samples.translatedGeom,
@@ -256,7 +245,7 @@ from (
 `
 
 const GetSamplesClusteredWrapperPostfix = `
-	) as samples (sampleid, translatedGeom)
+	) samples
 ) clusters
 group by clusters.clusterid
 `

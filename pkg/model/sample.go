@@ -41,23 +41,17 @@ type SampleByFilterResponse struct {
 	Data     []SampleByFilters `json:"data"`
 }
 
-type FilteredSample struct {
-	ValuesString string `json:"valuesString"`
-	NumSamples   int    `json:"numSamples"`
-}
-
 type ClusteredSample struct {
-	ClusterID    int      `json:"clusterID"`
-	Centroid     Geometry `json:"centroid"`
-	ConvexHull   Geometry `json:"convexHull"`
-	PointStrings []string `json:"pointsWithIds"`
-	Samples      []int64  `json:"samples"`
+	ClusterID  int      `json:"clusterID"`
+	Centroid   Geometry `json:"centroid"`
+	ConvexHull Geometry `json:"convexHull"`
+	Points     Geometry `json:"points"`
+	Samples    []int64  `json:"samples"`
 }
 
 type ClusterResponse struct {
 	Clusters []GeoJSONCluster `json:"clusters"`
 	Bbox     GeoJSONFeature   `json:"bbox"`
-	Points   []GeoJSONFeature `json:"points"`
 }
 
 type SamplingTechnique struct {

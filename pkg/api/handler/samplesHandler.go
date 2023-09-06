@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -54,16 +52,14 @@ const (
 
 	QP_BBOX = "bbox"
 
-	QP_NUM_CLUSTERS              = "numClusters"
-	QP_MAX_DISTANCE              = "maxDistance"
-	DEFAULT_NUM_CLUSTERS         = "7"
-	DEFAULT_MAX_DISTANCE         = "50"
-	LONG_MIN                     = -180.0
-	LONG_MAX                     = 180.0
-	LAT_MIN                      = -90.0
-	LAT_MAX                      = 90.0
-	QP_CLUSTERING_THRESHOLD      = "clusteringThreshold"
-	DEFAULT_CLUSTERING_THRESHOLD = 50
+	QP_NUM_CLUSTERS      = "numClusters"
+	QP_MAX_DISTANCE      = "maxDistance"
+	DEFAULT_NUM_CLUSTERS = "7"
+	DEFAULT_MAX_DISTANCE = "50"
+	LONG_MIN             = -180.0
+	LONG_MAX             = 180.0
+	LAT_MIN              = -90.0
+	LAT_MAX              = 90.0
 
 	KEY_BBOX                    = "key_bbox"
 	KEY_TRANSLATION_FACTOR      = "key_translation_factor"
@@ -228,56 +224,52 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Tags        geodata
 // @Accept      json
 // @Produce     json
-// @Param       setting             query    string false "tectonic setting - see /queries/sites/settings"
-// @Param       location1           query    string false "location level 1 - see /queries/locations/l1"
-// @Param       location2           query    string false "location level 2 - see /queries/locations/l2"
-// @Param       location3           query    string false "location level 3 - see /queries/locations/l3"
-// @Param       latitude            query    string false "latitude"
-// @Param       longitude           query    string false "longitude"
-// @Param       rocktype            query    string false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass           query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral             query    string false "mineral - see /queries/samples/minerals"
-// @Param       material            query    string false "material - see /queries/samples/materials"
-// @Param       inclusiontype       query    string false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech          query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element             query    string false "chemical element - see /queries/samples/elements"
-// @Param       elementtype         query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value               query    string false "measured value"
-// @Param       title               query    string false "title of publication"
-// @Param       publicationyear     query    string false "publication year"
-// @Param       doi                 query    string false "DOI"
-// @Param       firstname           query    string false "Author first name"
-// @Param       lastname            query    string false "Author last name"
-// @Param       agemin              query    string false "Specimen age min"
-// @Param       agemax              query    string false "Specimen age max"
-// @Param       geoage              query    string false "Specimen geological age - see /queries/samples/geoages"
-// @Param       geoageprefix        query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
-// @Param       lab                 query    string false "Laboratory name - see /queries/samples/organizationnames"
-// @Param       polygon             query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox                query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
-// @Param       numClusters         query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
-// @Param       maxDistance         query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Param       clusteringThreshold query    int    false "Min number of points to cluster. Points below are returned individually"
-// @Success     200                 {object} model.ClusterResponse
-// @Failure     401                 {object} string
-// @Failure     404                 {object} string
-// @Failure     422                 {object} string
-// @Failure     500                 {object} string
+// @Param       limit           query    int    false "limit"
+// @Param       offset          query    int    false "offset"
+// @Param       setting         query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
+// @Param       latitude        query    string false "latitude"
+// @Param       longitude       query    string false "longitude"
+// @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
+// @Param       material        query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       element         query    string false "chemical element - see /queries/samples/elements"
+// @Param       elementtype     query    string false "element type - see /queries/samples/elementtypes"
+// @Param       value           query    string false "measured value"
+// @Param       title           query    string false "title of publication"
+// @Param       publicationyear query    string false "publication year"
+// @Param       doi             query    string false "DOI"
+// @Param       firstname       query    string false "Author first name"
+// @Param       lastname        query    string false "Author last name"
+// @Param       agemin          query    string false "Specimen age min"
+// @Param       agemax          query    string false "Specimen age max"
+// @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
+// @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       bbox            query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+// @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Success     200             {object} model.ClusterResponse
+// @Failure     401             {object} string
+// @Failure     404             {object} string
+// @Failure     422             {object} string
+// @Failure     500             {object} string
 // @Router      /geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
+	clusterData := []model.ClusteredSample{}
 
 	// response object
 	response := model.ClusterResponse{}
-
-	thresholdString := c.QueryParam(QP_CLUSTERING_THRESHOLD)
-	clusteringThreshold, err := strconv.Atoi(thresholdString)
-	if thresholdString == "" || err != nil {
-		clusteringThreshold = DEFAULT_CLUSTERING_THRESHOLD
-	}
 
 	coordData := map[string]interface{}{}
 	// get the bbox
@@ -337,34 +329,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	// wrap in []interface{} for geoJSON polygon
-	bboxIWrap := []interface{}{bbox}
-	response.Bbox = model.GeoJSONFeature{
-		Type: model.GEOJSONTYPE_FEATURE,
-		Geometry: model.Geometry{
-			Type:        model.GEOJSON_GEOMETRY_POLYGON,
-			Coordinates: bboxIWrap,
-		},
-	}
-
-	// get filtered samples
-	filteredSamplesList := []model.FilteredSample{}
-	err = h.db.Query(query.GetQueryString(), &filteredSamplesList, query.GetFilterValues()...)
-	if err != nil || len(filteredSamplesList) == 0 {
-		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
-	}
-	filteredSamples := filteredSamplesList[0]
-	if filteredSamples.NumSamples < clusteringThreshold {
-		// return individual points
-		points, err := parsePointIDStrings(filteredSamples.ValuesString)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not parse individual points")
-		}
-		response.Points = points
-		return c.JSON(http.StatusOK, response)
-	}
-
 	numClusters := c.QueryParam(QP_NUM_CLUSTERS)
 	if numClusters == "" {
 		numClusters = DEFAULT_NUM_CLUSTERS
@@ -375,29 +339,42 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
 	}
 
-	// generate cluster postGIS-sql with parameters over filteredSamples
+	// wrap query in clustering postGIS-sql with parameters
 	params := map[string]interface{}{
 		"numClusters": numClusters,
 		"maxDistance": maxDistance,
 	}
-
-	query = sql.NewQuery(fmt.Sprintf("values %s", filteredSamples.ValuesString))
 	query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
 
-	clusterData := []model.ClusteredSample{}
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+
 	err = h.db.Query(query.GetQueryString(), &clusterData, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	geoJSONClusters, geoJSONPoints, err := parseClusterToGeoJSON(clusterData, clusteringThreshold)
+	// wrap in []interface{} for geoJSON polygon
+	bboxIWrap := []interface{}{bbox}
+	response.Bbox = model.GeoJSONFeature{
+		Type: model.GEOJSONTYPE_FEATURE,
+		Geometry: model.Geometry{
+			Type:        model.GEOJSON_GEOMETRY_POLYGON,
+			Coordinates: bboxIWrap,
+		},
+	}
+	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
 	}
 	response.Clusters = geoJSONClusters
-	response.Points = append(response.Points, geoJSONPoints...)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -870,7 +847,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		params := map[string]interface{}{
 			"translationFactor": -factor,
 		}
-		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilterBaseQueryForClusters, params)
+		query.AddSQLBlockParametrized(sql.GetSamplingFeatureIdsByFilteBaseQueryTranslated, params)
 	}
 
 	// add optional search filters
@@ -1171,10 +1148,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
 	}
 
-	if bbox != nil {
-		// add closing parenthesis for clustering query first step
-		query.AddSQLBlock(sql.GetSamplingFeatureIdsByFilterBaseQueryTranslatedEnd)
-	}
 	return query, nil
 }
 
@@ -1299,71 +1272,30 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
-func parseClusterToGeoJSON(clusterData []model.ClusteredSample, clusteringThreshold int) ([]model.GeoJSONCluster, []model.GeoJSONFeature, error) {
-	geoJSONClusters := make([]model.GeoJSONCluster, 0, len(clusterData))
-	geoJSONPoints := []model.GeoJSONFeature{}
+func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, error) {
+	geoJSON := make([]model.GeoJSONCluster, 0, len(clusterData))
 	for _, cluster := range clusterData {
-		if len(cluster.Samples) < clusteringThreshold {
-			// parse data to individual points
-			points, err := parsePointIDStrings(strings.Join(cluster.PointStrings, ","))
-			if err != nil {
-				return nil, nil, err
-			}
-			geoJSONPoints = append(geoJSONPoints, points...)
-		} else {
-			// parse data into cluster objects
-			centroid := model.GeoJSONFeature{
-				Type:     model.GEOJSONTYPE_FEATURE,
-				Geometry: cluster.Centroid,
-				Properties: map[string]interface{}{
-					"clusterID":   cluster.ClusterID,
-					"clusterSize": len(cluster.Samples),
-				},
-			}
-			if len(cluster.Samples) == 1 {
-				centroid.Properties["sampleID"] = cluster.Samples[0]
-			}
-			convexHull := model.GeoJSONFeature{
-				Type:     model.GEOJSONTYPE_FEATURE,
-				Geometry: cluster.ConvexHull,
-			}
-			geoJSONCluster := model.GeoJSONCluster{
-				ClusterID:  cluster.ClusterID,
-				Centroid:   centroid,
-				ConvexHull: convexHull,
-			}
-			geoJSONClusters = append(geoJSONClusters, geoJSONCluster)
-		}
-	}
-	return geoJSONClusters, geoJSONPoints, nil
-}
-
-// parsePointIDStrings takes aggregated strings of samplingfeatureids with their points and returns a slice of model.GeoJSONFeatures
-// e.g. "1234,'POINT(56,-45)'"
-func parsePointIDStrings(sampleString string) ([]model.GeoJSONFeature, error) {
-	geoPoints := []model.GeoJSONFeature{}
-	samples := strings.Split(sampleString, "),")
-	sampleRegex := regexp.MustCompile(`(\d+),'?POINT ?\((-?[\.\d]+ -?[\.\d]+)`)
-	for _, sample := range samples {
-		matches := sampleRegex.FindAllStringSubmatch(sample, -1)
-		longString, latString, _ := strings.Cut(matches[0][2], " ")
-		long, err := strconv.ParseFloat(longString, 64)
-		if err != nil {
-			return nil, err
-		}
-		lat, err := strconv.ParseFloat(latString, 64)
-		if err != nil {
-			return nil, err
-		}
-		point := model.GeoJSONFeature{
-			Type: model.GEOJSONTYPE_FEATURE,
-			ID:   matches[0][1],
-			Geometry: model.Geometry{
-				Type:        model.GEOJSON_GEOMETRY_POINT,
-				Coordinates: []interface{}{long, lat},
+		centroid := model.GeoJSONFeature{
+			Type:     model.GEOJSONTYPE_FEATURE,
+			Geometry: cluster.Centroid,
+			Properties: map[string]interface{}{
+				"clusterID":   cluster.ClusterID,
+				"clusterSize": len(cluster.Samples),
 			},
 		}
-		geoPoints = append(geoPoints, point)
+		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
+			centroid.Properties["sampleID"] = cluster.Samples[0]
+		}
+		convexHull := model.GeoJSONFeature{
+			Type:     model.GEOJSONTYPE_FEATURE,
+			Geometry: cluster.ConvexHull,
+		}
+		geoJSONCluster := model.GeoJSONCluster{
+			ClusterID:  cluster.ClusterID,
+			Centroid:   centroid,
+			ConvexHull: convexHull,
+		}
+		geoJSON = append(geoJSON, geoJSONCluster)
 	}
-	return geoPoints, nil
+	return geoJSON, nil
 }
