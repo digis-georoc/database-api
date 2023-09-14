@@ -89,11 +89,25 @@ const GetSamplingfeatureIdsByFilterLocationsEnd = `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select stc.samplingfeatureid
-	from odm2.specimentaxonomicclassifiers stc
-	left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
-	left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
-	left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifierdescription  = 'Mineral Classification from GEOROC'
+	select distinct rt.samplingfeatureid
+	from 
+	(	
+		select stc.samplingfeatureid, tax_type.taxonomicclassifiername as rock_type
+		from odm2.specimentaxonomicclassifiers stc
+		left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
+	) rt
+	left join 
+	(
+		select stc.samplingfeatureid, tax_class.taxonomicclassifiername as rock_class
+		from odm2.specimentaxonomicclassifiers stc
+		left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
+	) rc on rc.samplingfeatureid = rt.samplingfeatureid
+	left join
+	(
+		select stc.samplingfeatureid, tax_min.taxonomicclassifiercommonname as mineral
+		from odm2.specimentaxonomicclassifiers stc
+		left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifierdescription  = 'Mineral Classification from GEOROC'
+	) min on min.samplingfeatureid = rt.samplingfeatureid
 `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 ) tax on tax.samplingfeatureid = spec.samplingfeatureid
@@ -107,13 +121,29 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 const GetSamplingfeatureIdsByFilterAnnotationsStart = `
 join (
 	-- annotations
-	select r.relatedfeatureid as sampleid
-	from odm2.samplingfeatureannotations sann
-	left join odm2.annotations ann_mat on ann_mat.annotationid = sann.annotationid and ann_mat.annotationcode = 'g_batches.material'
-	left join odm2.annotations ann_inc_type on ann_inc_type.annotationid = sann.annotationid and ann_inc_type.annotationcode = 'g_inclusions.inclusion_type'
-	left join odm2.annotations ann_samp_tech on ann_samp_tech.annotationid = sann.annotationid and ann_samp_tech.annotationcode = 'g_samples.samp_technique'
-	left join odm2.annotations ann_rim_or_core on ann_rim_or_core.annotationid = sann.annotationid and ann_rim_or_core.annotationcode = 'g_inclusions.rim_or_core_inc'
-	left join odm2.relatedfeatures r on r.samplingfeatureid = sann.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
+	select distinct r.relatedfeatureid as sampleid
+	from odm2.relatedfeatures r
+	left join 
+	(
+		select sa_mat.samplingfeatureid, ann_mat.annotationtext as material
+		from odm2.samplingfeatureannotations sa_mat
+		left join odm2.annotations ann_mat on ann_mat.annotationid = sa_mat.annotationid and ann_mat.annotationcode = 'g_batches.material'
+	) mat on r.samplingfeatureid = mat.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
+	left join (
+		select sa_inctype.samplingfeatureid, ann_inc_type.annotationtext as inclusion_type
+		from odm2.samplingfeatureannotations sa_inctype
+		left join odm2.annotations ann_inc_type on ann_inc_type.annotationid = sa_inctype.annotationid and ann_inc_type.annotationcode = 'g_inclusions.inclusion_type'
+	) inctype on r.samplingfeatureid = inctype.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
+	left join (
+		select sa_stech.samplingfeatureid, ann_stech.annotationtext as sampling_technique
+		from odm2.samplingfeatureannotations sa_stech
+		left join odm2.annotations ann_stech on ann_stech.annotationid = sa_stech.annotationid and ann_stech.annotationcode = 'g_samples.samp_technique'
+	) stech on r.samplingfeatureid = stech.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
+	left join (
+		select sa_roc.samplingfeatureid, ann_roc.annotationtext as rim_or_core
+		from odm2.samplingfeatureannotations sa_roc
+		left join odm2.annotations ann_roc on ann_roc.annotationid = sa_roc.annotationid and ann_roc.annotationcode = 'g_inclusions.rim_or_core_inc'
+	) roc on r.samplingfeatureid = roc.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
 const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
 ) ann on ann.sampleid = spec.samplingfeatureid
