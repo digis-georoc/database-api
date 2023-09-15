@@ -120,17 +120,20 @@ const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
 `
 
 // Filter query-module Results
-// Filter options are:
-// 		MeasuredItem
-//		ItemType
-//		Unit
-//		Value
+// Filter options are defined by a filter dsl:
+// EXPR: <element> [<|>|<=|>=|=] <value>
+// QRY: EXPR ([AND|OR] EXPR)*
 const GetSamplingfeatureIdsByFilterResultsStart = `
 join (
 	-- results
-	select mv.samplingfeatureid 
-	from odm2.measuredvalues mv
+	select distinct coalesce(mvIDList) as samplingfeatureid
 `
+
+const GetSamplingfeatureIdsByFilterResultsExpression = `
+select distinct mv.samplingfeatureid
+from odm2.measuredvalues mv
+`
+
 const GetSamplingfeatureIdsByFilterResultsEnd = `
 ) results on results.samplingfeatureid = spec.samplingfeatureid
 `
