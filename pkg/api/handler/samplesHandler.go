@@ -137,7 +137,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       material        query    string false "material - see /queries/samples/materials"
 // @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
 // @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       chemistry         query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
+// @Param       chemistry       query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
 // @Param       title           query    string false "title of publication"
 // @Param       publicationyear query    string false "publication year"
 // @Param       doi             query    string false "DOI"
@@ -235,7 +235,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       material        query    string false "material - see /queries/samples/materials"
 // @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
 // @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       chemistry         query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
+// @Param       chemistry       query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
 // @Param       title           query    string false "title of publication"
 // @Param       publicationyear query    string false "publication year"
 // @Param       doi             query    string false "DOI"
@@ -997,7 +997,11 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 			query.AddFilter("mv.variablecode", expr.Element, sql.OpEq, junctor)
 			junctor = sql.OpAnd
 			query.AddFilter("mv.datavalue", expr.Value, expr.Operator, junctor)
-			query.AddSQLBlock(fmt.Sprintf(") m%d", i+1))
+			if i == 0 {
+				query.AddSQLBlock(fmt.Sprintf(") m%d", i+1))
+			} else {
+				query.AddSQLBlock(fmt.Sprintf(") m%d on m%d.samplingfeatureid = m%d.samplingfeatureid", i+1, i+1, i))
+			}
 		}
 
 		// add closing block for results

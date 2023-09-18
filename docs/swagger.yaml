@@ -562,17 +562,11 @@ paths:
         in: query
         name: sampletech
         type: string
-      - description: chemical element - see /queries/samples/elements
+      - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
+          OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
+          & or |
         in: query
-        name: element
-        type: string
-      - description: element type - see /queries/samples/elementtypes
-        in: query
-        name: elementtype
-        type: string
-      - description: measured value
-        in: query
-        name: value
+        name: chemistry
         type: string
       - description: title of publication
         in: query
@@ -1246,17 +1240,11 @@ paths:
         in: query
         name: sampletech
         type: string
-      - description: chemical element - see /queries/samples/elements
+      - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
+          OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
+          & or |
         in: query
-        name: element
-        type: string
-      - description: element type - see /queries/samples/elementtypes
-        in: query
-        name: elementtype
-        type: string
-      - description: measured value
-        in: query
-        name: value
+        name: chemistry
         type: string
       - description: title of publication
         in: query
