@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -29,9 +30,7 @@ const (
 	QP_INCTYPE  = "inclusiontype"
 	QP_SAMPTECH = "sampletech"
 
-	QP_ELEM     = "element"
-	QP_ELEMTYPE = "elementtype"
-	QP_VALUE    = "value"
+	QP_CHEMISTRY = "chemistry"
 
 	QP_TITLE        = "title"
 	QP_PUBYEAR      = "publicationyear"
@@ -138,9 +137,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       material        query    string false "material - see /queries/samples/materials"
 // @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
 // @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element         query    string false "chemical element - see /queries/samples/elements"
-// @Param       elementtype     query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value           query    string false "measured value"
+// @Param       chemistry       query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
 // @Param       title           query    string false "title of publication"
 // @Param       publicationyear query    string false "publication year"
 // @Param       doi             query    string false "DOI"
@@ -238,9 +235,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       material        query    string false "material - see /queries/samples/materials"
 // @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
 // @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       element         query    string false "chemical element - see /queries/samples/elements"
-// @Param       elementtype     query    string false "element type - see /queries/samples/elementtypes"
-// @Param       value           query    string false "measured value"
+// @Param       chemistry       query    string false "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with & or |"
 // @Param       title           query    string false "title of publication"
 // @Param       publicationyear query    string false "publication year"
 // @Param       doi             query    string false "DOI"
@@ -973,32 +968,40 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 
 	// results
 	junctor = sql.OpWhere // reset junctor for new subquery
-	elem, opElem, err := parseParam(c.QueryParam(QP_ELEM))
-	if err != nil {
-		return nil, err
-	}
-	elemType, opElemType, err := parseParam(c.QueryParam(QP_ELEMTYPE))
-	if err != nil {
-		return nil, err
-	}
-	value, opValue, err := parseParam(c.QueryParam(QP_VALUE))
-	if err != nil {
-		return nil, err
-	}
-	if elem != "" || elemType != "" || value != "" {
+	qryString := c.QueryParam(QP_CHEMISTRY)
+	if qryString != "" {
+		chemQry, err := parseChemQuery(qryString)
+		if err != nil {
+			return nil, err
+		}
 		// add query module results
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterResultsStart)
-		if elem != "" {
-			query.AddFilter("mv.variablecode", elem, opElem, junctor)
+		mvIDList := ""
+		for i := 0; i < len(chemQry.Expressions); i++ {
+			if i > 0 {
+				mvIDList += ","
+			}
+			mvIDList += fmt.Sprintf("m%d.samplingfeatureid", i+1)
+		}
+		query.AddSQLBlock(fmt.Sprintf("%s%s%s", sql.GetSamplingfeatureIdsByFilterResultsStartPre, mvIDList, sql.GetSamplingfeatureIdsByFilterResultsStartPost))
+		// add ResultFilterExpression for each expression in the chemQry
+		for i, expr := range chemQry.Expressions {
+			junctor = sql.OpWhere // reset junctor for new expression
+			exprJunctor, exists := model.CQSQLMap[expr.Junctor]
+			if !exists {
+				return nil, fmt.Errorf("Invalid junctor in chemical query")
+			}
+			query.AddSQLBlock(exprJunctor + sql.GetSamplingfeatureIdsByFilterResultsExpression)
+			query.AddFilter("mv.variablecode", expr.Element, sql.OpEq, junctor)
 			junctor = sql.OpAnd
+			query.AddFilter("mv.datavalue", expr.Value, expr.Operator, junctor)
+			if i == 0 {
+				query.AddSQLBlock(fmt.Sprintf(") m%d", i+1))
+			} else {
+				query.AddSQLBlock(fmt.Sprintf(") m%d on m%d.samplingfeatureid = m%d.samplingfeatureid", i+1, i+1, i))
+			}
 		}
-		if elemType != "" {
-			query.AddFilter("mv.variabletypecode", elemType, opElemType, junctor)
-			junctor = sql.OpAnd
-		}
-		if value != "" {
-			query.AddFilter("mv.datavalue", value, opValue, junctor)
-		}
+
+		// add closing block for results
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterResultsEnd)
 	}
 
@@ -1298,4 +1301,28 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 		geoJSON = append(geoJSON, geoJSONCluster)
 	}
 	return geoJSON, nil
+}
+
+// parseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure
+func parseChemQuery(query string) (model.ChemQuery, error) {
+	chemQuery := model.ChemQuery{}
+	expressionRegex := regexp.MustCompile(`([&\|])?([\w\d]+)([<>=]{1,2})([\d\.]+)`)
+	matches := expressionRegex.FindAllStringSubmatch(query, -1)
+	if len(matches) == 0 {
+		return chemQuery, fmt.Errorf("Can not parse chemical query")
+	}
+	for _, match := range matches {
+		junctor := match[1]
+		if junctor == "" {
+			junctor = model.CQ_JUNCTOR_NONE
+		}
+		expr := model.CQExpression{
+			Junctor:  junctor,
+			Element:  match[2],
+			Operator: match[3],
+			Value:    match[4],
+		}
+		chemQuery.Expressions = append(chemQuery.Expressions, expr)
+	}
+	return chemQuery, nil
 }

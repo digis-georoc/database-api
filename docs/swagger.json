@@ -126,20 +126,8 @@
                     },
                     {
                         "type": "string",
-                        "description": "chemical element - see /queries/samples/elements",
-                        "name": "element",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "element type - see /queries/samples/elementtypes",
-                        "name": "elementtype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "measured value",
-                        "name": "value",
+                        "description": "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of \u003c,\u003e,=,\u003c=,\u003e=. Multiple filters can be concatenated with \u0026 or |",
+                        "name": "chemistry",
                         "in": "query"
                     },
                     {
@@ -1165,20 +1153,8 @@
                     },
                     {
                         "type": "string",
-                        "description": "chemical element - see /queries/samples/elements",
-                        "name": "element",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "element type - see /queries/samples/elementtypes",
-                        "name": "elementtype",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "measured value",
-                        "name": "value",
+                        "description": "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of \u003c,\u003e,=,\u003c=,\u003e=. Multiple filters can be concatenated with \u0026 or |",
+                        "name": "chemistry",
                         "in": "query"
                     },
                     {
