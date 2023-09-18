@@ -982,10 +982,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 			}
 			mvIDList += fmt.Sprintf("m%d.samplingfeatureid", i+1)
 		}
-		params := map[string]interface{}{
-			"mvIDList": mvIDList,
-		}
-		query.AddSQLBlockParametrized(sql.GetSamplingfeatureIdsByFilterResultsStart, params)
+		query.AddSQLBlock(fmt.Sprintf("%s%s%s", sql.GetSamplingfeatureIdsByFilterResultsStartPre, mvIDList, sql.GetSamplingfeatureIdsByFilterResultsStartPost))
 		// add ResultFilterExpression for each expression in the chemQry
 		for i, expr := range chemQry.Expressions {
 			junctor = sql.OpWhere // reset junctor for new expression
