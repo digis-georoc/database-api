@@ -921,15 +921,15 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add taxonomic classifiers filters
 		if rockType != "" {
-			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, junctor)
+			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
 			junctor = sql.OpAnd
 		}
 		if rockClass != "" {
-			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, junctor)
+			query.AddFilter("rc.rock_class", rockClass, opRClass, junctor)
 			junctor = sql.OpAnd
 		}
 		if mineral != "" {
-			query.AddFilter("tax_min.taxonomicclassifiercommonname", mineral, opMin, junctor)
+			query.AddFilter("min.mineral", mineral, opMin, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
 	}
@@ -953,15 +953,15 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
 		// add annotaion filters
 		if material != "" {
-			query.AddFilter("ann_mat.annotationtext", material, opMat, junctor)
+			query.AddFilter("mat.material", material, opMat, junctor)
 			junctor = sql.OpAnd
 		}
 		if incType != "" {
-			query.AddFilter("ann_inc_type.annotationtext", incType, opIncType, junctor)
+			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
 			junctor = sql.OpAnd
 		}
 		if sampTech != "" {
-			query.AddFilter("ann_samp_tech.annotationtext", sampTech, opSampTech, junctor)
+			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
 	}
