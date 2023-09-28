@@ -2,7 +2,7 @@ package model
 
 const (
 	CQ_JUNCTOR_NONE = "%"
-	CQ_JUNCTOR_AND  = "&"
+	CQ_JUNCTOR_AND  = "^"
 	CQ_JUNCTOR_OR   = "|"
 )
 
