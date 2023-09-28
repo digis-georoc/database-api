@@ -1306,7 +1306,7 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 // parseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure
 func parseChemQuery(query string) (model.ChemQuery, error) {
 	chemQuery := model.ChemQuery{}
-	expressionRegex := regexp.MustCompile(`([&\|])?([\w\d]+)([<>=]{1,2})([\d\.]+)`)
+	expressionRegex := regexp.MustCompile(`([\^\|])?([\w\d]+)([<>=]{1,2})([\d\.]+)`)
 	matches := expressionRegex.FindAllStringSubmatch(query, -1)
 	if len(matches) == 0 {
 		return chemQuery, fmt.Errorf("Can not parse chemical query")
