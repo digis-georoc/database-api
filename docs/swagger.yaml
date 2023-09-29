@@ -486,7 +486,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.4
+  version: 0.3.5
 paths:
   /geodata/samplesclustered:
     get:
@@ -564,7 +564,7 @@ paths:
         type: string
       - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
           OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
-          & or |
+          ^ or |
         in: query
         name: chemistry
         type: string
@@ -1242,7 +1242,7 @@ paths:
         type: string
       - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
           OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
-          & or |
+          ^ or |
         in: query
         name: chemistry
         type: string
