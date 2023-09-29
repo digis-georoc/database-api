@@ -54,7 +54,7 @@ const (
 	QP_NUM_CLUSTERS      = "numClusters"
 	QP_MAX_DISTANCE      = "maxDistance"
 	DEFAULT_NUM_CLUSTERS = "7"
-	DEFAULT_MAX_DISTANCE = "50"
+	DEFAULT_MAX_DISTANCE = "50" // not in use currently
 	LONG_MIN             = -180.0
 	LONG_MAX             = 180.0
 	LAT_MIN              = -90.0
@@ -281,7 +281,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 	// calc clustering param relative to original (visible) bbox size
 	width := bbox[1][0] - bbox[0][0]
-	kmeansMaxDistance := width / 4
+	kmeansMaxDistance := width / 10
 	// scale bbox
 	if !isZoom0(bbox) {
 		// add frame around bbox to avoid reloading on small panning
