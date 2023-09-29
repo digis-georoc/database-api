@@ -129,7 +129,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of \u003c,\u003e,=,\u003c=,\u003e=. Multiple filters can be concatenated with ^ or |",
+                        "description": "chemical filter using the form ",
                         "name": "chemistry",
                         "in": "query"
                     },
@@ -1156,7 +1156,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "chemical filter using the form ELEMENT OPERATOR VALUE, where OPERATOR is one of \u003c,\u003e,=,\u003c=,\u003e=. Multiple filters can be concatenated with ^ or |",
+                        "description": "chemical filter using the form ",
                         "name": "chemistry",
                         "in": "query"
                     },
