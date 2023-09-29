@@ -150,9 +150,8 @@ const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
 `
 
 // Filter query-module Results
-// Filter options are defined by a filter dsl:
-// EXPR: <element> [<|>|<=|>=|=] <value>
-// QRY: EXPR ([AND|OR] EXPR)*
+// Filter options are defined by conjunctive filter tuples:
+// (TYPE, ELEMENT, MIN, MAX)
 const GetSamplingfeatureIdsByFilterResultsStartPre = `
 join (
 	-- results

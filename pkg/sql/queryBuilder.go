@@ -28,7 +28,9 @@ type FilterJunctor = string
 const (
 	OpEq        FilterOperator = "="
 	OpLt        FilterOperator = "<"
+	OpLte       FilterOperator = "<="
 	OpGt        FilterOperator = ">"
+	OpGte       FilterOperator = ">="
 	OpIn        FilterOperator = "IN"
 	OpLike      FilterOperator = "LIKE"
 	OpBetween   FilterOperator = "BETWEEN"
@@ -48,7 +50,9 @@ var OperatorMap map[string]FilterOperator = map[string]FilterOperator{
 	"eq":  OpEq,
 	"in":  OpIn,
 	"gt":  OpGt,
+	"gte": OpGte,
 	"lt":  OpLt,
+	"lte": OpLte,
 	"lk":  OpLike,
 	"btw": OpBetween,
 }
@@ -67,11 +71,15 @@ func NewQueryFilter(key string, value string, operator FilterOperator, junctor F
 func (q *Query) AddFilter(key string, value string, operator FilterOperator, junctor FilterJunctor) {
 	switch operator {
 	case OpEq:
-		q.AddEqFilter(key, value, junctor)
+		q.AddComparisonFilter(key, value, junctor, OpEq)
 	case OpGt:
-		q.AddGtFilter(key, value, junctor)
+		q.AddComparisonFilter(key, value, junctor, OpGt)
+	case OpGte:
+		q.AddComparisonFilter(key, value, junctor, OpGte)
 	case OpLt:
-		q.AddLtFilter(key, value, junctor)
+		q.AddComparisonFilter(key, value, junctor, OpLt)
+	case OpLte:
+		q.AddComparisonFilter(key, value, junctor, OpLte)
 	case OpIn:
 		q.AddInFilter(key, value, junctor)
 	case OpLike:
@@ -84,26 +92,10 @@ func (q *Query) AddFilter(key string, value string, operator FilterOperator, jun
 }
 
 // Add a filter with operator "=" to the query
-func (q *Query) AddEqFilter(key string, value string, junctor FilterJunctor) {
+func (q *Query) AddComparisonFilter(key string, value string, junctor FilterJunctor, comparator FilterOperator) {
 	q.filterValues = append(q.filterValues, value)
 	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
-	filterString := NewQueryFilter(key, placeholder, OpEq, junctor)
-	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
-}
-
-// Add a filter with operator "<" to the query
-func (q *Query) AddLtFilter(key string, value string, junctor FilterJunctor) {
-	q.filterValues = append(q.filterValues, value)
-	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
-	filterString := NewQueryFilter(key, placeholder, OpLt, junctor)
-	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
-}
-
-// Add a filter with operator ">" to the query
-func (q *Query) AddGtFilter(key string, value string, junctor FilterJunctor) {
-	q.filterValues = append(q.filterValues, value)
-	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
-	filterString := NewQueryFilter(key, placeholder, OpGt, junctor)
+	filterString := NewQueryFilter(key, placeholder, comparator, junctor)
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
