@@ -281,7 +281,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 	// calc clustering param relative to original (visible) bbox size
 	width := bbox[1][0] - bbox[0][0]
-	kmeansMaxDistance := width / 10
+	kmeansMaxDistance := width / 12
 	// scale bbox
 	if !isZoom0(bbox) {
 		// add frame around bbox to avoid reloading on small panning
