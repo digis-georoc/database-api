@@ -33,9 +33,10 @@ type ElementTypeResponse struct {
 
 type CQExpression struct {
 	Junctor  string
+	Type     string
 	Element  string
-	Operator string
-	Value    string
+	MinValue string
+	MaxValue string
 }
 
 type ChemQuery struct {

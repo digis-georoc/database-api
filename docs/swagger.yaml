@@ -562,9 +562,7 @@ paths:
         in: query
         name: sampletech
         type: string
-      - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
-          OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
-          ^ or |
+      - description: 'chemical filter using the form '
         in: query
         name: chemistry
         type: string
@@ -1240,9 +1238,7 @@ paths:
         in: query
         name: sampletech
         type: string
-      - description: chemical filter using the form ELEMENT OPERATOR VALUE, where
-          OPERATOR is one of <,>,=,<=,>=. Multiple filters can be concatenated with
-          ^ or |
+      - description: 'chemical filter using the form '
         in: query
         name: chemistry
         type: string
