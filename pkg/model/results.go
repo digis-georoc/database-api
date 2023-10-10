@@ -14,7 +14,9 @@ var CQSQLMap = map[string]string{
 }
 
 type Element struct {
-	Name string `json:"name"`
+	Value string `json:"value"`
+	Label string `json:"label"`
+	Count int    `json:"count"`
 }
 
 type ElementResponse struct {
