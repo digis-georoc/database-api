@@ -1,8 +1,9 @@
 package sql
 
 const ElementsQuery = `
-select distinct v.variablecode as name
-from odm2.variables v 
+select v.variablecode as value,
+v.variablecode as label
+from odm2.variables v
 `
 
 const ElementTypesQuery = `
