@@ -51,7 +51,11 @@ definitions:
     type: object
   model.Element:
     properties:
-      name:
+      count:
+        type: integer
+      label:
+        type: string
+      value:
         type: string
     type: object
   model.ElementResponse:
