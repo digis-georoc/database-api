@@ -371,12 +371,14 @@ definitions:
     properties:
       data:
         items:
-          $ref: '#/definitions/model.SampleByFilters'
+          $ref: '#/definitions/model.SampleByFiltersData'
         type: array
       numItems:
         type: integer
+      totalCount:
+        type: integer
     type: object
-  model.SampleByFilters:
+  model.SampleByFiltersData:
     properties:
       latitude:
         type: number

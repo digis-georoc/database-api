@@ -2794,15 +2794,18 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.SampleByFilters"
+                        "$ref": "#/definitions/model.SampleByFiltersData"
                     }
                 },
                 "numItems": {
                     "type": "integer"
+                },
+                "totalCount": {
+                    "type": "integer"
                 }
             }
         },
-        "model.SampleByFilters": {
+        "model.SampleByFiltersData": {
             "type": "object",
             "properties": {
                 "latitude": {
