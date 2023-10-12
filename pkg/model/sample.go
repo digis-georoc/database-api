@@ -31,14 +31,22 @@ type SampleResponse struct {
 }
 
 type SampleByFilters struct {
+	SampleID   int     `json:"sampleID"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	TotalCount int     `json:"totalCount"`
+}
+
+type SampleByFiltersData struct {
 	SampleID  int     `json:"sampleID"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
 }
 
 type SampleByFilterResponse struct {
-	NumItems int               `json:"numItems"`
-	Data     []SampleByFilters `json:"data"`
+	NumItems   int                   `json:"numItems"`
+	TotalCount int                   `json:"totalCount"`
+	Data       []SampleByFiltersData `json:"data"`
 }
 
 type ClusteredSample struct {

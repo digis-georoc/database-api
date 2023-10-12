@@ -186,6 +186,9 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
+	// wrap in rowcount sql
+	query.WrapInSQL("select *, count(*) over () as NumSamples from (", ") q")
+
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -199,7 +202,17 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	response := model.SampleByFilterResponse{NumItems: len(specimen), Data: specimen}
+	// copy into model without totalCount on each sample
+	responseData := []model.SampleByFiltersData{}
+	for _, sample := range specimen {
+		data := model.SampleByFiltersData{
+			SampleID:  sample.SampleID,
+			Latitude:  sample.Latitude,
+			Longitude: sample.Longitude,
+		}
+		responseData = append(responseData, data)
+	}
+	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: specimen[0].TotalCount, Data: responseData}
 	return c.JSON(http.StatusOK, response)
 }
 
