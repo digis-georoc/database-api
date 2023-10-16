@@ -1730,7 +1730,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "get rock classes",
+                "description": "get rock classes\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is either \"in\" (IN) for rocktype; or \"lk\" (LIKE) for the search query q\nand VALUE is an unquoted string\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards ` + "`" + `*` + "`" + `(0 or more chars) and ` + "`" + `?` + "`" + `(one char).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1752,6 +1752,18 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "offset",
                         "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use ",
+                        "name": "rocktype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search string for rockclass values. Use ",
+                        "name": "q",
                         "in": "query"
                     }
                 ],

@@ -443,15 +443,15 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Param		rocktype query string false "One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use "in" as the operator"
-// @Param		q query string false "Search string for rockclass values. Use "lk:" as the operator"
-// @Success     200    {object} model.TaxonomicClassifierResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
+// @Param       limit    query    int    false "limit"
+// @Param       offset   query    int    false "offset"
+// @Param       rocktype query    string false "One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use "in" as the operator"
+// @Param       q        query    string false "Search string for rockclass values. Use "lk:" as the operator"
+// @Success     200      {object} model.TaxonomicClassifierResponse
+// @Failure     401      {object} string
+// @Failure     404      {object} string
+// @Failure     422      {object} string
+// @Failure     500      {object} string
 // @Router      /queries/samples/rockclasses [get]
 func (h *Handler) GetRockClasses(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
