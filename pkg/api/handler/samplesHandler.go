@@ -187,7 +187,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 	// wrap in rowcount sql
-	query.WrapInSQL("select *, count(*) over () as NumSamples from (", ") q")
+	query.WrapInSQL("select *, count(*) over () as totalCount from (", ") q")
 
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
