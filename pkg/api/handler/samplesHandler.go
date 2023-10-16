@@ -26,6 +26,8 @@ const (
 	QP_ROCKCLASS = "rockclass"
 	QP_MINERAL   = "mineral"
 
+	QP_ROCKCLASS_QUERY = "q"
+
 	QP_MATERIAL = "material"
 	QP_INCTYPE  = "inclusiontype"
 	QP_SAMPTECH = "sampletech"
@@ -431,12 +433,20 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 // GetRockClasses godoc
 // @Summary     Retrieve rock classes
 // @Description get rock classes
+// @Description Filter DSL syntax:
+// @Description FIELD=OPERATOR:VALUE
+// @Description where FIELD is one of the accepted query params; OPERATOR is either "in" (IN) for rocktype; or "lk" (LIKE) for the search query q
+// @Description and VALUE is an unquoted string
+// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
 // @Security    ApiKeyAuth
 // @Tags        samples
 // @Accept      json
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
+// @Param		rocktype query string false "One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use "in" as the operator"
+// @Param		q query string false "Search string for rockclass values. Use "lk:" as the operator"
 // @Success     200    {object} model.TaxonomicClassifierResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
@@ -448,9 +458,28 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-
 	rockclasses := []model.TaxonomicClassifier{}
-	query := sql.NewQuery(sql.RockClassQuery)
+	query := sql.NewQuery(sql.RockClassQueryStart)
+
+	rocktypes, _, err := parseParam(c.QueryParam(QP_ROCKTYPE))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Invalid rocktype parameter. Expected format: `in:VAL1,VAL2`")
+	}
+	if rocktypes != "" {
+		// add query filter for rock types
+		query.AddFilter("t2.taxonomicclassifiername", rocktypes, sql.OpIn, sql.OpAnd)
+	}
+	query.AddSQLBlock(sql.RockClassQueryMid)
+	rockClassQuery, _, err := parseParam(c.QueryParam(QP_ROCKCLASS_QUERY))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Invalid string search parameter q. Expected format: `lk:*F_o`")
+	}
+	if rockClassQuery != "" {
+		// add query filter for search query
+		query.AddFilter("t.taxonomicclassifiername", rockClassQuery, sql.OpLike, sql.OpAnd)
+	}
+	query.AddSQLBlock(sql.RockClassQueryEnd)
+
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -458,7 +487,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &rockclasses)
+	err = h.db.Query(query.GetQueryString(), &rockclasses, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetRockClasses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
