@@ -1653,7 +1653,14 @@ paths:
     get:
       consumes:
       - application/json
-      description: get rock classes
+      description: |-
+        get rock classes
+        Filter DSL syntax:
+        FIELD=OPERATOR:VALUE
+        where FIELD is one of the accepted query params; OPERATOR is either "in" (IN) for rocktype; or "lk" (LIKE) for the search query q
+        and VALUE is an unquoted string
+        Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+        The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
       parameters:
       - description: limit
         in: query
@@ -1663,6 +1670,15 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: 'One or more Rocktypes to filter corresponding Rockclasses as
+          a comma-separated list. Use '
+        in: query
+        name: rocktype
+        type: string
+      - description: 'Search string for rockclass values. Use '
+        in: query
+        name: q
+        type: string
       produces:
       - application/json
       responses:

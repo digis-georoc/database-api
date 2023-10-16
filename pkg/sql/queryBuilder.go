@@ -91,7 +91,7 @@ func (q *Query) AddFilter(key string, value string, operator FilterOperator, jun
 	}
 }
 
-// Add a filter with operator "=" to the query
+// Add a filter with operator "=", "<", ">", "<=", ">=" to the query
 func (q *Query) AddComparisonFilter(key string, value string, junctor FilterJunctor, comparator FilterOperator) {
 	q.filterValues = append(q.filterValues, value)
 	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
@@ -172,7 +172,7 @@ func (q *Query) WrapInSQL(prefix string, postfix string) {
 }
 
 // Wraps the current query in in an sql prefix and postfix
-// Successively replaces all occurrences of param.keys in the prefix and postfix with the params.values
+// Successively replaces all occurrences of param.keys in the prefix and postfix with sql-placeholders for the params.values
 func (q *Query) WrapInSQLParametrized(prefix string, postfix string, params map[string]interface{}) {
 	replacements := []string{}
 	for k, v := range params {
@@ -188,7 +188,7 @@ func (q *Query) WrapInSQLParametrized(prefix string, postfix string, params map[
 }
 
 // Add a subquery / sql block to the query
-// Successively replaces all occurrences of param.keys in the sql-block with the params.values
+// Successively replaces all occurrences of param.keys in the sql-block with sql-placeholders for the params.values
 func (q *Query) AddSQLBlockParametrized(sql string, params map[string]interface{}) {
 	replacements := []string{}
 	for k, v := range params {
