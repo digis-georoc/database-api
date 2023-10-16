@@ -460,6 +460,17 @@ definitions:
       numItems:
         type: integer
     type: object
+  model.Statistics:
+    properties:
+      numAnalyses:
+        type: integer
+      numCitations:
+        type: integer
+      numResults:
+        type: integer
+      numSamples:
+        type: integer
+    type: object
   model.TaxonomicClassifier:
     properties:
       count:
@@ -1948,6 +1959,39 @@ paths:
       summary: Retrieve all geological settings
       tags:
       - sites
+  /queries/statistics:
+    get:
+      consumes:
+      - application/json
+      description: get statistics
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Statistics'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve data statistics
+      tags:
+      - stats
 schemes:
 - https
 - http

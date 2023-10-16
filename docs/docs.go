@@ -2234,6 +2234,58 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/queries/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get statistics",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stats"
+                ],
+                "summary": "Retrieve data statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Statistics"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2940,6 +2992,23 @@ const docTemplate = `{
                     }
                 },
                 "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.Statistics": {
+            "type": "object",
+            "properties": {
+                "numAnalyses": {
+                    "type": "integer"
+                },
+                "numCitations": {
+                    "type": "integer"
+                },
+                "numResults": {
+                    "type": "integer"
+                },
+                "numSamples": {
                     "type": "integer"
                 }
             }
