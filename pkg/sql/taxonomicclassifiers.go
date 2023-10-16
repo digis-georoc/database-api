@@ -1,9 +1,9 @@
 package sql
 
 const RockClassQuery = `
-select (array_agg(t.taxonomicclassifiername))[1] as value,
+select distinct (array_agg(t.taxonomicclassifiername))[1] as value,
 (array_agg(t.taxonomicclassifiercommonname))[1] as label,
-count(distinct s.samplingfeatureid)
+count(distinct s.samplingfeatureid) as count
 from odm2.taxonomicclassifiers t
 left join odm2.specimentaxonomicclassifiers s on s.taxonomicclassifierid = t.taxonomicclassifierid 
 where t.taxonomicclassifiertypecv = 'Lithology'
@@ -12,7 +12,7 @@ order by count desc
 `
 
 const RockTypeQuery = `
-select (array_agg(t.taxonomicclassifiername))[1] as value,
+select distinct (array_agg(t.taxonomicclassifiername))[1] as value,
 (array_agg(t.taxonomicclassifiercommonname))[1] as label,
 count(distinct s.samplingfeatureid)
 from odm2.taxonomicclassifiers t
@@ -23,7 +23,7 @@ order by count desc
 `
 
 const MineralQuery = `
-select (array_agg(t.taxonomicclassifiername))[1] as value,
+select distinct (array_agg(t.taxonomicclassifiername))[1] as value,
 (array_agg(t.taxonomicclassifiercommonname))[1] as label,
 count(distinct s.samplingfeatureid)
 from odm2.taxonomicclassifiers t
