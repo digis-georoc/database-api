@@ -118,6 +118,8 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// results
 	queries.GET("/results/elements", h.GetElements)
 	queries.GET("/results/elementtypes", h.GetElementTypes)
+	// statistics
+	queries.GET("/statistics", h.GetStatistics)
 	// GeoJSON
 	geoData := v1.Group("/geodata")
 	geoData.Use(middleware.GetAccessKeyMiddleware(secStore))
