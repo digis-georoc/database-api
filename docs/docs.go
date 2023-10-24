@@ -939,6 +939,12 @@ const docTemplate = `{
                 "summary": "Retrieve chemical elements",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Element type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
                         "description": "limit",
                         "name": "limit",
