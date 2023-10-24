@@ -123,6 +123,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "host material - see /queries/samples/hostmaterials",
+                        "name": "hostmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion material - see /queries/samples/inclusionmaterials",
+                        "name": "inclusionmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques",
                         "name": "sampletech",
                         "in": "query"
@@ -1156,6 +1168,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "host material - see /queries/samples/hostmaterials",
+                        "name": "hostmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion material - see /queries/samples/inclusionmaterials",
+                        "name": "inclusionmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques",
                         "name": "sampletech",
                         "in": "query"
@@ -1376,6 +1400,138 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/model.GeoAgeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/hostmaterials": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get host materials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve host materials",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TaxonomicClassifierResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/queries/samples/inclusionmaterials": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get inclusion materials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "samples"
+                ],
+                "summary": "Retrieve inclusion materials",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.TaxonomicClassifierResponse"
                         }
                     },
                     "401": {
