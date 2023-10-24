@@ -10,6 +10,10 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
+const (
+	QP_ELEMENTTYPE = "type"
+)
+
 // GetElements godoc
 // @Summary     Retrieve chemical elements
 // @Description get chemical elements
@@ -17,6 +21,7 @@ import (
 // @Tags        samples
 // @Accept      json
 // @Produce     json
+// @Param type query string false "Element type"
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
 // @Success     200    {object} model.ElementResponse
@@ -31,8 +36,17 @@ func (h *Handler) GetElements(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
+	elementType, opElementType, err := parseParam(c.QueryParam(QP_ELEMENTTYPE))
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+
 	elements := []model.Element{}
 	query := sql.NewQuery(sql.ElementsQuery)
+	if elementType != "" {
+		// add filter for element type
+		query.AddFilter("v.variabletypecode", elementType, opElementType, sql.OpWhere)
+	}
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -40,7 +54,7 @@ func (h *Handler) GetElements(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &elements)
+	err = h.db.Query(query.GetQueryString(), &elements, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetElements: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element data")
