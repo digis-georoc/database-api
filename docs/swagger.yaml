@@ -1103,6 +1103,10 @@ paths:
       - application/json
       description: get chemical elements
       parameters:
+      - description: Element type
+        in: query
+        name: type
+        type: string
       - description: limit
         in: query
         name: limit

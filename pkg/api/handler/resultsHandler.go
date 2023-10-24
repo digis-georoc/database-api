@@ -21,9 +21,9 @@ const (
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param type query string false "Element type"
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
+// @Param       type   query    string false "Element type"
+// @Param       limit  query    int    false "limit"
+// @Param       offset query    int    false "offset"
 // @Success     200    {object} model.ElementResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
