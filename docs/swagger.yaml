@@ -575,6 +575,14 @@ paths:
         in: query
         name: inclusiontype
         type: string
+      - description: host material - see /queries/samples/hostmaterials
+        in: query
+        name: hostmaterial
+        type: string
+      - description: inclusion material - see /queries/samples/inclusionmaterials
+        in: query
+        name: inclusionmaterial
+        type: string
       - description: sampling technique - see /queries/samples/samplingtechniques
         in: query
         name: sampletech
@@ -1255,6 +1263,14 @@ paths:
         in: query
         name: inclusiontype
         type: string
+      - description: host material - see /queries/samples/hostmaterials
+        in: query
+        name: hostmaterial
+        type: string
+      - description: inclusion material - see /queries/samples/inclusionmaterials
+        in: query
+        name: inclusionmaterial
+        type: string
       - description: sampling technique - see /queries/samples/samplingtechniques
         in: query
         name: sampletech
@@ -1456,6 +1472,90 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Retrieve geological ages
+      tags:
+      - samples
+  /queries/samples/hostmaterials:
+    get:
+      consumes:
+      - application/json
+      description: get host materials
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TaxonomicClassifierResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve host materials
+      tags:
+      - samples
+  /queries/samples/inclusionmaterials:
+    get:
+      consumes:
+      - application/json
+      description: get inclusion materials
+      parameters:
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.TaxonomicClassifierResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "422":
+          description: Unprocessable Entity
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve inclusion materials
       tags:
       - samples
   /queries/samples/inclusiontypes:

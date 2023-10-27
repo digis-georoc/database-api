@@ -22,9 +22,11 @@ const (
 	QP_LAT     = "latitude"
 	QP_LONG    = "longitude"
 
-	QP_ROCKTYPE  = "rocktype"
-	QP_ROCKCLASS = "rockclass"
-	QP_MINERAL   = "mineral"
+	QP_ROCKTYPE     = "rocktype"
+	QP_ROCKCLASS    = "rockclass"
+	QP_MINERAL      = "mineral"
+	QP_INCLUSIONMAT = "inclusionmaterial"
+	QP_HOSTMAT      = "hostmaterial"
 
 	QP_ROCKCLASS_QUERY = "q"
 
@@ -125,38 +127,40 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Tags        samples
 // @Accept      json
 // @Produce     json
-// @Param       limit           query    int    false "limit"
-// @Param       offset          query    int    false "offset"
-// @Param       setting         query    string false "tectonic setting - see /queries/sites/settings"
-// @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
-// @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
-// @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
-// @Param       latitude        query    string false "latitude"
-// @Param       longitude       query    string false "longitude"
-// @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
-// @Param       material        query    string false "material - see /queries/samples/materials"
-// @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       chemistry       query    string false "chemical filter using the form "(TYPE,ELEMENT,MIN,MAX),..." where the filter tuples are evaluated conjunctively
-// @Param       title           query    string false "title of publication"
-// @Param       publicationyear query    string false "publication year"
-// @Param       doi             query    string false "DOI"
-// @Param       firstname       query    string false "Author first name"
-// @Param       lastname        query    string false "Author last name"
-// @Param       agemin          query    string false "Specimen age min"
-// @Param       agemax          query    string false "Specimen age max"
-// @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
-// @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
-// @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
-// @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       addcoordinates  query    bool   false "Add coordinates to each sample"
-// @Success     200             {object} model.SampleByFilterResponse
-// @Failure     401             {object} string
-// @Failure     404             {object} string
-// @Failure     422             {object} string
-// @Failure     500             {object} string
+// @Param       limit             query    int    false "limit"
+// @Param       offset            query    int    false "offset"
+// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1         query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2         query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3         query    string false "location level 3 - see /queries/locations/l3"
+// @Param       latitude          query    string false "latitude"
+// @Param       longitude         query    string false "longitude"
+// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass         query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral           query    string false "mineral - see /queries/samples/minerals"
+// @Param       material          query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials"
+// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials"
+// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       chemistry         query    string false "chemical filter using the form "(TYPE,ELEMENT,MIN,MAX),..." where the filter tuples are evaluated conjunctively
+// @Param       title             query    string false "title of publication"
+// @Param       publicationyear   query    string false "publication year"
+// @Param       doi               query    string false "DOI"
+// @Param       firstname         query    string false "Author first name"
+// @Param       lastname          query    string false "Author last name"
+// @Param       agemin            query    string false "Specimen age min"
+// @Param       agemax            query    string false "Specimen age max"
+// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages"
+// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
+// @Success     200               {object} model.SampleByFilterResponse
+// @Failure     401               {object} string
+// @Failure     404               {object} string
+// @Failure     422               {object} string
+// @Failure     500               {object} string
 // @Router      /queries/samples [get]
 func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -214,7 +218,11 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		}
 		responseData = append(responseData, data)
 	}
-	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: specimen[0].TotalCount, Data: responseData}
+	totalCount := 0
+	if len(specimen) > 0 {
+		totalCount = specimen[0].TotalCount
+	}
+	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: totalCount, Data: responseData}
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -236,40 +244,42 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Tags        geodata
 // @Accept      json
 // @Produce     json
-// @Param       limit           query    int    false "limit"
-// @Param       offset          query    int    false "offset"
-// @Param       setting         query    string false "tectonic setting - see /queries/sites/settings"
-// @Param       location1       query    string false "location level 1 - see /queries/locations/l1"
-// @Param       location2       query    string false "location level 2 - see /queries/locations/l2"
-// @Param       location3       query    string false "location level 3 - see /queries/locations/l3"
-// @Param       latitude        query    string false "latitude"
-// @Param       longitude       query    string false "longitude"
-// @Param       rocktype        query    string false "rock type - see /queries/samples/rocktypes"
-// @Param       rockclass       query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
-// @Param       mineral         query    string false "mineral - see /queries/samples/minerals"
-// @Param       material        query    string false "material - see /queries/samples/materials"
-// @Param       inclusiontype   query    string false "inclusion type - see /queries/samples/inclusiontypes"
-// @Param       sampletech      query    string false "sampling technique - see /queries/samples/samplingtechniques"
-// @Param       chemistry       query    string false "chemical filter using the form "(TYPE,ELEMENT,MIN,MAX),..." where the filter tuples are evaluated conjunctively
-// @Param       title           query    string false "title of publication"
-// @Param       publicationyear query    string false "publication year"
-// @Param       doi             query    string false "DOI"
-// @Param       firstname       query    string false "Author first name"
-// @Param       lastname        query    string false "Author last name"
-// @Param       agemin          query    string false "Specimen age min"
-// @Param       agemax          query    string false "Specimen age max"
-// @Param       geoage          query    string false "Specimen geological age - see /queries/samples/geoages"
-// @Param       geoageprefix    query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
-// @Param       lab             query    string false "Laboratory name - see /queries/samples/organizationnames"
-// @Param       polygon         query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox            query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
-// @Param       numClusters     query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
-// @Param       maxDistance     query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Success     200             {object} model.ClusterResponse
-// @Failure     401             {object} string
-// @Failure     404             {object} string
-// @Failure     422             {object} string
-// @Failure     500             {object} string
+// @Param       limit             query    int    false "limit"
+// @Param       offset            query    int    false "offset"
+// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings"
+// @Param       location1         query    string false "location level 1 - see /queries/locations/l1"
+// @Param       location2         query    string false "location level 2 - see /queries/locations/l2"
+// @Param       location3         query    string false "location level 3 - see /queries/locations/l3"
+// @Param       latitude          query    string false "latitude"
+// @Param       longitude         query    string false "longitude"
+// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes"
+// @Param       rockclass         query    string false "taxonomic classifier name - see /queries/samples/rockclasses"
+// @Param       mineral           query    string false "mineral - see /queries/samples/minerals"
+// @Param       material          query    string false "material - see /queries/samples/materials"
+// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes"
+// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials"
+// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials"
+// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques"
+// @Param       chemistry         query    string false "chemical filter using the form "(TYPE,ELEMENT,MIN,MAX),..." where the filter tuples are evaluated conjunctively
+// @Param       title             query    string false "title of publication"
+// @Param       publicationyear   query    string false "publication year"
+// @Param       doi               query    string false "DOI"
+// @Param       firstname         query    string false "Author first name"
+// @Param       lastname          query    string false "Author last name"
+// @Param       agemin            query    string false "Specimen age min"
+// @Param       agemax            query    string false "Specimen age max"
+// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages"
+// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes"
+// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames"
+// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       bbox              query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       numClusters       query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+// @Param       maxDistance       query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Success     200               {object} model.ClusterResponse
+// @Failure     401               {object} string
+// @Failure     404               {object} string
+// @Failure     422               {object} string
+// @Failure     500               {object} string
 // @Router      /geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -625,6 +635,90 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+// GetHostMaterials godoc
+// @Summary     Retrieve host materials
+// @Description get host materials
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {object} model.TaxonomicClassifierResponse
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/hostmaterials [get]
+func (h *Handler) GetHostMaterials(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	hostMaterials := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.HostMatQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &hostMaterials)
+	if err != nil {
+		logger.Errorf("Can not GetHostMaterials: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve host material data")
+	}
+	response := model.TaxonomicClassifierResponse{
+		NumItems: len(hostMaterials),
+		Data:     hostMaterials,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
+// GetInclusionMaterials godoc
+// @Summary     Retrieve inclusion materials
+// @Description get inclusion materials
+// @Security    ApiKeyAuth
+// @Tags        samples
+// @Accept      json
+// @Produce     json
+// @Param       limit  query    int false "limit"
+// @Param       offset query    int false "offset"
+// @Success     200    {object} model.TaxonomicClassifierResponse
+// @Failure     401    {object} string
+// @Failure     404    {object} string
+// @Failure     422    {object} string
+// @Failure     500    {object} string
+// @Router      /queries/samples/inclusionmaterials [get]
+func (h *Handler) GetInclusionMaterials(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+
+	incMaterials := []model.TaxonomicClassifier{}
+	query := sql.NewQuery(sql.IncMatQuery)
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+	err = h.db.Query(query.GetQueryString(), &incMaterials)
+	if err != nil {
+		logger.Errorf("Can not GetInclusionMaterials: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion material data")
+	}
+	response := model.TaxonomicClassifierResponse{
+		NumItems: len(incMaterials),
+		Data:     incMaterials,
+	}
+	return c.JSON(http.StatusOK, response)
+}
+
 // GetInclusionTypes godoc
 // @Summary     Retrieve inclusion types
 // @Description get inclusion types
@@ -958,10 +1052,45 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	if err != nil {
 		return nil, err
 	}
-	if rockType != "" || rockClass != "" || mineral != "" {
+	hostMaterial, opHostMaterial, err := parseParam(c.QueryParam(QP_HOSTMAT))
+	if err != nil {
+		return nil, err
+	}
+	inclMaterial, opInclMaterial, err := parseParam(c.QueryParam(QP_INCLUSIONMAT))
+	if err != nil {
+		return nil, err
+	}
+	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
-		// add taxonomic classifiers filters
+		// add filter for each subquery for significant speedup
+		if rockType != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
+			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
+		}
+		if rockClass != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
+			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
+		}
+		if mineral != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralStart)
+			query.AddFilter("tax_min.taxonomicclassifiername", mineral, opMin, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralEnd)
+		}
+		if hostMaterial != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatStart)
+			query.AddFilter("tax_host.taxonomicclassifiername", hostMaterial, opHostMaterial, sql.OpAnd)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatEnd)
+		}
+		if inclMaterial != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatStart)
+			query.AddFilter("tax_inc.taxonomicclassifiername", inclMaterial, opInclMaterial, sql.OpAnd)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd)
+		}
+		// add taxonomic classifiers filters at the end
+		junctor = sql.OpWhere
 		if rockType != "" {
 			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
 			junctor = sql.OpAnd
@@ -972,6 +1101,14 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		}
 		if mineral != "" {
 			query.AddFilter("min.mineral", mineral, opMin, junctor)
+			junctor = sql.OpAnd
+		}
+		if hostMaterial != "" {
+			query.AddFilter("hostmat.host_material", hostMaterial, opHostMaterial, junctor)
+			junctor = sql.OpAnd
+		}
+		if inclMaterial != "" {
+			query.AddFilter("incmat.inclusion_material", inclMaterial, opInclMaterial, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
 	}

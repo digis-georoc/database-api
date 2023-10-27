@@ -44,3 +44,23 @@ where t.taxonomicclassifierdescription = 'Mineral Classification from GEOROC'
 group by t.taxonomicclassifierid 
 order by count desc
 `
+
+const HostMatQuery = `
+-- get all host materials
+select t.taxonomicclassifiername as value, t.taxonomicclassifiercommonname as label, count(distinct s.samplingfeatureid)
+from odm2.taxonomicclassifiers t 
+left join odm2.specimentaxonomicclassifiers s on s.taxonomicclassifierid = t.taxonomicclassifierid 
+where s.specimentaxonomicclassifiertype = 'host mineral'
+group by t.taxonomicclassifiername, t.taxonomicclassifiercommonname 
+order by count desc
+`
+
+const IncMatQuery = `
+-- get all inclusion materials
+select t.taxonomicclassifiername as value, t.taxonomicclassifiercommonname as label, count(distinct s.samplingfeatureid)
+from odm2.taxonomicclassifiers t 
+left join odm2.specimentaxonomicclassifiers s on s.taxonomicclassifierid = t.taxonomicclassifierid 
+where s.specimentaxonomicclassifiertype = 'mineral inclusion'
+group by t.taxonomicclassifiername, t.taxonomicclassifiercommonname 
+order by count desc
+`

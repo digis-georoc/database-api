@@ -86,28 +86,66 @@ const GetSamplingfeatureIdsByFilterLocationsEnd = `
 // 		RockType
 //		RockClass
 //		Mineral
+//		HostMaterial
+//		InclusionMaterial
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select distinct rt.samplingfeatureid
-	from 
+	select s.samplingfeatureid
+	from odm2.samplingfeatures s
+	left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart = `
+	left join
 	(	
 		select stc.samplingfeatureid, tax_type.taxonomicclassifiername as rock_type
 		from odm2.specimentaxonomicclassifiers stc
 		left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
-	) rt
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd = `
+	) rt on rt.samplingfeatureid = s.samplingfeatureid
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart = `
 	left join 
 	(
 		select stc.samplingfeatureid, tax_class.taxonomicclassifiername as rock_class
 		from odm2.specimentaxonomicclassifiers stc
 		left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
-	) rc on rc.samplingfeatureid = rt.samplingfeatureid
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd = `
+	) rc on rc.samplingfeatureid = s.samplingfeatureid
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralStart = `
 	left join
 	(
-		select stc.samplingfeatureid, tax_min.taxonomicclassifiercommonname as mineral
+		select stc.samplingfeatureid, tax_min.taxonomicclassifiername as mineral
 		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifierdescription  = 'Mineral Classification from GEOROC'
-	) min on min.samplingfeatureid = rt.samplingfeatureid
+		left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifiertypecv  = 'Mineral'
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralEnd = `
+	) min on min.samplingfeatureid = r.samplingfeatureid or min.samplingfeatureid = s.samplingfeatureid 
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatStart = `
+	left join
+	(
+		select stc.samplingfeatureid, tax_host.taxonomicclassifiername as host_material
+		from odm2.specimentaxonomicclassifiers stc
+		left join odm2.taxonomicclassifiers tax_host on tax_host.taxonomicclassifierid = stc.taxonomicclassifierid
+		where stc.specimentaxonomicclassifiertype = 'host mineral'
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatEnd = `
+	) hostmat on hostmat.samplingfeatureid = r.samplingfeatureid
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatStart = `
+	left join 
+	(
+		select stc.samplingfeatureid , tax_inc.taxonomicclassifiername as inclusion_material
+		from odm2.specimentaxonomicclassifiers stc
+		left join odm2.taxonomicclassifiers tax_inc on tax_inc.taxonomicclassifierid = stc.taxonomicclassifierid
+		where stc.specimentaxonomicclassifiertype = 'mineral inclusion'
+`
+const GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd = `
+	) incmat on incmat.samplingfeatureid = r.samplingfeatureid
 `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 ) tax on tax.samplingfeatureid = spec.samplingfeatureid
@@ -229,7 +267,7 @@ join (
 `
 
 const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
-) organizations on spec.samplingfeatureid = case when organizations.samplingfeaturedescription = 'Sample' then organizations.sid else fid end
+) organizations on spec.samplingfeatureid = case when organizations.samplingfeaturedescription = 'Sample' then organizations.sid else organizations.fid end
 `
 
 // Filter query-module Geometry

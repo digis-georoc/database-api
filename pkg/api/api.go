@@ -111,6 +111,8 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/samples/minerals", h.GetMinerals)
 	queries.GET("/samples/materials", h.GetMaterials)
 	queries.GET("/samples/inclusiontypes", h.GetInclusionTypes)
+	queries.GET("/samples/inclusionmaterials", h.GetInclusionMaterials)
+	queries.GET("/samples/hostmaterials", h.GetHostMaterials)
 	queries.GET("/samples/samplingtechniques", h.GetSamplingTechniques)
 	queries.GET("/samples/geoages", h.GetGeoAges)
 	queries.GET("/samples/geoageprefixes", h.GetGeoAgePrefixes)
