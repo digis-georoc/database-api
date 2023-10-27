@@ -1063,7 +1063,34 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
-		// add taxonomic classifiers filters
+		// add filter for each subquery for significant speedup
+		if rockType != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
+			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
+		}
+		if rockClass != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
+			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
+		}
+		if mineral != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralStart)
+			query.AddFilter("tax_min.taxonomicclassifiername", mineral, opMin, sql.OpWhere)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralEnd)
+		}
+		if hostMaterial != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatStart)
+			query.AddFilter("tax_host.taxonomicclassifiername", hostMaterial, opHostMaterial, sql.OpAnd)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatEnd)
+		}
+		if inclMaterial != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatStart)
+			query.AddFilter("tax_inc.taxonomicclassifiername", inclMaterial, opInclMaterial, sql.OpAnd)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd)
+		}
+		// add taxonomic classifiers filters at the end
+		junctor = sql.OpWhere
 		if rockType != "" {
 			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
 			junctor = sql.OpAnd
