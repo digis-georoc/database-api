@@ -57,12 +57,14 @@ const (
 
 	QP_NUM_CLUSTERS      = "numClusters"
 	QP_MAX_DISTANCE      = "maxDistance"
-	DEFAULT_NUM_CLUSTERS = "7"
+	DEFAULT_NUM_CLUSTERS = "1"  // 1 produces any number of clusters that satisfy the max_distance but prevents error where fewer samples that NUM_CLUSTERS exist
 	DEFAULT_MAX_DISTANCE = "50" // not in use currently
 	LONG_MIN             = -180.0
 	LONG_MAX             = 180.0
 	LAT_MIN              = -90.0
 	LAT_MAX              = 90.0
+
+	CLUSTERING_THRESHOLD = 15 // clusters with less points are returned as individual points instead of a cluster
 
 	KEY_BBOX                    = "key_bbox"
 	KEY_TRANSLATION_FACTOR      = "key_translation_factor"
@@ -389,12 +391,13 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 			Coordinates: bboxIWrap,
 		},
 	}
-	geoJSONClusters, err := parseClusterToGeoJSON(clusterData)
+	geoJSONClusters, geoJSONPoints, err := parseClusterToGeoJSON(clusterData)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
 	}
 	response.Clusters = geoJSONClusters
+	response.Points = geoJSONPoints
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -1458,9 +1461,23 @@ func calcTranslation(polygon [][]float64) (float64, float64, error) {
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
-func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, error) {
-	geoJSON := make([]model.GeoJSONCluster, 0, len(clusterData))
+func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, []model.GeoJSONFeature, error) {
+	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
+	points := []model.GeoJSONFeature{}
 	for _, cluster := range clusterData {
+		if len(cluster.Points) <= CLUSTERING_THRESHOLD {
+			for i, p := range cluster.Points {
+				point := model.GeoJSONFeature{
+					Type:     model.GEOJSONTYPE_FEATURE,
+					Geometry: p,
+					Properties: map[string]interface{}{
+						"sampleID": cluster.Samples[i],
+					},
+				}
+				points = append(points, point)
+			}
+			continue
+		}
 		centroid := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
 			Geometry: cluster.Centroid,
@@ -1481,9 +1498,9 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 			Centroid:   centroid,
 			ConvexHull: convexHull,
 		}
-		geoJSON = append(geoJSON, geoJSONCluster)
+		clusters = append(clusters, geoJSONCluster)
 	}
-	return geoJSON, nil
+	return clusters, points, nil
 }
 
 // parseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure

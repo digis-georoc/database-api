@@ -315,6 +315,7 @@ select
 clusters.clusterid,
 st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
 ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
+array_agg(clusters.translatedGeom) as points,
 array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,

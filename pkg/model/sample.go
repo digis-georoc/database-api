@@ -50,15 +50,16 @@ type SampleByFilterResponse struct {
 }
 
 type ClusteredSample struct {
-	ClusterID  int      `json:"clusterID"`
-	Centroid   Geometry `json:"centroid"`
-	ConvexHull Geometry `json:"convexHull"`
-	Points     Geometry `json:"points"`
-	Samples    []int64  `json:"samples"`
+	ClusterID  int        `json:"clusterID"`
+	Centroid   Geometry   `json:"centroid"`
+	ConvexHull Geometry   `json:"convexHull"`
+	Points     []Geometry `json:"points"`
+	Samples    []int64    `json:"samples"`
 }
 
 type ClusterResponse struct {
 	Clusters []GeoJSONCluster `json:"clusters"`
+	Points   []GeoJSONFeature `json:"points"`
 	Bbox     GeoJSONFeature   `json:"bbox"`
 }
 
