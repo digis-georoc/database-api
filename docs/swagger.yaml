@@ -48,6 +48,10 @@ definitions:
         items:
           $ref: '#/definitions/model.GeoJSONCluster'
         type: array
+      points:
+        items:
+          $ref: '#/definitions/model.GeoJSONFeature'
+        type: array
     type: object
   model.Element:
     properties:
