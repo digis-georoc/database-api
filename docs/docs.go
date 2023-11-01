@@ -2523,6 +2523,12 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.GeoJSONCluster"
                     }
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeoJSONFeature"
+                    }
                 }
             }
         },
