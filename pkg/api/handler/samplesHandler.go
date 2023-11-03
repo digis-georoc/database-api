@@ -1,15 +1,14 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
-	"math"
 	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/geometry"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
@@ -59,10 +58,6 @@ const (
 	QP_MAX_DISTANCE      = "maxDistance"
 	DEFAULT_NUM_CLUSTERS = "1"  // 1 produces any number of clusters that satisfy the max_distance but prevents error where fewer samples that NUM_CLUSTERS exist
 	DEFAULT_MAX_DISTANCE = "50" // not in use currently
-	LONG_MIN             = -180.0
-	LONG_MAX             = 180.0
-	LAT_MIN              = -90.0
-	LAT_MAX              = 90.0
 
 	CLUSTERING_THRESHOLD = 15 // clusters with less points are returned as individual points instead of a cluster
 
@@ -178,11 +173,11 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not parse polygon")
 	}
 	if polygonString != "" {
-		polygon, err := parsePointArray(polygonString)
+		polygon, err := geometry.ParsePointArray(polygonString)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not parse polygon")
 		}
-		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
+		boundaryPoly, translationFactorPoly, err := geometry.CalcTranslation(polygon)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
 		}
@@ -302,23 +297,24 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if bboxString == "" {
 		return c.String(http.StatusInternalServerError, "No bbox provided")
 	}
-	bbox, err := parsePointArray(bboxString)
+	bbox, err := geometry.ParsePointArray(bboxString)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Can not parse bbox")
 	}
-	// calc clustering param relative to original (visible) bbox size
+	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
+	bbox = geometry.TruncateBBox(bbox)
 	width := bbox[1][0] - bbox[0][0]
 	kmeansMaxDistance := width / 12
 	// scale bbox
-	if !isZoom0(bbox) {
+	if !geometry.IsZoom0(bbox) {
 		// add frame around bbox to avoid reloading on small panning
-		bbox = scaleBBox(bbox)
+		bbox = geometry.ScaleBBox(bbox)
 	}
-	// truncate bbox so it contains at most one whole world
-	bbox = truncateBBox(bbox)
-	// add first point again to make close polygon shape
+	// truncate bbox after scaling so it contains at most one whole world
+	bbox = geometry.TruncateBBox(bbox)
+	// add first point again to make closed polygon shape
 	bbox = append(bbox, bbox[0])
-	boundary, translationFactor, err := calcTranslation(bbox)
+	boundary, translationFactor, err := geometry.CalcTranslation(bbox)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
 	}
@@ -332,11 +328,11 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not parse polygon")
 	}
 	if polygonString != "" {
-		polygon, err := parsePointArray(polygonString)
+		polygon, err := geometry.ParsePointArray(polygonString)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not parse polygon")
 		}
-		boundaryPoly, translationFactorPoly, err := calcTranslation(polygon)
+		boundaryPoly, translationFactorPoly, err := geometry.CalcTranslation(polygon)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
 		}
@@ -1301,7 +1297,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		if bbox != nil {
 			bboxSlice := bbox.([][]float64)
 			// format bbox string for postGIS/SQL syntax
-			bboxFormatted, err := formatPolygonArray(bboxSlice)
+			bboxFormatted, err := geometry.FormatPolygonArray(bboxSlice)
 			if err != nil {
 				return nil, err
 			}
@@ -1320,7 +1316,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		if polygon != nil {
 			polygonSlice := polygon.([][]float64)
 			// format polygon for postGIS/SQL syntax
-			polygonFormatted, err := formatPolygonArray(polygonSlice)
+			polygonFormatted, err := geometry.FormatPolygonArray(polygonSlice)
 			if err != nil {
 				return nil, err
 			}
@@ -1338,126 +1334,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	}
 
 	return query, nil
-}
-
-// formatPolygonArray formats a given input polygon for usage in postGIS/SQL syntax
-// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-// Output is postGIS geometry syntax: (long1 lat1, long2 lat2, ...)
-func formatPolygonArray(polygon [][]float64) (string, error) {
-	output := "("
-	for i, point := range polygon {
-		if i > 0 {
-			// add separator before adding next point
-			output += ","
-		}
-		for _, coordinate := range point {
-			output += fmt.Sprintf(" %f", coordinate)
-		}
-	}
-	output += ")"
-	return output, nil
-}
-
-// parsePointArray parses a string representation of an array of float-points into a 2-dimensional array
-func parsePointArray(arrayString string) ([][]float64, error) {
-	polygon := [][]float64{}
-	err := json.Unmarshal([]byte(arrayString), &polygon)
-	if err != nil {
-		return nil, err
-	}
-	return polygon, nil
-}
-
-// isZoom0 returns true if the given bbox is big enough to fit the whole world view (zoom = 0); false if it is smaller.
-func isZoom0(bbox [][]float64) bool {
-	// check if height of bbox is >= |LAT_MIN| + LAT_MAX and width of bbox is |LONG_MIN| + LONG_MAX
-	return bbox[3][1]-bbox[0][1] >= math.Abs(LAT_MIN)+LAT_MAX && bbox[1][0]-bbox[0][0] >= math.Abs(LONG_MIN)+LONG_MAX
-}
-
-// scaleBbox takes an array of coordinates for a bounding box and scales it around the center
-// Scales latitudes up to LAT_MIN/LAT_MAX only
-// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-func scaleBBox(bbox [][]float64) [][]float64 {
-	// calc width and height of bbox
-	width := bbox[1][0] - bbox[0][0]
-	height := bbox[3][1] - bbox[0][1]
-	scaleLong := width / 2
-	scaleLat := height / 2
-	// add half bbox on each side
-	// SW
-	bbox[0][0] = bbox[0][0] - scaleLong
-	bbox[0][1] = math.Max(LAT_MIN, bbox[0][1]-scaleLat)
-	// SE
-	bbox[1][0] = bbox[1][0] + scaleLong
-	bbox[1][1] = math.Max(LAT_MIN, bbox[1][1]-scaleLat)
-	// NE
-	bbox[2][0] = bbox[2][0] + scaleLong
-	bbox[2][1] = math.Min(LAT_MAX, bbox[2][1]+scaleLat)
-	// NW
-	bbox[3][0] = bbox[3][0] - scaleLong
-	bbox[3][1] = math.Min(LAT_MAX, bbox[3][1]+scaleLat)
-	return bbox
-}
-
-// truncateBBox truncates a given bbox to at most 360 width and 180 height by reducing the size equally from both sides
-func truncateBBox(bbox [][]float64) [][]float64 {
-	width := bbox[1][0] - bbox[0][0]
-	height := bbox[3][1] - bbox[0][1]
-	if width <= LONG_MAX*2 && height <= LAT_MAX*2 {
-		// no need to truncate
-		return bbox
-	}
-	// calc middle longitude and latitude
-	middleLong := (bbox[1][0] + bbox[0][0]) / 2
-	middleLat := (bbox[3][1] + bbox[0][1]) / 2
-	// truncate bbox by keeping only middle +- LONG/LAT_MAX
-	// SW
-	bbox[0][0] = math.Max(bbox[0][0], middleLong-LONG_MAX)
-	bbox[0][1] = math.Max(bbox[0][1], middleLat-LAT_MAX)
-	// SE
-	bbox[1][0] = math.Min(bbox[1][0], middleLong+LONG_MAX)
-	bbox[1][1] = math.Max(bbox[1][1], middleLat-LAT_MAX)
-	// NE
-	bbox[2][0] = math.Min(bbox[2][0], middleLong+LONG_MAX)
-	bbox[2][1] = math.Min(bbox[2][1], middleLat+LAT_MAX)
-	// NW
-	bbox[3][0] = math.Max(bbox[3][0], middleLong-LONG_MAX)
-	bbox[3][1] = math.Min(bbox[3][1], middleLat+LAT_MAX)
-	return bbox
-}
-
-// calcTranslation calculates the longitudinal translation and crossed bound of a polygon
-// Input is 2-dimensional array of points formatted: [[long1,lat1],[long2,lat2],...]
-// Max polygon size is limited to 180 height and 360 width. Scale polygon accordingly before these calculations.
-func calcTranslation(polygon [][]float64) (float64, float64, error) {
-	var left, right, top, bottom float64
-	for i, point := range polygon {
-		if i == 0 || left > point[0] {
-			left = point[0]
-		}
-		if i == 0 || right < point[0] {
-			right = point[0]
-		}
-		if i == 0 || top < point[1] {
-			top = point[1]
-		}
-		if i == 0 || bottom > point[1] {
-			bottom = point[1]
-		}
-	}
-	if right-left > 360 || top-bottom > 180 {
-		return 0, 0, fmt.Errorf("Polygon dimensions out of bounds")
-	}
-	// since max width is 360, all points have the same translation (postGIS' wrapx handles cases where part of the bbox is within the bounds an thus should have a factor of 0)
-	// and only one boundary can be crossed (-180 or +180)
-	boundary := 180.0
-	translationFactor := -math.Floor((right + 180) / 360)
-	if left < -180 {
-		boundary = -180.0
-		translationFactor = -math.Floor((left + 180) / 360)
-	}
-
-	return boundary, translationFactor, nil
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
