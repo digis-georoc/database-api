@@ -301,7 +301,8 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Can not parse bbox")
 	}
-	// calc clustering param relative to original (visible) bbox size
+	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
+	bbox = geometry.TruncateBBox(bbox)
 	width := bbox[1][0] - bbox[0][0]
 	kmeansMaxDistance := width / 12
 	// scale bbox
@@ -309,9 +310,9 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		// add frame around bbox to avoid reloading on small panning
 		bbox = geometry.ScaleBBox(bbox)
 	}
-	// truncate bbox so it contains at most one whole world
+	// truncate bbox after scaling so it contains at most one whole world
 	bbox = geometry.TruncateBBox(bbox)
-	// add first point again to make close polygon shape
+	// add first point again to make closed polygon shape
 	bbox = append(bbox, bbox[0])
 	boundary, translationFactor, err := geometry.CalcTranslation(bbox)
 	if err != nil {
