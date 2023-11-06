@@ -1,16 +1,63 @@
-# database-api
+# Database-API
 
-API to access the GEOROC database in the new ODM2 schema
+API to access the GEOROC2.0 database in the new ODM2-based schema.
 
-## Structure
+Current version: **0.3.6**
 
-The database resources are available at `/api/v1/queries`.
-You can get all resources of a type by GETing `/resource`, optionally providing pagination parameters `/resource?limit=10&offset=30`, where `limit` is the pagesize and `offset` is the pagenumber times the pagesize.
-To get a specific resource by its identifier, GET `/resource/:identifier`.
+This api is currently in a testing phase.
 
-## Documentation
+## Usage
 
-To view the api documentation, open the route `/api/v1/docs/index.html` in your browser.
+For a basic liveness check, the route `/api/v1/ping` can be used. If the api is up and running, it will answer with http status 200 and the string "pong".
+Documentation of the available resources and routes can be found at `/api/v1/docs/index.html`.
+
+The database resources are available under `/api/v1/queries/`. All routes with the `/queries/`-prefix are secured via access key.
+A valid access key has to be provided in the custom header `DIGIS-API-ACCESSKEY` for each request to a secured route.
+To obtain an access key, refer to the [Get Access](#get-access) part of this README.
+
+Most routes support basic pagination with the query-parameters `limit` and `offset`.
+
+## Get Access
+
+To access the api, a personal access token is needed.
+Access tokens are generated on demand.
+Please note that the api is currently in a testing phase, so bugs or service outages can happen.
+If you want to provide feedback and participate in testing the api, please [contact us](digis-info@uni-goettingen.de).
+
+## Operation
+
+### Setup
+
+For running the api, a Dockerfile is provided. No build-time parameters are needed.
+The api needs database configuration to start. The database configuration must be provided in a file named `database-config.txt` with the contents as follows:
+
+```json
+
+{
+    "DB_USER":"",
+    "DB_PASSWORD":"",
+    "SSH_USER":"",
+    "SSH_PASSWORD":""
+}
+
+```
+
+The ssh config is optional.
+
+To be able to access the secured routes, access keys must be provided as a second configuration file named `accesskeys.txt` with contents formatted as follows:
+
+```json
+
+{
+    "<KEY_NAME1>": "<KEY1>",
+    "<KEY_NAME2>": "<KEY2>"
+}
+
+```
+
+The configuration files must be mounted in the container under the path `/vault/secrets/` (e.g. `docker run -v <absolute-path-to-config-files-on-host>:/vault/secrets/ digis-api`).
+
+### Update Documentation
 
 The api documentation is generated with [swagger](https://github.com/swaggo/swag).
 For installation guides see [the documentation](https://github.com/swaggo/swag#getting-started). You may need to add the `GOPATH` to your `PATH` variable to be able to exectue `swag` from your commandline: `export PATH=$(go env GOPATH)/bin:$PATH`.
