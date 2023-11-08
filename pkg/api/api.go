@@ -79,6 +79,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// api/v1
 	v1 := e.Group("/api/v1")
 	v1.GET("/ping", h.Ping)
+	v1.GET("/version", h.Version)
 	v1.GET("/docs/*", echoSwagger.WrapHandler)
 
 	// accesskey queries

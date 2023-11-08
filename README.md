@@ -65,3 +65,12 @@ For installation guides see [the documentation](https://github.com/swaggo/swag#g
 To generate the documentation files under **docs/**, execute
 
 `swag fmt && swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go`
+
+### Update Version
+
+To update the api version, change the version number in the following places:
+
+- The start of this README
+- handler.go/version method
+- api.go swaggo comment
+- push a new tag with the new version number to the repositories main branch (attention: triggers a staging (test) release!)
