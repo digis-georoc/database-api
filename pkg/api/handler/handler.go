@@ -44,6 +44,19 @@ func (h *Handler) Ping(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Pong")
 }
 
+// Version godoc
+// @Summary     Get api-version
+// @Description Check current version of the api
+// @Tags        general
+// @Accept      json
+// @Produce     json
+// @Success     200 {object} string
+// @Failure     404 {object} string
+// @Router      /version [get]
+func (h *Handler) Version(c echo.Context) error {
+	return c.JSON(http.StatusOK, "0.3.6")
+}
+
 // handlePaginationParams reads the pagination parameters from the request and returns them as integers
 func handlePaginationParams(c echo.Context) (int, int, error) {
 	var err error

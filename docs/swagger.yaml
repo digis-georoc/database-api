@@ -2104,6 +2104,25 @@ paths:
       summary: Retrieve data statistics
       tags:
       - stats
+  /version:
+    get:
+      consumes:
+      - application/json
+      description: Check current version of the api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Get api-version
+      tags:
+      - general
 schemes:
 - https
 - http
