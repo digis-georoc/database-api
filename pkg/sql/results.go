@@ -7,7 +7,8 @@ from odm2.variables v
 `
 
 const ElementTypesQuery = `
-select distinct v.variabletypecode as name
+select distinct v.variabletypecode as value,
+v.variabletypecv as label
 from odm2.variables v 
 where v.variabletypecv !='Rock mode'
 `

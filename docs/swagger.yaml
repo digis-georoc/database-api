@@ -73,7 +73,9 @@ definitions:
     type: object
   model.ElementType:
     properties:
-      name:
+      label:
+        type: string
+      value:
         type: string
     type: object
   model.ElementTypeResponse:

@@ -2563,7 +2563,10 @@ const docTemplate = `{
         "model.ElementType": {
             "type": "object",
             "properties": {
-                "name": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
