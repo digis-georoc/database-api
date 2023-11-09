@@ -3048,6 +3048,9 @@ const docTemplate = `{
                 },
                 "sampleID": {
                     "type": "integer"
+                },
+                "samplename": {
+                    "type": "string"
                 }
             }
         },

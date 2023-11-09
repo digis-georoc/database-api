@@ -3045,6 +3045,9 @@
                 },
                 "sampleID": {
                     "type": "integer"
+                },
+                "samplename": {
+                    "type": "string"
                 }
             }
         },
