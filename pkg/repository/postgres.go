@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 // PostgresConnector interface exposes methods to connect to and interact with a postgreSQL instance
@@ -64,7 +63,7 @@ func NewPostgresConnector() PostgresConnector {
 
 func (pC *postgresConnector) Connect(connString string) error {
 	log.Info("Connecting to database...")
-	connection, err := pgxpool.Connect(context.Background(), connString)
+	connection, err := pgxpool.New(context.Background(), connString)
 	if err != nil {
 		return err
 	}
@@ -100,7 +99,7 @@ func (pC *postgresConnector) SSHConnect(connString string, params *ConnectionPar
 		return sshcon.Dial(network, addr)
 	}
 	log.Info("Connecting to database via ssh...")
-	connection, err := pgxpool.ConnectConfig(context.Background(), connPoolConfig)
+	connection, err := pgxpool.NewWithConfig(context.Background(), connPoolConfig)
 	if err != nil {
 		return fmt.Errorf("Can not create new connection pool: %v", err)
 	}
