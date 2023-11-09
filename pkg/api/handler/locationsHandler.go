@@ -44,7 +44,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &locations)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL1: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve first level locations")
@@ -87,7 +87,7 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &locations, locationNameL1)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations, locationNameL1)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL2: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve second level locations")
@@ -132,7 +132,7 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 	query.AddOffset(offset)
 	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
 	locationNameL2 := c.QueryParam(PARAM_LOC_LEVEL_2)
-	err = h.db.Query(query.GetQueryString(), &locations, locationNameL1, locationNameL2)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations, locationNameL1, locationNameL2)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL3: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve third level locations")

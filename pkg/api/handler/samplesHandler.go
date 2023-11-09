@@ -90,7 +90,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 
 	samples := []model.Sample{}
 	query := sql.NewQuery(sql.GetSampleByIDQuery)
-	err := h.db.Query(query.GetQueryString(), &samples, c.Param(QP_SAMPFEATUREID))
+	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &samples, c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSampleByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -200,7 +200,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(query.GetQueryString(), &specimen, query.GetFilterValues()...)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimen, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -373,7 +373,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(query.GetQueryString(), &clusterData, query.GetFilterValues()...)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &clusterData, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -428,7 +428,7 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &specimentypes)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimentypes)
 	if err != nil {
 		logger.Errorf("Can not GetSpecimenTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
@@ -497,7 +497,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &rockclasses, query.GetFilterValues()...)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rockclasses, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetRockClasses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
@@ -539,7 +539,7 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &rocktypes)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rocktypes)
 	if err != nil {
 		logger.Errorf("Can not GetRockTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
@@ -581,7 +581,7 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &minerals)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &minerals)
 	if err != nil {
 		logger.Errorf("Can not GetMinerals: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
@@ -623,7 +623,7 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &materials)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &materials)
 	if err != nil {
 		logger.Errorf("Can not GetMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve material data")
@@ -665,7 +665,7 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &hostMaterials)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &hostMaterials)
 	if err != nil {
 		logger.Errorf("Can not GetHostMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve host material data")
@@ -707,7 +707,7 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &incMaterials)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &incMaterials)
 	if err != nil {
 		logger.Errorf("Can not GetInclusionMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion material data")
@@ -749,7 +749,7 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &inclusionTypes)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &inclusionTypes)
 	if err != nil {
 		logger.Errorf("Can not GetInclusionTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion type data")
@@ -791,7 +791,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &samplingtechniques)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &samplingtechniques)
 	if err != nil {
 		logger.Errorf("Can not GetSamplingTechniques: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
@@ -826,7 +826,7 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 	randomSpecimen := []model.Specimen{}
 	query := sql.NewQuery(sql.GetRandomSpecimensQuery)
 	limit := c.QueryParam(QP_LIMIT)
-	err := h.db.Query(query.GetQueryString(), &randomSpecimen, limit)
+	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &randomSpecimen, limit)
 	if err != nil {
 		logger.Errorf("Can not GetRandomSamples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve random data sample")
@@ -868,7 +868,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &geoAges)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAges)
 	if err != nil {
 		logger.Errorf("Can not GetGeoAges: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age data")
@@ -910,7 +910,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &geoAgePrefixes)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAgePrefixes)
 	if err != nil {
 		logger.Errorf("Can not GetGeoAgePrefixes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age prefix data")
@@ -952,7 +952,7 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &organizations)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &organizations)
 	if err != nil {
 		logger.Errorf("Can not GetOrganizationNames: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")

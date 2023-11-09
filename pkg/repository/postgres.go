@@ -37,7 +37,7 @@ type PostgresConnector interface {
 	// sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
 	// receiver := []struct{ Phonenumber int, Name string }{} // be sure to use uppercase field names; make it a slice of your type because call to pgx.QueryRow will return a list of rows even if there is just one
 	// err := query(sql, receiver, "Turing")
-	Query(sql string, receiver interface{}, args ...interface{}) error
+	Query(ctx context.Context, sql string, receiver interface{}, args ...interface{}) error
 }
 
 type postgresConnector struct {
@@ -114,14 +114,14 @@ func (pC *postgresConnector) Close() {
 
 func (pC *postgresConnector) Ping() (string, error) {
 	version := []struct{ Version string }{}
-	err := pC.Query("SELECT version()", &version)
+	err := pC.Query(context.Background(), "SELECT version()", &version)
 	if err != nil {
 		return "", err
 	}
 	return version[0].Version, nil
 }
 
-func (pC *postgresConnector) Query(sql string, receiver interface{}, args ...interface{}) error {
+func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver interface{}, args ...interface{}) error {
 	// from https://github.com/jackc/pgx/issues/878
 	// Add PostgreSQL magic json functions
 	// This gives us a single row back even if the query returns many rows
@@ -132,7 +132,7 @@ func (pC *postgresConnector) Query(sql string, receiver interface{}, args ...int
 		SELECT jsonb_agg(row_to_json(orig_sql.*)) 
 		FROM orig_sql;`,
 		sql)
-	err := pC.connection.QueryRow(context.Background(), completeSql, args...).Scan(receiver)
+	err := pC.connection.QueryRow(ctx, completeSql, args...).Scan(receiver)
 	if err != nil {
 		return fmt.Errorf("Can not query database: %w", err)
 	}

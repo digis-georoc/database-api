@@ -39,7 +39,7 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &sites)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
 	if err != nil {
 		logger.Errorf("Can not GeoJSONSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geoJSON site data")
