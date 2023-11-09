@@ -209,9 +209,10 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	responseData := []model.SampleByFiltersData{}
 	for _, sample := range specimen {
 		data := model.SampleByFiltersData{
-			SampleID:  sample.SampleID,
-			Latitude:  sample.Latitude,
-			Longitude: sample.Longitude,
+			SampleID:   sample.SampleID,
+			SampleName: sample.SampleName,
+			Latitude:   sample.Latitude,
+			Longitude:  sample.Longitude,
 		}
 		responseData = append(responseData, data)
 	}

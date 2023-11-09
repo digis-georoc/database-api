@@ -390,6 +390,8 @@ definitions:
         type: number
       sampleID:
         type: integer
+      samplename:
+        type: string
     type: object
   model.SampleResponse:
     properties:
