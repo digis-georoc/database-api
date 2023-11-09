@@ -25,7 +25,8 @@ type ElementResponse struct {
 }
 
 type ElementType struct {
-	Name string `json:"name"`
+	Value string `json:"value"`
+	Label string `json:"label"`
 }
 
 type ElementTypeResponse struct {
