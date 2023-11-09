@@ -10,7 +10,8 @@ where s.samplingfeatureid = $1
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"
 const GetSamplingfeatureIdsByFilterBaseQuery = `
 -- modular query for specimenids with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid
+select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+spec.samplingfeaturename as samplename
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
@@ -21,7 +22,8 @@ const GetSamplingfeatureIdsByFilterBaseQueryWithCoords = `
 -- modular query for specimenids and coordinates with all filter options
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
 coords.latitude,
-coords.longitude
+coords.longitude,
+spec.samplingfeaturename as samplename
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 `
