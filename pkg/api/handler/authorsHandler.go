@@ -43,7 +43,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &authors)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &authors)
 	if err != nil {
 		logger.Errorf("Can not GetAuthors: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
@@ -75,7 +75,7 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 	}
 
 	authors := []model.Person{}
-	err := h.db.Query(sql.AuthorByIDQuery, &authors, c.Param(QP_PERSONID))
+	err := h.db.Query(c.Request().Context(), sql.AuthorByIDQuery, &authors, c.Param(QP_PERSONID))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")

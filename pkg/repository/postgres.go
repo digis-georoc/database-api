@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
-
-	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 // PostgresConnector interface exposes methods to connect to and interact with a postgreSQL instance
@@ -37,7 +37,7 @@ type PostgresConnector interface {
 	// sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
 	// receiver := []struct{ Phonenumber int, Name string }{} // be sure to use uppercase field names; make it a slice of your type because call to pgx.QueryRow will return a list of rows even if there is just one
 	// err := query(sql, receiver, "Turing")
-	Query(sql string, receiver interface{}, args ...interface{}) error
+	Query(ctx context.Context, sql string, receiver interface{}, args ...interface{}) error
 }
 
 type postgresConnector struct {
@@ -64,7 +64,7 @@ func NewPostgresConnector() PostgresConnector {
 
 func (pC *postgresConnector) Connect(connString string) error {
 	log.Info("Connecting to database...")
-	connection, err := pgxpool.Connect(context.Background(), connString)
+	connection, err := pgxpool.New(context.Background(), connString)
 	if err != nil {
 		return err
 	}
@@ -97,10 +97,22 @@ func (pC *postgresConnector) SSHConnect(connString string, params *ConnectionPar
 		return fmt.Errorf("Can not parse config: %v", err)
 	}
 	connPoolConfig.ConnConfig.DialFunc = func(ctx context.Context, network, addr string) (net.Conn, error) {
-		return sshcon.Dial(network, addr)
+		host, portString, err := net.SplitHostPort(addr)
+		if err != nil {
+			return nil, err
+		}
+		port, err := strconv.Atoi(portString)
+		if err != nil {
+			return nil, err
+		}
+		// with sshcon.Dial() the remoteAddr is empty (0.0.0.0) so no CancelRequest could be sent.
+		return sshcon.DialTCP(network, nil, &net.TCPAddr{
+			IP:   net.ParseIP(host),
+			Port: port,
+		})
 	}
 	log.Info("Connecting to database via ssh...")
-	connection, err := pgxpool.ConnectConfig(context.Background(), connPoolConfig)
+	connection, err := pgxpool.NewWithConfig(context.Background(), connPoolConfig)
 	if err != nil {
 		return fmt.Errorf("Can not create new connection pool: %v", err)
 	}
@@ -114,14 +126,14 @@ func (pC *postgresConnector) Close() {
 
 func (pC *postgresConnector) Ping() (string, error) {
 	version := []struct{ Version string }{}
-	err := pC.Query("SELECT version()", &version)
+	err := pC.Query(context.Background(), "SELECT version()", &version)
 	if err != nil {
 		return "", err
 	}
 	return version[0].Version, nil
 }
 
-func (pC *postgresConnector) Query(sql string, receiver interface{}, args ...interface{}) error {
+func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver interface{}, args ...interface{}) error {
 	// from https://github.com/jackc/pgx/issues/878
 	// Add PostgreSQL magic json functions
 	// This gives us a single row back even if the query returns many rows
@@ -132,9 +144,36 @@ func (pC *postgresConnector) Query(sql string, receiver interface{}, args ...int
 		SELECT jsonb_agg(row_to_json(orig_sql.*)) 
 		FROM orig_sql;`,
 		sql)
-	err := pC.connection.QueryRow(context.Background(), completeSql, args...).Scan(receiver)
+
+	// manually acquire and release connection to be able to send CancelRequest() on context canceled by client
+	c, err := pC.connection.Acquire(ctx)
+	defer c.Release()
+	if err != nil {
+		return err
+	}
+	stopChan := make(chan bool)
+	go cancelQueryOnContextCanceled(ctx, c, stopChan)
+	row := c.QueryRow(ctx, completeSql, args...)
+	err = row.Scan(receiver)
+	stopChan <- true
 	if err != nil {
 		return fmt.Errorf("Can not query database: %w", err)
 	}
 	return nil
+}
+
+// cancelQueryOnContextCanceled is an async context watcher to send a CancelRequest() if the context is canceled by client
+func cancelQueryOnContextCanceled(ctx context.Context, c *pgxpool.Conn, stopChan chan bool) {
+	// block until context is done or query returned
+	select {
+	case <-stopChan:
+		// stop goroutine to avoid call to c.Conn() after c.Release()
+		return
+	case <-ctx.Done():
+		err := c.Conn().PgConn().CancelRequest(context.Background())
+		if err != nil {
+			// query cancellation failed
+			log.Warn(fmt.Sprintf("CancelRequest failed: %s", err.Error()))
+		}
+	}
 }

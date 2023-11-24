@@ -44,7 +44,7 @@ func (h *Handler) GetSites(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &sites)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
 	if err != nil {
 		logger.Errorf("Can not GetSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -75,7 +75,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 	sites := []model.Site{}
-	err := h.db.Query(sql.SiteByIDQuery, &sites, c.Param(QP_SAMPFEATUREID))
+	err := h.db.Query(c.Request().Context(), sql.SiteByIDQuery, &sites, c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSiteByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -119,7 +119,7 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &sites)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
 	if err != nil {
 		logger.Errorf("Can not GetGeoSettings: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological settings data")

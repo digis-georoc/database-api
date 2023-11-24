@@ -54,7 +54,7 @@ func (h *Handler) GetElements(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &elements, query.GetFilterValues()...)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &elements, query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetElements: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element data")
@@ -96,7 +96,7 @@ func (h *Handler) GetElementTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(query.GetQueryString(), &elementTypes)
+	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &elementTypes)
 	if err != nil {
 		logger.Errorf("Can not GetElementTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element type data")
