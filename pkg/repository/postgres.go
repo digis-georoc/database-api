@@ -147,10 +147,10 @@ func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver int
 
 	// manually acquire and release connection to be able to send CancelRequest() on context canceled by client
 	c, err := pC.connection.Acquire(ctx)
-	defer c.Release()
 	if err != nil {
 		return err
 	}
+	defer c.Release()
 	stopChan := make(chan bool)
 	go cancelQueryOnContextCanceled(ctx, c, stopChan)
 	row := c.QueryRow(ctx, completeSql, args...)
