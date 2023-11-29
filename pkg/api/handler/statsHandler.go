@@ -30,29 +30,34 @@ func (h *Handler) GetStatistics(c echo.Context) error {
 	}
 
 	stats := []model.Statistics{}
+	statisticsResponse := model.Statistics{}
 	query := sql.NewQuery(sql.CountCitationsQuery)
 	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
 	if err != nil {
 		logger.Errorf("Can not GetStatistics Citations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
+	statisticsResponse.NumCitations = stats[0].NumCitations
 	query = sql.NewQuery(sql.CountAnalysesQuery)
 	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
 	if err != nil {
 		logger.Errorf("Can not GetStatistics Analyses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
+	statisticsResponse.NumAnalyses = stats[0].NumAnalyses
 	query = sql.NewQuery(sql.CountSamplesQuery)
 	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
 	if err != nil {
 		logger.Errorf("Can not GetStatistics Samples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
+	statisticsResponse.NumSamples = stats[0].NumSamples
 	query = sql.NewQuery(sql.CountResultsQuery)
 	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
 	if err != nil {
 		logger.Errorf("Can not GetStatistics Results: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
-	return c.JSON(http.StatusOK, stats)
+	statisticsResponse.NumResults = stats[0].NumResults
+	return c.JSON(http.StatusOK, statisticsResponse)
 }
