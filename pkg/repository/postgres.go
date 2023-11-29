@@ -24,9 +24,9 @@ type PostgresConnector interface {
 	// Close stops the connection
 	Close()
 
-	// Ping executes a simple query against the database to check if the connection is healthy
-	// returns the database version or an error
-	Ping() (string, error)
+	// Ping executes a simple Ping against the database to check if the connection is healthy
+	// returns an error if the Ping failed
+	Ping() error
 
 	// query is the generic method to query the database
 	// param receiver must be a pointer to a slice of struct that contains the expected columns as fields
@@ -124,13 +124,13 @@ func (pC *postgresConnector) Close() {
 	pC.connection.Close()
 }
 
-func (pC *postgresConnector) Ping() (string, error) {
-	version := []struct{ Version string }{}
-	err := pC.Query(context.Background(), "SELECT version()", &version)
+func (pC *postgresConnector) Ping() error {
+	c, err := pC.connection.Acquire(context.Background())
 	if err != nil {
-		return "", err
+		return err
 	}
-	return version[0].Version, nil
+	defer c.Release()
+	return c.Ping(context.Background())
 }
 
 func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver interface{}, args ...interface{}) error {

@@ -45,11 +45,11 @@ func main() {
 		}
 	}
 
-	version, err := db.Ping()
+	err = db.Ping()
 	if err != nil {
 		log.Fatal(fmt.Errorf("Can not reach database: %w", err))
 	}
-	log.Infof("Connected to database: %v", version)
+	log.Infof("Connected to database: %s/%s", params.DBHost, params.DBName)
 
 	handler := handler.NewHandler(db, nil)
 	echoAPI := api.InitializeAPI(handler, secStore)

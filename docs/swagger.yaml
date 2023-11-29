@@ -513,6 +513,25 @@ info:
   title: DIGIS Database API
   version: 0.3.6
 paths:
+  /alive:
+    get:
+      consumes:
+      - application/json
+      description: Check connection to api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: Health request to check if api is responsive
+      tags:
+      - general
   /geodata/samplesclustered:
     get:
       consumes:
@@ -733,7 +752,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Check connection to api
+      description: Check connection to db
       produces:
       - application/json
       responses:
@@ -741,11 +760,11 @@ paths:
           description: OK
           schema:
             type: string
-        "404":
-          description: Not Found
+        "424":
+          description: Failed Dependency
           schema:
             type: string
-      summary: Sample request
+      summary: Health request to check db connection
       tags:
       - general
   /queries/authors:

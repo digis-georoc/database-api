@@ -24,6 +24,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/alive": {
+            "get": {
+                "description": "Check connection to api",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "general"
+                ],
+                "summary": "Health request to check if api is responsive",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/geodata/samplesclustered": {
             "get": {
                 "security": [
@@ -333,7 +362,7 @@ const docTemplate = `{
         },
         "/ping": {
             "get": {
-                "description": "Check connection to api",
+                "description": "Check connection to db",
                 "consumes": [
                     "application/json"
                 ],
@@ -343,7 +372,7 @@ const docTemplate = `{
                 "tags": [
                     "general"
                 ],
-                "summary": "Sample request",
+                "summary": "Health request to check db connection",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -351,8 +380,8 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "424": {
+                        "description": "Failed Dependency",
                         "schema": {
                             "type": "string"
                         }
