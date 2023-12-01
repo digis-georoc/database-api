@@ -1155,7 +1155,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		}
 		// add query module results
 		mvIDList := ""
-		for i := 0; i < len(chemQry.Expressions); i++ {
+		for i := range chemQry.Expressions {
 			if i > 0 {
 				mvIDList += ","
 			}
@@ -1164,19 +1164,31 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(fmt.Sprintf("%s%s%s", sql.GetSamplingfeatureIdsByFilterResultsStartPre, mvIDList, sql.GetSamplingfeatureIdsByFilterResultsStartPost))
 		// add ResultFilterExpression for each expression in the chemQry
 		for i, expr := range chemQry.Expressions {
+			// interpret missing minValue as 0 to enable "element exists"-queries
+			if expr.MinValue == "" {
+				expr.MinValue = "0"
+			}
 			junctor = sql.OpWhere // reset junctor for new expression
 			exprJunctor, exists := model.CQSQLMap[expr.Junctor]
 			if !exists {
 				return nil, fmt.Errorf("Invalid junctor in chemical query")
 			}
 			query.AddSQLBlock(exprJunctor + sql.GetSamplingfeatureIdsByFilterResultsExpression)
-			query.AddFilter("mv.variabletypecode", expr.Type, sql.OpEq, junctor)
-			junctor = sql.OpAnd
-			query.AddFilter("mv.variablecode", expr.Element, sql.OpEq, junctor)
-			junctor = sql.OpAnd
-			query.AddFilter("mv.datavalue", expr.MinValue, sql.OpGte, junctor)
-			junctor = sql.OpAnd
-			query.AddFilter("mv.datavalue", expr.MaxValue, sql.OpLte, junctor)
+			if expr.Type != "" {
+				query.AddFilter("mv.variabletypecode", expr.Type, sql.OpEq, junctor)
+				junctor = sql.OpAnd
+			}
+			if expr.Element != "" {
+				query.AddFilter("mv.variablecode", expr.Element, sql.OpEq, junctor)
+				junctor = sql.OpAnd
+			}
+			if expr.MinValue != "" {
+				query.AddFilter("mv.datavalue", expr.MinValue, sql.OpGte, junctor)
+				junctor = sql.OpAnd
+			}
+			if expr.MaxValue != "" {
+				query.AddFilter("mv.datavalue", expr.MaxValue, sql.OpLte, junctor)
+			}
 			if i == 0 {
 				query.AddSQLBlock(fmt.Sprintf(") m%d", i+1))
 			} else {
@@ -1383,7 +1395,7 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 // parseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure
 func parseChemQuery(query string) (model.ChemQuery, error) {
 	chemQuery := model.ChemQuery{}
-	expressionRegex := regexp.MustCompile(`\(([\w]+),([\w\d]+),([\d\.]+),([\d\.]+)\)`)
+	expressionRegex := regexp.MustCompile(`\(([\w]+)?,([\w\d]+)?,([\d\.]+)?,([\d\.]+)?\)`)
 	matches := expressionRegex.FindAllStringSubmatch(query, -1)
 	if len(matches) == 0 {
 		return chemQuery, fmt.Errorf("Can not parse chemical query")
@@ -1400,6 +1412,10 @@ func parseChemQuery(query string) (model.ChemQuery, error) {
 			Element:  match[2],
 			MinValue: match[3],
 			MaxValue: match[4],
+		}
+		// omit expressions without type or element as they make no sense
+		if expr.Type == "" && expr.Element == "" {
+			continue
 		}
 		chemQuery.Expressions = append(chemQuery.Expressions, expr)
 	}
