@@ -558,103 +558,116 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: tectonic setting - see /queries/sites/settings
+      - description: tectonic setting - see /queries/sites/settings (supports Filter
+          DSL)
         in: query
         name: setting
         type: string
-      - description: location level 1 - see /queries/locations/l1
+      - description: location level 1 - see /queries/locations/l1 (supports Filter
+          DSL)
         in: query
         name: location1
         type: string
-      - description: location level 2 - see /queries/locations/l2
+      - description: location level 2 - see /queries/locations/l2 (supports Filter
+          DSL)
         in: query
         name: location2
         type: string
-      - description: location level 3 - see /queries/locations/l3
+      - description: location level 3 - see /queries/locations/l3 (supports Filter
+          DSL)
         in: query
         name: location3
         type: string
-      - description: latitude
+      - description: latitude (supports Filter DSL)
         in: query
         name: latitude
         type: string
-      - description: longitude
+      - description: longitude (supports Filter DSL)
         in: query
         name: longitude
         type: string
-      - description: rock type - see /queries/samples/rocktypes
+      - description: rock type - see /queries/samples/rocktypes (supports Filter DSL)
         in: query
         name: rocktype
         type: string
       - description: taxonomic classifier name - see /queries/samples/rockclasses
+          (supports Filter DSL)
         in: query
         name: rockclass
         type: string
-      - description: mineral - see /queries/samples/minerals
+      - description: mineral - see /queries/samples/minerals (supports Filter DSL)
         in: query
         name: mineral
         type: string
-      - description: material - see /queries/samples/materials
+      - description: material - see /queries/samples/materials (supports Filter DSL)
         in: query
         name: material
         type: string
-      - description: inclusion type - see /queries/samples/inclusiontypes
+      - description: inclusion type - see /queries/samples/inclusiontypes (supports
+          Filter DSL)
         in: query
         name: inclusiontype
         type: string
-      - description: host material - see /queries/samples/hostmaterials
+      - description: host material - see /queries/samples/hostmaterials (supports
+          Filter DSL)
         in: query
         name: hostmaterial
         type: string
       - description: inclusion material - see /queries/samples/inclusionmaterials
+          (supports Filter DSL)
         in: query
         name: inclusionmaterial
         type: string
       - description: sampling technique - see /queries/samples/samplingtechniques
+          (supports Filter DSL)
         in: query
         name: sampletech
         type: string
-      - description: 'chemical filter using the form '
+      - description: chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where
+          the filter tuples are evaluated conjunctively
         in: query
         name: chemistry
         type: string
-      - description: title of publication
+      - description: title of publication (supports Filter DSL)
         in: query
         name: title
         type: string
-      - description: publication year
+      - description: publication year (supports Filter DSL)
         in: query
         name: publicationyear
         type: string
-      - description: DOI
+      - description: DOI (supports Filter DSL)
         in: query
         name: doi
         type: string
-      - description: Author first name
+      - description: Author first name (supports Filter DSL)
         in: query
         name: firstname
         type: string
-      - description: Author last name
+      - description: Author last name (supports Filter DSL)
         in: query
         name: lastname
         type: string
-      - description: Specimen age min
+      - description: Specimen age min (supports Filter DSL)
         in: query
         name: agemin
         type: string
-      - description: Specimen age max
+      - description: Specimen age max (supports Filter DSL)
         in: query
         name: agemax
         type: string
-      - description: Specimen geological age - see /queries/samples/geoages
+      - description: Specimen geological age - see /queries/samples/geoages (supports
+          Filter DSL)
         in: query
         name: geoage
         type: string
       - description: Specimen geological age prefix - see /queries/samples/geoageprefixes
+          (supports Filter DSL)
         in: query
         name: geoageprefix
         type: string
-      - description: Laboratory name - see /queries/samples/organizationnames
+      - description: Laboratory name - see /queries/samples/organizationnames (supports
+          Filter DSL)
         in: query
         name: lab
         type: string
@@ -1246,103 +1259,116 @@ paths:
         in: query
         name: offset
         type: integer
-      - description: tectonic setting - see /queries/sites/settings
+      - description: tectonic setting - see /queries/sites/settings (supports Filter
+          DSL)
         in: query
         name: setting
         type: string
-      - description: location level 1 - see /queries/locations/l1
+      - description: location level 1 - see /queries/locations/l1 (supports Filter
+          DSL)
         in: query
         name: location1
         type: string
-      - description: location level 2 - see /queries/locations/l2
+      - description: location level 2 - see /queries/locations/l2 (supports Filter
+          DSL)
         in: query
         name: location2
         type: string
-      - description: location level 3 - see /queries/locations/l3
+      - description: location level 3 - see /queries/locations/l3 (supports Filter
+          DSL)
         in: query
         name: location3
         type: string
-      - description: latitude
+      - description: latitude (supports Filter DSL)
         in: query
         name: latitude
         type: string
-      - description: longitude
+      - description: longitude (supports Filter DSL)
         in: query
         name: longitude
         type: string
-      - description: rock type - see /queries/samples/rocktypes
+      - description: rock type - see /queries/samples/rocktypes (supports Filter DSL)
         in: query
         name: rocktype
         type: string
       - description: taxonomic classifier name - see /queries/samples/rockclasses
+          (supports Filter DSL)
         in: query
         name: rockclass
         type: string
-      - description: mineral - see /queries/samples/minerals
+      - description: mineral - see /queries/samples/minerals (supports Filter DSL)
         in: query
         name: mineral
         type: string
-      - description: material - see /queries/samples/materials
+      - description: material - see /queries/samples/materials (supports Filter DSL)
         in: query
         name: material
         type: string
-      - description: inclusion type - see /queries/samples/inclusiontypes
+      - description: inclusion type - see /queries/samples/inclusiontypes (supports
+          Filter DSL)
         in: query
         name: inclusiontype
         type: string
-      - description: host material - see /queries/samples/hostmaterials
+      - description: host material - see /queries/samples/hostmaterials (supports
+          Filter DSL)
         in: query
         name: hostmaterial
         type: string
       - description: inclusion material - see /queries/samples/inclusionmaterials
+          (supports Filter DSL)
         in: query
         name: inclusionmaterial
         type: string
       - description: sampling technique - see /queries/samples/samplingtechniques
+          (supports Filter DSL)
         in: query
         name: sampletech
         type: string
-      - description: 'chemical filter using the form '
+      - description: chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where
+          the filter tuples are evaluated conjunctively
         in: query
         name: chemistry
         type: string
-      - description: title of publication
+      - description: title of publication (supports Filter DSL)
         in: query
         name: title
         type: string
-      - description: publication year
+      - description: publication year (supports Filter DSL)
         in: query
         name: publicationyear
         type: string
-      - description: DOI
+      - description: DOI (supports Filter DSL)
         in: query
         name: doi
         type: string
-      - description: Author first name
+      - description: Author first name (supports Filter DSL)
         in: query
         name: firstname
         type: string
-      - description: Author last name
+      - description: Author last name (supports Filter DSL)
         in: query
         name: lastname
         type: string
-      - description: Specimen age min
+      - description: Specimen age min (supports Filter DSL)
         in: query
         name: agemin
         type: string
-      - description: Specimen age max
+      - description: Specimen age max (supports Filter DSL)
         in: query
         name: agemax
         type: string
-      - description: Specimen geological age - see /queries/samples/geoages
+      - description: Specimen geological age - see /queries/samples/geoages (supports
+          Filter DSL)
         in: query
         name: geoage
         type: string
       - description: Specimen geological age prefix - see /queries/samples/geoageprefixes
+          (supports Filter DSL)
         in: query
         name: geoageprefix
         type: string
-      - description: Laboratory name - see /queries/samples/organizationnames
+      - description: Laboratory name - see /queries/samples/organizationnames (supports
+          Filter DSL)
         in: query
         name: lab
         type: string

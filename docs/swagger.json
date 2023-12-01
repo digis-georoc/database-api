@@ -83,151 +83,151 @@
                     },
                     {
                         "type": "string",
-                        "description": "tectonic setting - see /queries/sites/settings",
+                        "description": "tectonic setting - see /queries/sites/settings (supports Filter DSL)",
                         "name": "setting",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 1 - see /queries/locations/l1",
+                        "description": "location level 1 - see /queries/locations/l1 (supports Filter DSL)",
                         "name": "location1",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 2 - see /queries/locations/l2",
+                        "description": "location level 2 - see /queries/locations/l2 (supports Filter DSL)",
                         "name": "location2",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 3 - see /queries/locations/l3",
+                        "description": "location level 3 - see /queries/locations/l3 (supports Filter DSL)",
                         "name": "location3",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "latitude",
+                        "description": "latitude (supports Filter DSL)",
                         "name": "latitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "longitude",
+                        "description": "longitude (supports Filter DSL)",
                         "name": "longitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "rock type - see /queries/samples/rocktypes",
+                        "description": "rock type - see /queries/samples/rocktypes (supports Filter DSL)",
                         "name": "rocktype",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "taxonomic classifier name - see /queries/samples/rockclasses",
+                        "description": "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)",
                         "name": "rockclass",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "mineral - see /queries/samples/minerals",
+                        "description": "mineral - see /queries/samples/minerals (supports Filter DSL)",
                         "name": "mineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "material - see /queries/samples/materials",
+                        "description": "material - see /queries/samples/materials (supports Filter DSL)",
                         "name": "material",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion type - see /queries/samples/inclusiontypes",
+                        "description": "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)",
                         "name": "inclusiontype",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "host material - see /queries/samples/hostmaterials",
+                        "description": "host material - see /queries/samples/hostmaterials (supports Filter DSL)",
                         "name": "hostmaterial",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion material - see /queries/samples/inclusionmaterials",
+                        "description": "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)",
                         "name": "inclusionmaterial",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "sampling technique - see /queries/samples/samplingtechniques",
+                        "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "chemical filter using the form ",
+                        "description": "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively",
                         "name": "chemistry",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "title of publication",
+                        "description": "title of publication (supports Filter DSL)",
                         "name": "title",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "publication year",
+                        "description": "publication year (supports Filter DSL)",
                         "name": "publicationyear",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "DOI",
+                        "description": "DOI (supports Filter DSL)",
                         "name": "doi",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author first name",
+                        "description": "Author first name (supports Filter DSL)",
                         "name": "firstname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author last name",
+                        "description": "Author last name (supports Filter DSL)",
                         "name": "lastname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen age min",
+                        "description": "Specimen age min (supports Filter DSL)",
                         "name": "agemin",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen age max",
+                        "description": "Specimen age max (supports Filter DSL)",
                         "name": "agemax",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen geological age - see /queries/samples/geoages",
+                        "description": "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)",
                         "name": "geoage",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
+                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)",
                         "name": "geoageprefix",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Laboratory name - see /queries/samples/organizationnames",
+                        "description": "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)",
                         "name": "lab",
                         "in": "query"
                     },
@@ -1128,151 +1128,151 @@
                     },
                     {
                         "type": "string",
-                        "description": "tectonic setting - see /queries/sites/settings",
+                        "description": "tectonic setting - see /queries/sites/settings (supports Filter DSL)",
                         "name": "setting",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 1 - see /queries/locations/l1",
+                        "description": "location level 1 - see /queries/locations/l1 (supports Filter DSL)",
                         "name": "location1",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 2 - see /queries/locations/l2",
+                        "description": "location level 2 - see /queries/locations/l2 (supports Filter DSL)",
                         "name": "location2",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "location level 3 - see /queries/locations/l3",
+                        "description": "location level 3 - see /queries/locations/l3 (supports Filter DSL)",
                         "name": "location3",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "latitude",
+                        "description": "latitude (supports Filter DSL)",
                         "name": "latitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "longitude",
+                        "description": "longitude (supports Filter DSL)",
                         "name": "longitude",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "rock type - see /queries/samples/rocktypes",
+                        "description": "rock type - see /queries/samples/rocktypes (supports Filter DSL)",
                         "name": "rocktype",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "taxonomic classifier name - see /queries/samples/rockclasses",
+                        "description": "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)",
                         "name": "rockclass",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "mineral - see /queries/samples/minerals",
+                        "description": "mineral - see /queries/samples/minerals (supports Filter DSL)",
                         "name": "mineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "material - see /queries/samples/materials",
+                        "description": "material - see /queries/samples/materials (supports Filter DSL)",
                         "name": "material",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion type - see /queries/samples/inclusiontypes",
+                        "description": "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)",
                         "name": "inclusiontype",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "host material - see /queries/samples/hostmaterials",
+                        "description": "host material - see /queries/samples/hostmaterials (supports Filter DSL)",
                         "name": "hostmaterial",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion material - see /queries/samples/inclusionmaterials",
+                        "description": "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)",
                         "name": "inclusionmaterial",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "sampling technique - see /queries/samples/samplingtechniques",
+                        "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "chemical filter using the form ",
+                        "description": "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively",
                         "name": "chemistry",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "title of publication",
+                        "description": "title of publication (supports Filter DSL)",
                         "name": "title",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "publication year",
+                        "description": "publication year (supports Filter DSL)",
                         "name": "publicationyear",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "DOI",
+                        "description": "DOI (supports Filter DSL)",
                         "name": "doi",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author first name",
+                        "description": "Author first name (supports Filter DSL)",
                         "name": "firstname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author last name",
+                        "description": "Author last name (supports Filter DSL)",
                         "name": "lastname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen age min",
+                        "description": "Specimen age min (supports Filter DSL)",
                         "name": "agemin",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen age max",
+                        "description": "Specimen age max (supports Filter DSL)",
                         "name": "agemax",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen geological age - see /queries/samples/geoages",
+                        "description": "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)",
                         "name": "geoage",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes",
+                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)",
                         "name": "geoageprefix",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Laboratory name - see /queries/samples/organizationnames",
+                        "description": "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)",
                         "name": "lab",
                         "in": "query"
                     },
