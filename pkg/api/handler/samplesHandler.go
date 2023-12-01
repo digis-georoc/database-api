@@ -1160,7 +1160,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 				mvIDList += ","
 			}
 			mvIDList += fmt.Sprintf("m%d.samplingfeatureid", i+1)
-			i++
 		}
 		query.AddSQLBlock(fmt.Sprintf("%s%s%s", sql.GetSamplingfeatureIdsByFilterResultsStartPre, mvIDList, sql.GetSamplingfeatureIdsByFilterResultsStartPost))
 		// add ResultFilterExpression for each expression in the chemQry
