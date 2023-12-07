@@ -2599,6 +2599,9 @@ const docTemplate = `{
                 "label": {
                     "type": "string"
                 },
+                "unit": {
+                    "type": "string"
+                },
                 "value": {
                     "type": "string"
                 }
