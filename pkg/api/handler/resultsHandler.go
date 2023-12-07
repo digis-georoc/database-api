@@ -59,6 +59,10 @@ func (h *Handler) GetElements(c echo.Context) error {
 		logger.Errorf("Can not GetElements: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element data")
 	}
+	// TODO: fill standard-units
+	for _, e := range elements {
+		e.Unit = "tbd"
+	}
 	response := model.ElementResponse{
 		NumItems: len(elements),
 		Data:     elements,
