@@ -58,7 +58,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 		LogRequestID: true,
 		LogMethod:    true,
 		Skipper: func(c echo.Context) bool {
-			return strings.Contains(c.Request().URL.Path, "docs") || strings.Contains(c.Request().URL.Path, "ping")
+			return strings.Contains(c.Request().URL.Path, "v1/docs") || strings.Contains(c.Request().URL.Path, "v1/ping") || strings.Contains(c.Request().URL.Path, "v1/alive")
 		},
 		LogValuesFunc: func(c echo.Context, values emw.RequestLoggerValues) error {
 			log.WithFields(logrus.Fields{
