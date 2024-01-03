@@ -9,20 +9,12 @@ where s.samplingfeatureid = $1
 // BaseQuery is extended with JOIN-modules depending on the selected filter options
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"
 const GetSamplingfeatureIdsByFilterBaseQuery = `
--- modular query for specimenids with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
-spec.samplingfeaturename as samplename
-from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
-`
-
-// Same as GetSamplingfeatureIdsByFilterBaseQuery but with select on latitude and longitude
-// Depends on QueryModule Coordinates being added
-const GetSamplingfeatureIdsByFilterBaseQueryWithCoords = `
 -- modular query for specimenids and coordinates with all filter options
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
-coords.latitude,
-coords.longitude,
+coalesce(coords.latitude, 0) as latitude,
+coalesce(coords.longitude, 0) as longitude,
+coalesce(tax.rock_type, 'None') as rockType,
+coalesce(tax.rock_class, 'None') as rockClass,
 spec.samplingfeaturename as samplename
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
@@ -40,12 +32,13 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 
 // Filter query-module Locations
 // Filter options are:
-// 		Setting
-//		Locationname lvl1
-//		Locationname lvl2
-//		Locationname lvl3
-//		Latitude
-//		Longitude
+//
+//	Setting
+//	Locationname lvl1
+//	Locationname lvl2
+//	Locationname lvl3
+//	Latitude
+//	Longitude
 const GetSamplingfeatureIdsByFilterLocationsStart = `
 join (
 	-- location data
@@ -85,15 +78,16 @@ const GetSamplingfeatureIdsByFilterLocationsEnd = `
 
 // Filter query-module TaxonomicClassifiers
 // Filter options are:
-// 		RockType
-//		RockClass
-//		Mineral
-//		HostMaterial
-//		InclusionMaterial
+//
+//	RockType
+//	RockClass
+//	Mineral
+//	HostMaterial
+//	InclusionMaterial
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select s.samplingfeatureid
+	select s.samplingfeatureid, rt.rock_type, rc.rock_class
 	from odm2.samplingfeatures s
 	left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
@@ -155,9 +149,10 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 
 // Filter query-module Annotations
 // Filter options are:
-// 		Material
-//		InclusionType
-//		SamplingTechnique
+//
+//	Material
+//	InclusionType
+//	SamplingTechnique
 const GetSamplingfeatureIdsByFilterAnnotationsStart = `
 join (
 	-- annotations
@@ -218,9 +213,10 @@ const GetSamplingfeatureIdsByFilterResultsEnd = `
 
 // Filter query-module Citations
 // Filter options are:
-// 		DOI
-// 		Title
-//		PublicationYear
+//
+//	DOI
+//	Title
+//	PublicationYear
 const GetSamplingfeatureIdsByFilterCitationsStart = `
 join (
 	select distinct cs.samplingfeatureid
@@ -238,10 +234,11 @@ const GetSamplingfeatureIdsByFilterCitationsEnd = `
 
 // Filter query-module Ages
 // Filter options are:
-//		AgeMin
-//		AgeMax
-//		GeologicalAge
-//		GeologicalAgePrefix
+//
+//	AgeMin
+//	AgeMax
+//	GeologicalAge
+//	GeologicalAgePrefix
 const GetSamplingfeatureIdsByFilterAgesStart = `
 join (
 	select sa.samplingfeatureid
@@ -254,7 +251,8 @@ const GetSamplingfeatureIdsByFilterAgesEnd = `
 
 // Filter query-module Organizations
 // Filter options are:
-// 		OrganizationName
+//
+//	OrganizationName
 const GestSamplingfeatureIdsByFilterOrganizationsStart = `
 join (
 	select 
@@ -274,7 +272,8 @@ const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
 
 // Filter query-module Geometry
 // Filter options are:
-// 		ST_WITHIN(geometry, st_wrapx(given-polygon))
+//
+//	ST_WITHIN(geometry, st_wrapx(given-polygon))
 const GestSamplingfeatureIdsByFilterGeometryStart = `
 join (
 select r.samplingfeatureid as sampleid,

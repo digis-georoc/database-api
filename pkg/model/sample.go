@@ -35,6 +35,8 @@ type SampleByFilters struct {
 	SampleName string  `json:"samplename"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
+	RockType   string  `json:"rockType"`
+	RockClass  string  `json:"rockClass"`
 	TotalCount int     `json:"totalCount"`
 }
 
@@ -43,6 +45,8 @@ type SampleByFiltersData struct {
 	SampleName string  `json:"samplename"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
+	RockType   string  `json:"rockType"`
+	RockClass  string  `json:"rockClass"`
 }
 
 type SampleByFilterResponse struct {

@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/geometry"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -164,8 +164,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	specimen := []model.SampleByFilters{}
-
 	// get polygon filter
 	coordData := map[string]interface{}{}
 	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
@@ -200,25 +198,25 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimen, query.GetFilterValues()...)
+	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 	// copy into model without totalCount on each sample
 	responseData := []model.SampleByFiltersData{}
-	for _, sample := range specimen {
+	totalCount := 0
+	for _, sample := range result {
+		totalCount = sample.TotalCount
 		data := model.SampleByFiltersData{
 			SampleID:   sample.SampleID,
 			SampleName: sample.SampleName,
 			Latitude:   sample.Latitude,
 			Longitude:  sample.Longitude,
+			RockType:   sample.RockType,
+			RockClass:  sample.RockClass,
 		}
 		responseData = append(responseData, data)
-	}
-	totalCount := 0
-	if len(specimen) > 0 {
-		totalCount = specimen[0].TotalCount
 	}
 	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: totalCount, Data: responseData}
 	return c.JSON(http.StatusOK, response)
@@ -967,10 +965,6 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 // buildSampleFilterQuery constructs a query using filter params from the request
 func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*sql.Query, error) {
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
-	addCoords := c.QueryParam(QP_ADD_COORDINATES)
-	if addCoords != "" && strings.ToLower(addCoords) != "false" {
-		query = sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQueryWithCoords)
-	}
 	bbox := coordData[KEY_BBOX]
 	if bbox != nil {
 		query = sql.NewQuery("")
@@ -1060,18 +1054,22 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	if err != nil {
 		return nil, err
 	}
-	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if true || rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add filter for each subquery for significant speedup
-		if rockType != "" {
+		if true || rockType != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
-			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			if rockType != "" {
+				query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			}
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
 		}
-		if rockClass != "" {
+		if true || rockClass != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			if rockClass != "" {
+				query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			}
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
 		}
 		if mineral != "" {
@@ -1341,10 +1339,8 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	}
 
 	// coordinates
-	if addCoords != "" && strings.ToLower(addCoords) != "false" {
-		// add query module coordinates
-		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
-	}
+	// add query module coordinates
+	query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
 
 	return query, nil
 }

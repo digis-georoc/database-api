@@ -6,6 +6,7 @@ import (
 	"net"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
@@ -23,6 +24,8 @@ type PostgresConnector interface {
 
 	// Close stops the connection
 	Close()
+
+	Connection() *pgxpool.Pool
 
 	// Ping executes a simple Ping against the database to check if the connection is healthy
 	// returns an error if the Ping failed
@@ -124,6 +127,10 @@ func (pC *postgresConnector) Close() {
 	pC.connection.Close()
 }
 
+func (pC *postgresConnector) Connection() *pgxpool.Pool {
+	return pC.connection
+}
+
 func (pC *postgresConnector) Ping() error {
 	c, err := pC.connection.Acquire(context.Background())
 	if err != nil {
@@ -138,6 +145,7 @@ func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver int
 	// Add PostgreSQL magic json functions
 	// This gives us a single row back even if the query returns many rows
 	// Now they get aggregated into a jsonb
+	// Note: jsonb has a maximum size. This is exceeded with the additional fields (rocktype & rockclass) in the samples query so we need another solution
 	completeSql := fmt.Sprintf(
 		`WITH orig_sql AS 
 		(%s) 
@@ -160,6 +168,23 @@ func (pC *postgresConnector) Query(ctx context.Context, sql string, receiver int
 		return fmt.Errorf("Can not query database: %w", err)
 	}
 	return nil
+}
+
+func Query[T any](ctx context.Context, pC PostgresConnector, sql string, args ...interface{}) ([]T, error) {
+	// manually acquire and release connection to be able to send CancelRequest() on context canceled by client
+	c, err := pC.Connection().Acquire(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer c.Release()
+	stopChan := make(chan bool)
+	go cancelQueryOnContextCanceled(ctx, c, stopChan)
+	rows, err := c.Query(ctx, sql, args...)
+	stopChan <- true
+	if err != nil {
+		return nil, fmt.Errorf("Can not query database: %w", err)
+	}
+	return pgx.CollectRows(rows, pgx.RowToStructByName[T])
 }
 
 // cancelQueryOnContextCanceled is an async context watcher to send a CancelRequest() if the context is canceled by client

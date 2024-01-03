@@ -120,12 +120,14 @@ left join
 	array_remove(array_agg(distinct g_loc.geolocationtype), null) as loc_types ,
 	array_remove(array_agg(loc.elevationprecisioncomment), null) as elevation,
 	array_remove(array_agg(distinct si_loc.sitedescription), null) as land_or_sea,
-	array_remove(array_agg(distinct si_loc.setting), null) as setting
+	array_remove(array_agg(distinct gs.settingname), null) as setting
 	from odm2.relatedfeatures rel_loc
 	left join odm2.samplingfeatures loc on loc.samplingfeatureid = rel_loc.relatedfeatureid 
 	left join odm2.sites si_loc on si_loc.samplingfeatureid = rel_loc.relatedfeatureid 
 	left join odm2.sitegeolocations sg_loc on sg_loc.samplingfeatureid  = si_loc.samplingfeatureid
 	left join odm2.geolocations g_loc on g_loc.geolocationid = sg_loc.geolocationid 
+	left join odm2.sitegeologicalsettings sgs on sgs.samplingfeatureid = si_loc.samplingfeatureid
+	left join odm2.geologicalsettings gs on gs.settingid = sgs.settingid
 	where rel_loc.samplingfeatureid = $1
 	group by rel_loc.samplingfeatureid 
 ) loc on loc.samplingfeatureid = samples.samplingfeatureid

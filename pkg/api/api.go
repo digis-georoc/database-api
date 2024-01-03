@@ -40,6 +40,7 @@ import (
 // @BasePath /api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
+	e.HideBanner = true
 	log := logrus.New()
 	e.Use(emw.Recover())
 	e.Use(emw.RequestID())
