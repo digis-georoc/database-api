@@ -67,6 +67,9 @@ const (
 	KEY_POLYGON                 = "key_polygon"
 	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
 	KEY_BOUNDARY_POLY           = "key_boundary_poly"
+
+	KEY_ROCKTYPE  = "key_rocktype"
+	KEY_ROCKCLASS = "key_rockclass"
 )
 
 // GetSampleByID godoc
@@ -183,7 +186,11 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
 		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
 	}
-	query, err := buildSampleFilterQuery(c, coordData)
+	kwargs := map[string]interface{}{
+		KEY_ROCKCLASS: true,
+		KEY_ROCKTYPE:  true,
+	}
+	query, err := buildSampleFilterQuery(c, coordData, kwargs)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -341,7 +348,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 
 	// build query string
-	query, err := buildSampleFilterQuery(c, coordData)
+	query, err := buildSampleFilterQuery(c, coordData, nil)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -963,7 +970,17 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 }
 
 // buildSampleFilterQuery constructs a query using filter params from the request
-func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*sql.Query, error) {
+func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kwargs map[string]interface{}) (*sql.Query, error) {
+	var returnRockClass, returnRockType bool
+	for k, v := range kwargs {
+		switch k {
+		case KEY_ROCKCLASS:
+			returnRockClass = v.(bool)
+		case KEY_ROCKTYPE:
+			returnRockType = v.(bool)
+		}
+	}
+
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 	bbox := coordData[KEY_BBOX]
 	if bbox != nil {
@@ -1054,18 +1071,18 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	if err != nil {
 		return nil, err
 	}
-	if true || rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if returnRockType || returnRockClass || rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add filter for each subquery for significant speedup
-		if true || rockType != "" {
+		if returnRockType || rockType != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
 			if rockType != "" {
 				query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
 			}
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
 		}
-		if true || rockClass != "" {
+		if returnRockClass || rockClass != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
 			if rockClass != "" {
 				query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
