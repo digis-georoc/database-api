@@ -55,8 +55,6 @@ definitions:
     type: object
   model.Element:
     properties:
-      count:
-        type: integer
       label:
         type: string
       unit:
@@ -392,6 +390,10 @@ definitions:
         type: number
       longitude:
         type: number
+      rockClass:
+        type: string
+      rockType:
+        type: string
       sampleID:
         type: integer
       samplename:
@@ -513,7 +515,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.6
+  version: 0.3.9
 paths:
   /alive:
     get:

@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.3.6"
+        "version": "0.3.9"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -2590,9 +2590,6 @@
         "model.Element": {
             "type": "object",
             "properties": {
-                "count": {
-                    "type": "integer"
-                },
                 "label": {
                     "type": "string"
                 },
@@ -3106,6 +3103,12 @@
                 },
                 "longitude": {
                     "type": "number"
+                },
+                "rockClass": {
+                    "type": "string"
+                },
+                "rockType": {
+                    "type": "string"
                 },
                 "sampleID": {
                     "type": "integer"
