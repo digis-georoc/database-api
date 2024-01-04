@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -29,35 +30,34 @@ func (h *Handler) GetStatistics(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	stats := []model.Statistics{}
 	statisticsResponse := model.Statistics{}
 	query := sql.NewQuery(sql.CountCitationsQuery)
-	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
-	if err != nil {
+	citations, err := repository.Query[struct{ NumCitations int }](c.Request().Context(), h.db, query.GetQueryString())
+	if err != nil || len(citations) == 0 {
 		logger.Errorf("Can not GetStatistics Citations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
-	statisticsResponse.NumCitations = stats[0].NumCitations
+	statisticsResponse.NumCitations = citations[0].NumCitations
 	query = sql.NewQuery(sql.CountAnalysesQuery)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
-	if err != nil {
+	analyses, err := repository.Query[struct{ NumAnalyses int }](c.Request().Context(), h.db, query.GetQueryString())
+	if err != nil || len(analyses) == 0 {
 		logger.Errorf("Can not GetStatistics Analyses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
-	statisticsResponse.NumAnalyses = stats[0].NumAnalyses
+	statisticsResponse.NumAnalyses = analyses[0].NumAnalyses
 	query = sql.NewQuery(sql.CountSamplesQuery)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
-	if err != nil {
+	samples, err := repository.Query[struct{ NumSamples int }](c.Request().Context(), h.db, query.GetQueryString())
+	if err != nil || len(samples) == 0 {
 		logger.Errorf("Can not GetStatistics Samples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
-	statisticsResponse.NumSamples = stats[0].NumSamples
+	statisticsResponse.NumSamples = samples[0].NumSamples
 	query = sql.NewQuery(sql.CountResultsQuery)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &stats)
-	if err != nil {
+	results, err := repository.Query[struct{ NumResults int }](c.Request().Context(), h.db, query.GetQueryString())
+	if err != nil || len(results) == 0 {
 		logger.Errorf("Can not GetStatistics Results: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
-	statisticsResponse.NumResults = stats[0].NumResults
+	statisticsResponse.NumResults = results[0].NumResults
 	return c.JSON(http.StatusOK, statisticsResponse)
 }

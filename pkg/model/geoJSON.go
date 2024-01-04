@@ -44,3 +44,18 @@ type GeoJSONCluster struct {
 	Centroid   GeoJSONFeature `json:"centroid"`
 	ConvexHull GeoJSONFeature `json:"convexHull"`
 }
+
+// GeoJSONSite
+// note: pointer types allow for NULL values in sql
+type GeoJSONSite struct {
+	Latitude              *float64 `json:"latitude"`
+	Longitude             *float64 `json:"longitude"`
+	LocationID            *int     `json:"locationID"`
+	NumSamplingFeatureIDs *int     `json:"numsamplingfeatureids"`
+	SamplingFeatureIDs    []*int   `json:"samplingfeatureids"`
+	Setting               *string  `json:"setting"`
+	Loc1                  *string  `json:"loc1"`
+	Loc2                  *string  `json:"loc2"`
+	Loc3                  *string  `json:"loc3"`
+	LandOrSea             *string  `json:"land_or_sea"`
+}

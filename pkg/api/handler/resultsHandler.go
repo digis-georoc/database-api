@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -41,7 +42,6 @@ func (h *Handler) GetElements(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
 
-	elements := []model.Element{}
 	query := sql.NewQuery(sql.ElementsQuery)
 	if elementType != "" {
 		// add filter for element type
@@ -54,7 +54,7 @@ func (h *Handler) GetElements(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &elements, query.GetFilterValues()...)
+	elements, err := repository.Query[model.Element](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetElements: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element data")
@@ -91,7 +91,6 @@ func (h *Handler) GetElementTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	elementTypes := []model.ElementType{}
 	query := sql.NewQuery(sql.ElementTypesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -100,7 +99,7 @@ func (h *Handler) GetElementTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &elementTypes)
+	elementTypes, err := repository.Query[model.ElementType](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetElementTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve chemical element type data")

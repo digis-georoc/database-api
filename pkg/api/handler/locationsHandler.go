@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -35,7 +36,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	locations := []model.Location{}
+
 	query := sql.NewQuery(sql.FirstLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -44,7 +45,7 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations)
+	locations, err := repository.Query[model.Location](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL1: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve first level locations")
@@ -77,7 +78,7 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	locations := []model.Location{}
+
 	query := sql.NewQuery(sql.SecondLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -87,7 +88,7 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations, locationNameL1)
+	locations, err := repository.Query[model.Location](c.Request().Context(), h.db, query.GetQueryString(), locationNameL1)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL2: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve second level locations")
@@ -121,7 +122,7 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	locations := []model.Location{}
+
 	query := sql.NewQuery(sql.ThirdLevelLocationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -132,7 +133,7 @@ func (h *Handler) GetLocationsL3(c echo.Context) error {
 	query.AddOffset(offset)
 	locationNameL1 := c.QueryParam(PARAM_LOC_LEVEL_1)
 	locationNameL2 := c.QueryParam(PARAM_LOC_LEVEL_2)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &locations, locationNameL1, locationNameL2)
+	locations, err := repository.Query[model.Location](c.Request().Context(), h.db, query.GetQueryString(), locationNameL1, locationNameL2)
 	if err != nil {
 		logger.Errorf("Can not GetLocationsL3: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve third level locations")

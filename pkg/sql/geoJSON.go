@@ -4,13 +4,13 @@ const GeoJSONQuery = `
 SELECT s.latitude,
 s.longitude,
 (array_agg(s.samplingfeatureid))[1] AS locationid,
-count(DISTINCT r.samplingfeatureid) AS num_samplingfeatureids,
+count(DISTINCT r.samplingfeatureid) AS numsamplingfeatureids,
 array_agg(DISTINCT r.samplingfeatureid) AS samplingfeatureids,
-array_agg(DISTINCT s.setting) AS setting,
-array_agg(DISTINCT toplevelloc.locationname) AS loc1,
-array_agg(DISTINCT secondlevelloc.locationname) AS loc2,
-array_agg(DISTINCT thirdlevelloc.locationname) AS loc3,
-array_agg(DISTINCT s.sitedescription) AS land_or_sea
+(array_agg(DISTINCT s.setting))[1] AS setting,
+(array_agg(DISTINCT toplevelloc.locationname))[1] AS loc1,
+(array_agg(DISTINCT secondlevelloc.locationname))[1] AS loc2,
+(array_agg(DISTINCT thirdlevelloc.locationname))[1] AS loc3,
+(array_agg(DISTINCT s.sitedescription))[1] AS landorsea
 FROM odm2.sites s
 LEFT JOIN ( 
 	SELECT sg.samplingfeatureid,

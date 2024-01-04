@@ -91,9 +91,8 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	samples := []model.Sample{}
 	query := sql.NewQuery(sql.GetSampleByIDQuery)
-	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &samples, c.Param(QP_SAMPFEATUREID))
+	samples, err := repository.Query[model.Sample](c.Request().Context(), h.db, query.GetQueryString(), c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSampleByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -289,7 +288,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	clusterData := []model.ClusteredSample{}
 
 	// response object
 	response := model.ClusterResponse{}
@@ -378,7 +376,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &clusterData, query.GetFilterValues()...)
+	clusterData, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -424,7 +422,6 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	specimentypes := []model.Specimen{}
 	query := sql.NewQuery(sql.GetSpecimenTypesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -433,7 +430,7 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimentypes)
+	specimentypes, err := repository.Query[model.Specimen](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSpecimenTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
@@ -473,7 +470,6 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	rockclasses := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.RockClassQueryStart)
 
 	rocktypes, _, err := parseParam(c.QueryParam(QP_ROCKTYPE))
@@ -502,7 +498,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rockclasses, query.GetFilterValues()...)
+	rockclasses, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetRockClasses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
@@ -535,7 +531,6 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	rocktypes := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.RockTypeQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -544,7 +539,7 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rocktypes)
+	rocktypes, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetRockTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
@@ -577,7 +572,6 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	minerals := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.MineralQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -586,7 +580,7 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &minerals)
+	minerals, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetMinerals: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
@@ -619,7 +613,6 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	materials := []model.Material{}
 	query := sql.NewQuery(sql.MaterialsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -628,7 +621,7 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &materials)
+	materials, err := repository.Query[model.Material](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve material data")
@@ -661,7 +654,6 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	hostMaterials := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.HostMatQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -670,7 +662,7 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &hostMaterials)
+	hostMaterials, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetHostMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve host material data")
@@ -703,7 +695,6 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	incMaterials := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.IncMatQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -712,7 +703,7 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &incMaterials)
+	incMaterials, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetInclusionMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion material data")
@@ -745,7 +736,6 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	inclusionTypes := []model.InclusionType{}
 	query := sql.NewQuery(sql.InclusionTypesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -754,7 +744,7 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &inclusionTypes)
+	inclusionTypes, err := repository.Query[model.InclusionType](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetInclusionTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion type data")
@@ -787,7 +777,6 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	samplingtechniques := []model.SamplingTechnique{}
 	query := sql.NewQuery(sql.SamplingTechniquesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -796,7 +785,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &samplingtechniques)
+	samplingtechniques, err := repository.Query[model.SamplingTechnique](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSamplingTechniques: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
@@ -828,10 +817,9 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	randomSpecimen := []model.Specimen{}
 	query := sql.NewQuery(sql.GetRandomSpecimensQuery)
 	limit := c.QueryParam(QP_LIMIT)
-	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &randomSpecimen, limit)
+	randomSpecimen, err := repository.Query[model.Specimen](c.Request().Context(), h.db, query.GetQueryString(), limit)
 	if err != nil {
 		logger.Errorf("Can not GetRandomSamples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve random data sample")
@@ -864,7 +852,6 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAges := []model.GeoAge{}
 	query := sql.NewQuery(sql.GetGeoAgesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -873,7 +860,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAges)
+	geoAges, err := repository.Query[model.GeoAge](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoAges: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age data")
@@ -906,7 +893,6 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAgePrefixes := []model.GeoAgePrefix{}
 	query := sql.NewQuery(sql.GetGeoAgePrefixesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -915,7 +901,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAgePrefixes)
+	geoAgePrefixes, err := repository.Query[model.GeoAgePrefix](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoAgePrefixes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age prefix data")
@@ -948,7 +934,6 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	organizations := []model.Organization{}
 	query := sql.NewQuery(sql.GetOrganizationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -957,7 +942,7 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &organizations)
+	organizations, err := repository.Query[model.Organization](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetOrganizationNames: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")

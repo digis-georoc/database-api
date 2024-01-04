@@ -2,7 +2,8 @@ package sql
 
 const ElementsQuery = `
 select v.variablecode as value,
-v.variablecode as label
+v.variablecode as label,
+'' as unit
 from odm2.variables v
 `
 

@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -34,7 +35,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	authors := []model.Person{}
+
 	query := sql.NewQuery(sql.AuthorsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -43,7 +44,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &authors)
+	authors, err := repository.Query[model.Person](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetAuthors: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")
@@ -74,8 +75,7 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	authors := []model.Person{}
-	err := h.db.Query(c.Request().Context(), sql.AuthorByIDQuery, &authors, c.Param(QP_PERSONID))
+	authors, err := repository.Query[model.Person](c.Request().Context(), h.db, sql.AuthorByIDQuery, c.Param(QP_PERSONID))
 	if err != nil {
 		logger.Errorf("Can not GetAuthorByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve author data")

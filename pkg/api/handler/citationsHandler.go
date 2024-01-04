@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -35,7 +36,6 @@ func (h *Handler) GetCitations(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	citations := []model.Citation{}
 	query := sql.NewQuery(sql.CitationsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -44,7 +44,7 @@ func (h *Handler) GetCitations(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &citations)
+	citations, err := repository.Query[model.Citation](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetCitations: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")
@@ -75,8 +75,7 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	citations := []model.Citation{}
-	err := h.db.Query(c.Request().Context(), sql.CitationByIDQuery, &citations, c.Param(QP_CITATIONID))
+	citations, err := repository.Query[model.Citation](c.Request().Context(), h.db, sql.CitationByIDQuery, c.Param(QP_CITATIONID))
 	if err != nil {
 		logger.Errorf("Can not GetCitationByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve citation data")

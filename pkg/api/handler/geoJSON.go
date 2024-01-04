@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -30,7 +31,7 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	sites := []map[string]interface{}{}
+
 	query := sql.NewQuery(sql.GeoJSONQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -39,7 +40,7 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
+	sites, err := repository.Query[model.GeoJSONSite](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GeoJSONSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geoJSON site data")
@@ -54,24 +55,27 @@ func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 }
 
 // buildFeatures takes a list of query results and populates GeoJSONFeatures with the data
-func buildFeatures(sites []map[string]interface{}) []model.GeoJSONFeature {
+func buildFeatures(sites []model.GeoJSONSite) []model.GeoJSONFeature {
 	featureList := []model.GeoJSONFeature{}
 	for i, result := range sites {
-		lat, long := .0, .0
-		if result["latitude"] != nil {
-			lat = result["latitude"].(float64)
-		}
-		if result["longitude"] != nil {
-			long = result["longitude"].(float64)
-		}
 		feature := model.GeoJSONFeature{
 			Type: model.GEOJSONTYPE_FEATURE,
 			ID:   fmt.Sprintf("%d", i),
 			Geometry: model.Geometry{
 				Type:        model.GEOJSON_GEOMETRY_POINT,
-				Coordinates: []interface{}{long, lat},
+				Coordinates: []interface{}{result.Longitude, result.Latitude},
 			},
-			Properties: result,
+			Properties: map[string]interface{}{
+				"latitude":               result.Latitude,
+				"longitude":              result.Longitude,
+				"num_samplingfeatureids": result.NumSamplingFeatureIDs,
+				"samplingfeatureids":     result.SamplingFeatureIDs,
+				"setting":                result.Setting,
+				"loc1":                   result.Loc1,
+				"loc2":                   result.Loc2,
+				"loc3":                   result.Loc3,
+				"land_or_sea":            result.LandOrSea,
+			},
 		}
 		featureList = append(featureList, feature)
 	}
