@@ -10,7 +10,10 @@ with params as (
 select min(s.samplingfeatureid) as min_id, max(s.samplingfeatureid) as max_id
 from odm2.specimens s 
 )
-select *
+select samplingFeatureID,
+specimenTypeCV,
+specimenMediumCV,
+isFieldSpecimen
 from (
 select trunc(p.min_id+random() * p.max_id) as id from
 params p,

@@ -20,7 +20,7 @@ samples.specimentexture as rockTextures,
 (samples.specimenagemax)[1] as ageMax,
 samples.material as materials,
 samples.mineral as minerals,
-samples.inclusion_type as inclusion_types,
+samples.inclusion_type as inclusiontypes,
 loc.loc_data[1].samplingfeatureid as locationNum,
 loc.loc_data[1].latitude as latitude,
 loc.loc_data[1].longitude as longitude,
@@ -95,10 +95,10 @@ from
 ) samples
 left join 
 (	
-	select q.samplingfeatureid, array_agg(q.*) as references from (
+	select q.samplingfeatureid, array_agg(q.reference) as references from (
 		-- query references and authors
 		select stc_ref.samplingfeatureid,
-		json_build_object('ref_num', c_ref.citationid , 'title', c_ref.title , 'journal', c_ref.journal , 'pages', c_ref.firstpage || '-' || c_ref.lastpage , 'year', c_ref.publicationyear , 'doi', cei_ref.citationexternalidentifier) as reference,
+		json_build_object('citationid', c_ref.citationid , 'title', c_ref.title , 'publisher', c_ref.publisher, 'publicationyear', c_ref.publicationyear , 'link', c_ref.citationlink, 'journal', c_ref.journal , 'volume', c_ref.volume, 'issue', c_ref.issue, 'firstpage', c_ref.firstpage, 'lastpage', c_ref.lastpage , 'booktitle', c_ref.booktitle, 'editors', c_ref.editors, 'authors', array_agg(distinct p_ref.*), 'doi', cei_ref.citationexternalidentifier) as reference,
 		array_agg(distinct p_ref.*) as authors 
 		from odm2.specimentaxonomicclassifiers stc_ref
 		left join odm2.citations c_ref on c_ref.citationid = stc_ref.citationid
@@ -277,10 +277,10 @@ from
 ) samples
 left join 
 (	
-	select q.samplingfeatureid, array_agg(q.*) as references from (
+	select q.samplingfeatureid, array_agg(q.reference) as references from (
 		-- query references and authors
 		select stc_ref.samplingfeatureid,
-		json_build_object('ref_num', c_ref.citationid , 'title', c_ref.title , 'journal', c_ref.journal , 'pages', c_ref.firstpage || '-' || c_ref.lastpage , 'year', c_ref.publicationyear , 'doi', cei_ref.citationexternalidentifier) as reference,
+		json_build_object('citationid', c_ref.citationid , 'title', c_ref.title , 'publisher', c_ref.publisher, 'publicationyear', c_ref.publicationyear , 'link', c_ref.citationlink, 'journal', c_ref.journal , 'volume', c_ref.volume, 'issue', c_ref.issue, 'firstpage', c_ref.firstpage, 'lastpage', c_ref.lastpage , 'booktitle', c_ref.booktitle, 'editors', c_ref.editors, 'authors', array_agg(distinct p_ref.*), 'doi', cei_ref.citationexternalidentifier) as reference,
 		array_agg(distinct p_ref.*) as authors 
 		from odm2.specimentaxonomicclassifiers stc_ref
 		left join odm2.citations c_ref on c_ref.citationid = stc_ref.citationid
@@ -302,10 +302,12 @@ left join
 	array_remove(array_agg(distinct g_loc.geolocationtype), null) as loc_types ,
 	array_remove(array_agg(loc.elevationprecisioncomment), null) as elevation,
 	array_remove(array_agg(distinct si_loc.sitedescription), null) as land_or_sea,
-	array_remove(array_agg(distinct si_loc.setting), null) as setting
+	array_remove(array_agg(distinct gs.settingname), null) as setting
 	from odm2.relatedfeatures rel_loc
 	left join odm2.samplingfeatures loc on loc.samplingfeatureid = rel_loc.relatedfeatureid 
 	left join odm2.sites si_loc on si_loc.samplingfeatureid = rel_loc.relatedfeatureid 
+	left join odm2.sitegeologicalsettings sgs on sgs.samplingfeatureid = si_loc.samplingfeatureid
+	left join odm2.geologicalsettings gs on gs.settingid = sgs.settingid
 	left join odm2.sitegeolocations sg_loc on sg_loc.samplingfeatureid  = si_loc.samplingfeatureid
 	left join odm2.geolocations g_loc on g_loc.geolocationid = sg_loc.geolocationid 
 	where rel_loc.samplingfeatureid = any ($1)

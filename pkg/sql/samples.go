@@ -1,7 +1,17 @@
 package sql
 
 const GetSampleByIDQuery = `
-select * from odm2.samplingfeatures s
+select s.samplingfeatureid,
+s.samplingfeatureuuid,
+s.samplingfeaturename,
+s.samplingfeaturedescription,
+s.samplingfeaturegeotypecv,
+s.featuregeometrywkt,
+s.elevation_m,
+s.elevationdatumcv,
+s.elevationprecision,
+s.elevationprecisioncomment
+from odm2.samplingfeatures s
 where s.samplingfeatureid = $1
 `
 
@@ -33,7 +43,7 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 // Filter query-module Locations
 // Filter options are:
 //
-//	Setting
+//	SettingName
 //	Locationname lvl1
 //	Locationname lvl2
 //	Locationname lvl3
@@ -42,9 +52,10 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 const GetSamplingfeatureIdsByFilterLocationsStart = `
 join (
 	-- location data
-	select r_sample.samplingfeatureid as sample,
-	r_batch.samplingfeatureid as batch
+	select r_sample.samplingfeatureid as sample
 	from odm2.sites s
+	left join odm2.sitegeologicalsettings sgs on sgs.samplingfeatureid = s.samplingfeatureid
+	left join odm2.geologicalsettings gs on gs.settingid = sgs.settingid
 	left join 
 	(
 		select sg.samplingfeatureid, sg.locationname
@@ -70,10 +81,9 @@ join (
 		group by sg.samplingfeatureid, sg.locationname -- multiple entries for same locationname
 	) thirdlevelloc on thirdlevelloc.samplingfeatureid = s.samplingfeatureid
 	left join odm2.relatedfeatures r_sample on r_sample.relatedfeatureid = s.samplingfeatureid -- samples for each location
-	left join odm2.relatedfeatures r_batch on r_batch.relatedfeatureid = r_sample.samplingfeatureid -- batches for each sample
 `
 const GetSamplingfeatureIdsByFilterLocationsEnd = `
-) loc on loc.sample = spec.samplingfeatureid or loc.batch = spec.samplingfeatureid
+) loc on loc.sample = spec.samplingfeatureid
 `
 
 // Filter query-module TaxonomicClassifiers
@@ -314,9 +324,9 @@ const GetSamplesClusteredWrapperPrefix = `
 -- filter query with clustering
 select
 clusters.clusterid,
-st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
-ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
-array_agg(clusters.translatedGeom) as points,
+st_asText(st_convexhull(st_collect(clusters.translatedGeom))) as convexHullString,
+st_asText(ST_Centroid(ST_Union(clusters.translatedGeom))) as centroidString,
+array_agg(st_astext(clusters.translatedGeom)) as pointStrings,
 array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,

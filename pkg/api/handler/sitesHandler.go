@@ -99,7 +99,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {object} model.SiteResponse
+// @Success     200    {object} model.GeologicalSettingResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     500    {object} string
@@ -118,12 +118,12 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	sites, err := repository.Query[model.Site](c.Request().Context(), h.db, query.GetQueryString())
+	sites, err := repository.Query[model.GeologicalSetting](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoSettings: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological settings data")
 	}
-	response := model.SiteResponse{
+	response := model.GeologicalSettingResponse{
 		NumItems: len(sites),
 		Data:     sites,
 	}

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -382,7 +384,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	// wrap in []interface{} for geoJSON polygon
+	// wrap bbox in []interface{} for geoJSON polygon
 	bboxIWrap := []interface{}{bbox}
 	response.Bbox = model.GeoJSONFeature{
 		Type: model.GEOJSONTYPE_FEATURE,
@@ -410,7 +412,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {object} model.SpecimenResponse
+// @Success     200    {object} model.SpecimenTypeResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -430,12 +432,12 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	specimentypes, err := repository.Query[model.Specimen](c.Request().Context(), h.db, query.GetQueryString())
+	specimentypes, err := repository.Query[model.SpecimenType](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSpecimenTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
 	}
-	response := model.SpecimenResponse{
+	response := model.SpecimenTypeResponse{
 		NumItems: len(specimentypes),
 		Data:     specimentypes,
 	}
@@ -979,7 +981,41 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 
 	// add optional search filters
 	junctor := sql.OpWhere // junctor to connect a new filter clause to the query: can be "WHERE" or "AND/OR"
+
+	// annotations
+	junctor = sql.OpWhere // reset junctor for new subquery
+	material, opMat, err := parseParam(c.QueryParam(QP_MATERIAL))
+	if err != nil {
+		return nil, err
+	}
+	incType, opIncType, err := parseParam(c.QueryParam(QP_INCTYPE))
+	if err != nil {
+		return nil, err
+	}
+	sampTech, opSampTech, err := parseParam(c.QueryParam(QP_SAMPTECH))
+	if err != nil {
+		return nil, err
+	}
+	if material != "" || incType != "" || sampTech != "" {
+		// add query module annotations
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
+		// add annotaion filters
+		if material != "" {
+			query.AddFilter("mat.material", material, opMat, junctor)
+			junctor = sql.OpAnd
+		}
+		if incType != "" {
+			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
+			junctor = sql.OpAnd
+		}
+		if sampTech != "" {
+			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
+	}
+
 	// location filters
+	junctor = sql.OpWhere // reset junctor for new subquery
 	setting, opSetting, err := parseParam(c.QueryParam(QP_SETTING))
 	if err != nil {
 		return nil, err
@@ -1009,7 +1045,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsStart)
 		// add location filters
 		if setting != "" {
-			query.AddFilter("s.setting", setting, opSetting, junctor)
+			query.AddFilter("gs.settingname", setting, opSetting, junctor)
 			junctor = sql.OpAnd // after first filter is added with "WHERE", change to "AND" for following filters
 		}
 		if location1 != "" {
@@ -1111,38 +1147,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddFilter("incmat.inclusion_material", inclMaterial, opInclMaterial, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
-	}
-
-	// annotations
-	junctor = sql.OpWhere // reset junctor for new subquery
-	material, opMat, err := parseParam(c.QueryParam(QP_MATERIAL))
-	if err != nil {
-		return nil, err
-	}
-	incType, opIncType, err := parseParam(c.QueryParam(QP_INCTYPE))
-	if err != nil {
-		return nil, err
-	}
-	sampTech, opSampTech, err := parseParam(c.QueryParam(QP_SAMPTECH))
-	if err != nil {
-		return nil, err
-	}
-	if material != "" || incType != "" || sampTech != "" {
-		// add query module annotations
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
-		// add annotaion filters
-		if material != "" {
-			query.AddFilter("mat.material", material, opMat, junctor)
-			junctor = sql.OpAnd
-		}
-		if incType != "" {
-			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
-			junctor = sql.OpAnd
-		}
-		if sampTech != "" {
-			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
-		}
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
 	}
 
 	// results
@@ -1352,11 +1356,15 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
 	points := []model.GeoJSONFeature{}
 	for _, cluster := range clusterData {
-		if len(cluster.Points) <= CLUSTERING_THRESHOLD {
-			for i, p := range cluster.Points {
+		if len(cluster.PointStrings) <= CLUSTERING_THRESHOLD {
+			for i, p := range cluster.PointStrings {
+				pointGeom, err := parseGeometryString(p)
+				if err != nil {
+					return nil, nil, err
+				}
 				point := model.GeoJSONFeature{
 					Type:     model.GEOJSONTYPE_FEATURE,
-					Geometry: p,
+					Geometry: *pointGeom,
 					Properties: map[string]interface{}{
 						"sampleID": cluster.Samples[i],
 					},
@@ -1365,20 +1373,25 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 			}
 			continue
 		}
+		centroidGeom, err := parseGeometryString(cluster.CentroidString)
+		if err != nil {
+			return nil, nil, err
+		}
 		centroid := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.Centroid,
+			Geometry: *centroidGeom,
 			Properties: map[string]interface{}{
 				"clusterID":   cluster.ClusterID,
 				"clusterSize": len(cluster.Samples),
 			},
 		}
-		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
-			centroid.Properties["sampleID"] = cluster.Samples[0]
+		convexHullGeom, err := parseGeometryString(cluster.ConvexHullString)
+		if err != nil {
+			return nil, nil, err
 		}
 		convexHull := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.ConvexHull,
+			Geometry: *convexHullGeom,
 		}
 		geoJSONCluster := model.GeoJSONCluster{
 			ClusterID:  cluster.ClusterID,
@@ -1418,4 +1431,50 @@ func parseChemQuery(query string) (model.ChemQuery, error) {
 		chemQuery.Expressions = append(chemQuery.Expressions, expr)
 	}
 	return chemQuery, nil
+}
+
+var geomTypeRegexp = regexp.MustCompile(`([A-z]+)`)
+var coordRegexp = regexp.MustCompile(`((-?\d+(\.\d+)?) (-?\d+(\.\d+)?))`)
+
+func parseGeometryString(geomString string) (*model.Geometry, error) {
+	geometry := model.Geometry{}
+	matches := geomTypeRegexp.FindAllString(geomString, -1)
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("Can not match geometry type: %s", geomString)
+	}
+	// set the type
+	geometry.Type = matches[0]
+	// parse the coordinates
+	matches = coordRegexp.FindAllString(geomString, -1)
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("Can not match coordinates: %s", geomString)
+	}
+	coordinates := []interface{}{}
+	for _, match := range matches {
+		split := strings.Split(match, " ")
+		if len(split) != 2 {
+			return nil, fmt.Errorf("Invalid coordinates: %s", match)
+		}
+		x, err := strconv.ParseFloat(split[0], 64)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid x coordinate: %s", split[0])
+		}
+		y, err := strconv.ParseFloat(split[1], 64)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid y coordinate: %s", split[1])
+		}
+		wrapper := make([]interface{}, 0, 2)
+		wrapper = append(wrapper, x)
+		wrapper = append(wrapper, y)
+		coordinates = append(coordinates, wrapper)
+	}
+	if len(matches) > 1 {
+		// multiple coordinates belong to a polygon and have to wrapped in two layers of array...
+		coordinates = []interface{}{coordinates}
+	} else {
+		// ... while a single set of coordinates belongs to a point and has NO wrapping layer
+		coordinates = coordinates[0].([]interface{})
+	}
+	geometry.Coordinates = coordinates
+	return &geometry, nil
 }

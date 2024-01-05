@@ -10,5 +10,7 @@ WHERE s.samplingfeatureID = $1
 `
 
 const GeoSettingsQuery = `
-SELECT distinct s.setting FROM odm2.sites s
+SELECT distinct gs.settingname as setting
+FROM odm2.geologicalsettings gs
+where gs.settingname is not null
 `
