@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -34,9 +35,8 @@ func (h *Handler) GetSites(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	sites := []model.Site{}
-	query := sql.NewQuery(sql.SitesQuery)
 
+	query := sql.NewQuery(sql.SitesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -44,7 +44,7 @@ func (h *Handler) GetSites(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
+	sites, err := repository.Query[model.Site](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSites: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -74,8 +74,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	sites := []model.Site{}
-	err := h.db.Query(c.Request().Context(), sql.SiteByIDQuery, &sites, c.Param(QP_SAMPFEATUREID))
+	sites, err := repository.Query[model.Site](c.Request().Context(), h.db, sql.SiteByIDQuery, c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSiteByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve site data")
@@ -100,7 +99,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {object} model.SiteResponse
+// @Success     200    {object} model.GeologicalSettingResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     500    {object} string
@@ -110,7 +109,7 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	sites := []model.Site{}
+
 	query := sql.NewQuery(sql.GeoSettingsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -119,12 +118,12 @@ func (h *Handler) GetGeoSettings(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &sites)
+	sites, err := repository.Query[model.GeologicalSetting](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoSettings: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological settings data")
 	}
-	response := model.SiteResponse{
+	response := model.GeologicalSettingResponse{
 		NumItems: len(sites),
 		Data:     sites,
 	}

@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/geometry"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -67,6 +69,9 @@ const (
 	KEY_POLYGON                 = "key_polygon"
 	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
 	KEY_BOUNDARY_POLY           = "key_boundary_poly"
+
+	KEY_ROCKTYPE  = "key_rocktype"
+	KEY_ROCKCLASS = "key_rockclass"
 )
 
 // GetSampleByID godoc
@@ -88,9 +93,8 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	samples := []model.Sample{}
 	query := sql.NewQuery(sql.GetSampleByIDQuery)
-	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &samples, c.Param(QP_SAMPFEATUREID))
+	samples, err := repository.Query[model.Sample](c.Request().Context(), h.db, query.GetQueryString(), c.Param(QP_SAMPFEATUREID))
 	if err != nil {
 		logger.Errorf("Can not GetSampleByID: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
@@ -164,8 +168,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	specimen := []model.SampleByFilters{}
-
 	// get polygon filter
 	coordData := map[string]interface{}{}
 	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
@@ -185,7 +187,11 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
 		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
 	}
-	query, err := buildSampleFilterQuery(c, coordData)
+	kwargs := map[string]interface{}{
+		KEY_ROCKCLASS: true,
+		KEY_ROCKTYPE:  true,
+	}
+	query, err := buildSampleFilterQuery(c, coordData, kwargs)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -200,25 +206,25 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimen, query.GetFilterValues()...)
+	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 	// copy into model without totalCount on each sample
 	responseData := []model.SampleByFiltersData{}
-	for _, sample := range specimen {
+	totalCount := 0
+	for _, sample := range result {
+		totalCount = sample.TotalCount
 		data := model.SampleByFiltersData{
 			SampleID:   sample.SampleID,
 			SampleName: sample.SampleName,
 			Latitude:   sample.Latitude,
 			Longitude:  sample.Longitude,
+			RockType:   sample.RockType,
+			RockClass:  sample.RockClass,
 		}
 		responseData = append(responseData, data)
-	}
-	totalCount := 0
-	if len(specimen) > 0 {
-		totalCount = specimen[0].TotalCount
 	}
 	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: totalCount, Data: responseData}
 	return c.JSON(http.StatusOK, response)
@@ -284,7 +290,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	clusterData := []model.ClusteredSample{}
 
 	// response object
 	response := model.ClusterResponse{}
@@ -343,7 +348,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 
 	// build query string
-	query, err := buildSampleFilterQuery(c, coordData)
+	query, err := buildSampleFilterQuery(c, coordData, nil)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -373,13 +378,13 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &clusterData, query.GetFilterValues()...)
+	clusterData, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
 
-	// wrap in []interface{} for geoJSON polygon
+	// wrap bbox in []interface{} for geoJSON polygon
 	bboxIWrap := []interface{}{bbox}
 	response.Bbox = model.GeoJSONFeature{
 		Type: model.GEOJSONTYPE_FEATURE,
@@ -407,7 +412,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 // @Produce     json
 // @Param       limit  query    int false "limit"
 // @Param       offset query    int false "offset"
-// @Success     200    {object} model.SpecimenResponse
+// @Success     200    {object} model.SpecimenTypeResponse
 // @Failure     401    {object} string
 // @Failure     404    {object} string
 // @Failure     422    {object} string
@@ -419,7 +424,6 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	specimentypes := []model.Specimen{}
 	query := sql.NewQuery(sql.GetSpecimenTypesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -428,12 +432,12 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &specimentypes)
+	specimentypes, err := repository.Query[model.SpecimenType](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSpecimenTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve specimentype data")
 	}
-	response := model.SpecimenResponse{
+	response := model.SpecimenTypeResponse{
 		NumItems: len(specimentypes),
 		Data:     specimentypes,
 	}
@@ -468,7 +472,6 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	rockclasses := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.RockClassQueryStart)
 
 	rocktypes, _, err := parseParam(c.QueryParam(QP_ROCKTYPE))
@@ -497,7 +500,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rockclasses, query.GetFilterValues()...)
+	rockclasses, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetRockClasses: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock class data")
@@ -530,7 +533,6 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	rocktypes := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.RockTypeQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -539,7 +541,7 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &rocktypes)
+	rocktypes, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetRockTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve rock type data")
@@ -572,7 +574,6 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	minerals := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.MineralQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -581,7 +582,7 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &minerals)
+	minerals, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetMinerals: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve mineral data")
@@ -614,7 +615,6 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	materials := []model.Material{}
 	query := sql.NewQuery(sql.MaterialsQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -623,7 +623,7 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &materials)
+	materials, err := repository.Query[model.Material](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve material data")
@@ -656,7 +656,6 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	hostMaterials := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.HostMatQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -665,7 +664,7 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &hostMaterials)
+	hostMaterials, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetHostMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve host material data")
@@ -698,7 +697,6 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	incMaterials := []model.TaxonomicClassifier{}
 	query := sql.NewQuery(sql.IncMatQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -707,7 +705,7 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &incMaterials)
+	incMaterials, err := repository.Query[model.TaxonomicClassifier](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetInclusionMaterials: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion material data")
@@ -740,7 +738,6 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	inclusionTypes := []model.InclusionType{}
 	query := sql.NewQuery(sql.InclusionTypesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -749,7 +746,7 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &inclusionTypes)
+	inclusionTypes, err := repository.Query[model.InclusionType](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetInclusionTypes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve inclusion type data")
@@ -782,7 +779,6 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	samplingtechniques := []model.SamplingTechnique{}
 	query := sql.NewQuery(sql.SamplingTechniquesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -791,7 +787,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &samplingtechniques)
+	samplingtechniques, err := repository.Query[model.SamplingTechnique](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetSamplingTechniques: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sampling technique data")
@@ -823,10 +819,9 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	randomSpecimen := []model.Specimen{}
 	query := sql.NewQuery(sql.GetRandomSpecimensQuery)
 	limit := c.QueryParam(QP_LIMIT)
-	err := h.db.Query(c.Request().Context(), query.GetQueryString(), &randomSpecimen, limit)
+	randomSpecimen, err := repository.Query[model.Specimen](c.Request().Context(), h.db, query.GetQueryString(), limit)
 	if err != nil {
 		logger.Errorf("Can not GetRandomSamples: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve random data sample")
@@ -859,7 +854,6 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAges := []model.GeoAge{}
 	query := sql.NewQuery(sql.GetGeoAgesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -868,7 +862,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAges)
+	geoAges, err := repository.Query[model.GeoAge](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoAges: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age data")
@@ -901,7 +895,6 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	geoAgePrefixes := []model.GeoAgePrefix{}
 	query := sql.NewQuery(sql.GetGeoAgePrefixesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -910,7 +903,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &geoAgePrefixes)
+	geoAgePrefixes, err := repository.Query[model.GeoAgePrefix](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetGeoAgePrefixes: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve geological age prefix data")
@@ -943,7 +936,6 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	organizations := []model.Organization{}
 	query := sql.NewQuery(sql.GetOrganizationNamesQuery)
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -952,7 +944,7 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	err = h.db.Query(c.Request().Context(), query.GetQueryString(), &organizations)
+	organizations, err := repository.Query[model.Organization](c.Request().Context(), h.db, query.GetQueryString())
 	if err != nil {
 		logger.Errorf("Can not GetOrganizationNames: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve organization name data")
@@ -965,12 +957,18 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 }
 
 // buildSampleFilterQuery constructs a query using filter params from the request
-func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*sql.Query, error) {
-	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
-	addCoords := c.QueryParam(QP_ADD_COORDINATES)
-	if addCoords != "" && strings.ToLower(addCoords) != "false" {
-		query = sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQueryWithCoords)
+func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kwargs map[string]interface{}) (*sql.Query, error) {
+	var returnRockClass, returnRockType bool
+	for k, v := range kwargs {
+		switch k {
+		case KEY_ROCKCLASS:
+			returnRockClass = v.(bool)
+		case KEY_ROCKTYPE:
+			returnRockType = v.(bool)
+		}
 	}
+
+	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 	bbox := coordData[KEY_BBOX]
 	if bbox != nil {
 		query = sql.NewQuery("")
@@ -983,7 +981,41 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 
 	// add optional search filters
 	junctor := sql.OpWhere // junctor to connect a new filter clause to the query: can be "WHERE" or "AND/OR"
+
+	// annotations
+	junctor = sql.OpWhere // reset junctor for new subquery
+	material, opMat, err := parseParam(c.QueryParam(QP_MATERIAL))
+	if err != nil {
+		return nil, err
+	}
+	incType, opIncType, err := parseParam(c.QueryParam(QP_INCTYPE))
+	if err != nil {
+		return nil, err
+	}
+	sampTech, opSampTech, err := parseParam(c.QueryParam(QP_SAMPTECH))
+	if err != nil {
+		return nil, err
+	}
+	if material != "" || incType != "" || sampTech != "" {
+		// add query module annotations
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
+		// add annotaion filters
+		if material != "" {
+			query.AddFilter("mat.material", material, opMat, junctor)
+			junctor = sql.OpAnd
+		}
+		if incType != "" {
+			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
+			junctor = sql.OpAnd
+		}
+		if sampTech != "" {
+			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
+	}
+
 	// location filters
+	junctor = sql.OpWhere // reset junctor for new subquery
 	setting, opSetting, err := parseParam(c.QueryParam(QP_SETTING))
 	if err != nil {
 		return nil, err
@@ -1013,7 +1045,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsStart)
 		// add location filters
 		if setting != "" {
-			query.AddFilter("s.setting", setting, opSetting, junctor)
+			query.AddFilter("gs.settingname", setting, opSetting, junctor)
 			junctor = sql.OpAnd // after first filter is added with "WHERE", change to "AND" for following filters
 		}
 		if location1 != "" {
@@ -1060,18 +1092,22 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	if err != nil {
 		return nil, err
 	}
-	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if returnRockType || returnRockClass || rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add filter for each subquery for significant speedup
-		if rockType != "" {
+		if returnRockType || rockType != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
-			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			if rockType != "" {
+				query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
+			}
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
 		}
-		if rockClass != "" {
+		if returnRockClass || rockClass != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			if rockClass != "" {
+				query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			}
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
 		}
 		if mineral != "" {
@@ -1111,38 +1147,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 			query.AddFilter("incmat.inclusion_material", inclMaterial, opInclMaterial, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
-	}
-
-	// annotations
-	junctor = sql.OpWhere // reset junctor for new subquery
-	material, opMat, err := parseParam(c.QueryParam(QP_MATERIAL))
-	if err != nil {
-		return nil, err
-	}
-	incType, opIncType, err := parseParam(c.QueryParam(QP_INCTYPE))
-	if err != nil {
-		return nil, err
-	}
-	sampTech, opSampTech, err := parseParam(c.QueryParam(QP_SAMPTECH))
-	if err != nil {
-		return nil, err
-	}
-	if material != "" || incType != "" || sampTech != "" {
-		// add query module annotations
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
-		// add annotaion filters
-		if material != "" {
-			query.AddFilter("mat.material", material, opMat, junctor)
-			junctor = sql.OpAnd
-		}
-		if incType != "" {
-			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
-			junctor = sql.OpAnd
-		}
-		if sampTech != "" {
-			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
-		}
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
 	}
 
 	// results
@@ -1341,10 +1345,8 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}) (*
 	}
 
 	// coordinates
-	if addCoords != "" && strings.ToLower(addCoords) != "false" {
-		// add query module coordinates
-		query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
-	}
+	// add query module coordinates
+	query.AddSQLBlock(sql.GetGestSamplingfeatureIdsByFilterCoordinates)
 
 	return query, nil
 }
@@ -1354,11 +1356,15 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
 	points := []model.GeoJSONFeature{}
 	for _, cluster := range clusterData {
-		if len(cluster.Points) <= CLUSTERING_THRESHOLD {
-			for i, p := range cluster.Points {
+		if len(cluster.PointStrings) <= CLUSTERING_THRESHOLD {
+			for i, p := range cluster.PointStrings {
+				pointGeom, err := parseGeometryString(p)
+				if err != nil {
+					return nil, nil, err
+				}
 				point := model.GeoJSONFeature{
 					Type:     model.GEOJSONTYPE_FEATURE,
-					Geometry: p,
+					Geometry: *pointGeom,
 					Properties: map[string]interface{}{
 						"sampleID": cluster.Samples[i],
 					},
@@ -1367,20 +1373,25 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 			}
 			continue
 		}
+		centroidGeom, err := parseGeometryString(cluster.CentroidString)
+		if err != nil {
+			return nil, nil, err
+		}
 		centroid := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.Centroid,
+			Geometry: *centroidGeom,
 			Properties: map[string]interface{}{
 				"clusterID":   cluster.ClusterID,
 				"clusterSize": len(cluster.Samples),
 			},
 		}
-		if cluster.ConvexHull.Type == model.GEOJSON_GEOMETRY_POINT {
-			centroid.Properties["sampleID"] = cluster.Samples[0]
+		convexHullGeom, err := parseGeometryString(cluster.ConvexHullString)
+		if err != nil {
+			return nil, nil, err
 		}
 		convexHull := model.GeoJSONFeature{
 			Type:     model.GEOJSONTYPE_FEATURE,
-			Geometry: cluster.ConvexHull,
+			Geometry: *convexHullGeom,
 		}
 		geoJSONCluster := model.GeoJSONCluster{
 			ClusterID:  cluster.ClusterID,
@@ -1420,4 +1431,50 @@ func parseChemQuery(query string) (model.ChemQuery, error) {
 		chemQuery.Expressions = append(chemQuery.Expressions, expr)
 	}
 	return chemQuery, nil
+}
+
+var geomTypeRegexp = regexp.MustCompile(`([A-z]+)`)
+var coordRegexp = regexp.MustCompile(`((-?\d+(\.\d+)?) (-?\d+(\.\d+)?))`)
+
+func parseGeometryString(geomString string) (*model.Geometry, error) {
+	geometry := model.Geometry{}
+	matches := geomTypeRegexp.FindAllString(geomString, -1)
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("Can not match geometry type: %s", geomString)
+	}
+	// set the type
+	geometry.Type = matches[0]
+	// parse the coordinates
+	matches = coordRegexp.FindAllString(geomString, -1)
+	if len(matches) == 0 {
+		return nil, fmt.Errorf("Can not match coordinates: %s", geomString)
+	}
+	coordinates := []interface{}{}
+	for _, match := range matches {
+		split := strings.Split(match, " ")
+		if len(split) != 2 {
+			return nil, fmt.Errorf("Invalid coordinates: %s", match)
+		}
+		x, err := strconv.ParseFloat(split[0], 64)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid x coordinate: %s", split[0])
+		}
+		y, err := strconv.ParseFloat(split[1], 64)
+		if err != nil {
+			return nil, fmt.Errorf("Invalid y coordinate: %s", split[1])
+		}
+		wrapper := make([]interface{}, 0, 2)
+		wrapper = append(wrapper, x)
+		wrapper = append(wrapper, y)
+		coordinates = append(coordinates, wrapper)
+	}
+	if len(matches) > 1 {
+		// multiple coordinates belong to a polygon and have to wrapped in two layers of array...
+		coordinates = []interface{}{coordinates}
+	} else {
+		// ... while a single set of coordinates belongs to a point and has NO wrapping layer
+		coordinates = coordinates[0].([]interface{})
+	}
+	geometry.Coordinates = coordinates
+	return &geometry, nil
 }

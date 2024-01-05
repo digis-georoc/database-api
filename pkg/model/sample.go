@@ -1,5 +1,14 @@
 package model
 
+type SpecimenType struct {
+	SpecimenTypeCV string `json:"specimentypecv"`
+}
+
+type SpecimenTypeResponse struct {
+	NumItems int            `json:"numItems"`
+	Data     []SpecimenType `json:"data"`
+}
+
 type Specimen struct {
 	SamplingFeatureID int    `json:"samplingFeatureID"`
 	SpecimenTypeCV    string `json:"specimenTypeCV"`
@@ -13,16 +22,16 @@ type SpecimenResponse struct {
 }
 
 type Sample struct {
-	SamplingFeatureID          int     `json:"samplingFeatureID"`
-	SamplingFeatureUUID        string  `json:"samplingFeatureUUID"`
-	SamplingFeatureName        string  `json:"samplingFeatureName"`
-	SamplingFeatureDescription string  `json:"samplingFeatureDescription"`
-	SamplingFeatureGeotypeCV   string  `json:"samplingFeatureGeoTypeCV"`
-	FeatureGeometryWKT         string  `json:"featureGeometryWKT"`
-	Elevation_m                float64 `json:"elevation_m"`
-	ElevationDatumCV           string  `json:"elevationDatumCV"`
-	ElevationPrecision         float64 `json:"elevationPrecision"`
-	ElevationPrecisionComment  string  `json:"elevationPrecisionComment"`
+	SamplingFeatureID          int      `json:"samplingFeatureID"`
+	SamplingFeatureUUID        *string  `json:"samplingFeatureUUID"`
+	SamplingFeatureName        *string  `json:"samplingFeatureName"`
+	SamplingFeatureDescription *string  `json:"samplingFeatureDescription"`
+	SamplingFeatureGeotypeCV   *string  `json:"samplingFeatureGeoTypeCV"`
+	FeatureGeometryWKT         *string  `json:"featureGeometryWKT"`
+	Elevation_m                *float64 `json:"elevation_m"`
+	ElevationDatumCV           *string  `json:"elevationDatumCV"`
+	ElevationPrecision         *float64 `json:"elevationPrecision"`
+	ElevationPrecisionComment  *string  `json:"elevationPrecisionComment"`
 }
 
 type SampleResponse struct {
@@ -35,6 +44,8 @@ type SampleByFilters struct {
 	SampleName string  `json:"samplename"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
+	RockType   string  `json:"rockType"`
+	RockClass  string  `json:"rockClass"`
 	TotalCount int     `json:"totalCount"`
 }
 
@@ -43,6 +54,8 @@ type SampleByFiltersData struct {
 	SampleName string  `json:"samplename"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
+	RockType   string  `json:"rockType"`
+	RockClass  string  `json:"rockClass"`
 }
 
 type SampleByFilterResponse struct {
@@ -52,11 +65,11 @@ type SampleByFilterResponse struct {
 }
 
 type ClusteredSample struct {
-	ClusterID  int        `json:"clusterID"`
-	Centroid   Geometry   `json:"centroid"`
-	ConvexHull Geometry   `json:"convexHull"`
-	Points     []Geometry `json:"points"`
-	Samples    []int64    `json:"samples"`
+	ClusterID        int      `json:"clusterID"`
+	CentroidString   string   `json:"centroid"`
+	ConvexHullString string   `json:"convexHull"`
+	PointStrings     []string `json:"points"`
+	Samples          []int64  `json:"samples"`
 }
 
 type ClusterResponse struct {

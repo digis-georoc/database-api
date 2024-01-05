@@ -2,7 +2,7 @@
 
 API to access the GEOROC2.0 database in the new ODM2-based schema.
 
-Current version: **0.3.8**
+Current version: **0.3.9**
 
 This api is currently in a testing phase.
 

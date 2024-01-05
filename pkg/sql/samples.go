@@ -1,7 +1,17 @@
 package sql
 
 const GetSampleByIDQuery = `
-select * from odm2.samplingfeatures s
+select s.samplingfeatureid,
+s.samplingfeatureuuid,
+s.samplingfeaturename,
+s.samplingfeaturedescription,
+s.samplingfeaturegeotypecv,
+s.featuregeometrywkt,
+s.elevation_m,
+s.elevationdatumcv,
+s.elevationprecision,
+s.elevationprecisioncomment
+from odm2.samplingfeatures s
 where s.samplingfeatureid = $1
 `
 
@@ -9,20 +19,12 @@ where s.samplingfeatureid = $1
 // BaseQuery is extended with JOIN-modules depending on the selected filter options
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"
 const GetSamplingfeatureIdsByFilterBaseQuery = `
--- modular query for specimenids with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
-spec.samplingfeaturename as samplename
-from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
-`
-
-// Same as GetSamplingfeatureIdsByFilterBaseQuery but with select on latitude and longitude
-// Depends on QueryModule Coordinates being added
-const GetSamplingfeatureIdsByFilterBaseQueryWithCoords = `
 -- modular query for specimenids and coordinates with all filter options
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
-coords.latitude,
-coords.longitude,
+coalesce(coords.latitude, 0) as latitude,
+coalesce(coords.longitude, 0) as longitude,
+coalesce(tax.rock_type, 'None') as rockType,
+coalesce(tax.rock_class, 'None') as rockClass,
 spec.samplingfeaturename as samplename
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
@@ -40,18 +42,20 @@ left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 
 // Filter query-module Locations
 // Filter options are:
-// 		Setting
-//		Locationname lvl1
-//		Locationname lvl2
-//		Locationname lvl3
-//		Latitude
-//		Longitude
+//
+//	SettingName
+//	Locationname lvl1
+//	Locationname lvl2
+//	Locationname lvl3
+//	Latitude
+//	Longitude
 const GetSamplingfeatureIdsByFilterLocationsStart = `
 join (
 	-- location data
-	select r_sample.samplingfeatureid as sample,
-	r_batch.samplingfeatureid as batch
+	select r_sample.samplingfeatureid as sample
 	from odm2.sites s
+	left join odm2.sitegeologicalsettings sgs on sgs.samplingfeatureid = s.samplingfeatureid
+	left join odm2.geologicalsettings gs on gs.settingid = sgs.settingid
 	left join 
 	(
 		select sg.samplingfeatureid, sg.locationname
@@ -77,23 +81,23 @@ join (
 		group by sg.samplingfeatureid, sg.locationname -- multiple entries for same locationname
 	) thirdlevelloc on thirdlevelloc.samplingfeatureid = s.samplingfeatureid
 	left join odm2.relatedfeatures r_sample on r_sample.relatedfeatureid = s.samplingfeatureid -- samples for each location
-	left join odm2.relatedfeatures r_batch on r_batch.relatedfeatureid = r_sample.samplingfeatureid -- batches for each sample
 `
 const GetSamplingfeatureIdsByFilterLocationsEnd = `
-) loc on loc.sample = spec.samplingfeatureid or loc.batch = spec.samplingfeatureid
+) loc on loc.sample = spec.samplingfeatureid
 `
 
 // Filter query-module TaxonomicClassifiers
 // Filter options are:
-// 		RockType
-//		RockClass
-//		Mineral
-//		HostMaterial
-//		InclusionMaterial
+//
+//	RockType
+//	RockClass
+//	Mineral
+//	HostMaterial
+//	InclusionMaterial
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select s.samplingfeatureid
+	select s.samplingfeatureid, rt.rock_type, rc.rock_class
 	from odm2.samplingfeatures s
 	left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
@@ -155,9 +159,10 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 
 // Filter query-module Annotations
 // Filter options are:
-// 		Material
-//		InclusionType
-//		SamplingTechnique
+//
+//	Material
+//	InclusionType
+//	SamplingTechnique
 const GetSamplingfeatureIdsByFilterAnnotationsStart = `
 join (
 	-- annotations
@@ -218,9 +223,10 @@ const GetSamplingfeatureIdsByFilterResultsEnd = `
 
 // Filter query-module Citations
 // Filter options are:
-// 		DOI
-// 		Title
-//		PublicationYear
+//
+//	DOI
+//	Title
+//	PublicationYear
 const GetSamplingfeatureIdsByFilterCitationsStart = `
 join (
 	select distinct cs.samplingfeatureid
@@ -238,10 +244,11 @@ const GetSamplingfeatureIdsByFilterCitationsEnd = `
 
 // Filter query-module Ages
 // Filter options are:
-//		AgeMin
-//		AgeMax
-//		GeologicalAge
-//		GeologicalAgePrefix
+//
+//	AgeMin
+//	AgeMax
+//	GeologicalAge
+//	GeologicalAgePrefix
 const GetSamplingfeatureIdsByFilterAgesStart = `
 join (
 	select sa.samplingfeatureid
@@ -254,7 +261,8 @@ const GetSamplingfeatureIdsByFilterAgesEnd = `
 
 // Filter query-module Organizations
 // Filter options are:
-// 		OrganizationName
+//
+//	OrganizationName
 const GestSamplingfeatureIdsByFilterOrganizationsStart = `
 join (
 	select 
@@ -274,7 +282,8 @@ const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
 
 // Filter query-module Geometry
 // Filter options are:
-// 		ST_WITHIN(geometry, st_wrapx(given-polygon))
+//
+//	ST_WITHIN(geometry, st_wrapx(given-polygon))
 const GestSamplingfeatureIdsByFilterGeometryStart = `
 join (
 select r.samplingfeatureid as sampleid,
@@ -315,9 +324,9 @@ const GetSamplesClusteredWrapperPrefix = `
 -- filter query with clustering
 select
 clusters.clusterid,
-st_convexhull(st_collect(clusters.translatedGeom)) as convexHull,
-ST_Centroid(ST_Union(clusters.translatedGeom)) as centroid,
-array_agg(clusters.translatedGeom) as points,
+st_asText(st_convexhull(st_collect(clusters.translatedGeom))) as convexHullString,
+st_asText(ST_Centroid(ST_Union(clusters.translatedGeom))) as centroidString,
+array_agg(st_astext(clusters.translatedGeom)) as pointStrings,
 array_agg(clusters.sampleid) as samples
 from (
 	select samples.sampleid,

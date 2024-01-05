@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
+	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/sql"
 )
 
@@ -35,8 +36,8 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	fullData := []model.FullData{}
-	err := h.db.Query(c.Request().Context(), sql.FullDataByIdQuery, &fullData, c.Param(QP_IDENTIFIER))
+
+	fullData, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByIdQuery, c.Param(QP_IDENTIFIER))
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data by id")
@@ -70,7 +71,7 @@ func (h *Handler) GetFullData(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-	fullData := []model.FullData{}
+
 	identifierList := []int{}
 	identifiers := c.QueryParam(QP_IDENTIFIER_LIST)
 	for _, id := range strings.Split(identifiers, ",") {
@@ -80,7 +81,7 @@ func (h *Handler) GetFullData(c echo.Context) error {
 		}
 		identifierList = append(identifierList, idInt)
 	}
-	err := h.db.Query(c.Request().Context(), sql.FullDataByMultiIdQuery, &fullData, identifierList)
+	fullData, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data")

@@ -1,9 +1,9 @@
 package model
 
 type TaxonomicClassifier struct {
-	Value string `json:"value"`
-	Label string `json:"label"`
-	Count int    `json:"count"`
+	Value string  `json:"value"`
+	Label *string `json:"label"`
+	Count int     `json:"count"`
 }
 
 type TaxonomicClassifierResponse struct {

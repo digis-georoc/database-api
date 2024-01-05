@@ -2593,9 +2593,6 @@ const docTemplate = `{
         "model.Element": {
             "type": "object",
             "properties": {
-                "count": {
-                    "type": "integer"
-                },
                 "label": {
                     "type": "string"
                 },
@@ -3110,6 +3107,12 @@ const docTemplate = `{
                 "longitude": {
                     "type": "number"
                 },
+                "rockClass": {
+                    "type": "string"
+                },
+                "rockType": {
+                    "type": "string"
+                },
                 "sampleID": {
                     "type": "integer"
                 },
@@ -3289,7 +3292,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.6",
+	Version:          "0.3.9",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
