@@ -1443,7 +1443,14 @@ func parseGeometryString(geomString string) (*model.Geometry, error) {
 		return nil, fmt.Errorf("Can not match geometry type: %s", geomString)
 	}
 	// set the type
-	geometry.Type = matches[0]
+	switch matches[0] {
+	case "POINT":
+		geometry.Type = model.GEOJSON_GEOMETRY_POINT
+	case "POLYGON":
+		geometry.Type = model.GEOJSON_GEOMETRY_POLYGON
+	default:
+		return nil, fmt.Errorf("Unexpected GeoJSON type: found %s", matches[0])
+	}
 	// parse the coordinates
 	matches = coordRegexp.FindAllString(geomString, -1)
 	if len(matches) == 0 {
