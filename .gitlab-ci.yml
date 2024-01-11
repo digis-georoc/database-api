@@ -95,7 +95,7 @@ release:
   image:
     name: registry.gitlab.com/go-semantic-release/semantic-release:latest
     entrypoint: [""]
-  stage: release
+  stage: deploy
   when: manual # Add this if you want to manually create releases
   only:
     - main
