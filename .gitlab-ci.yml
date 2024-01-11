@@ -88,3 +88,18 @@ trigger-downstream-pipeline-staging:
     REPOSITORY_PATH: fe/digis/database-api-helm
   rules:
     - !reference [.staging-rules, rules]
+
+
+# Semantic Release & Changelog
+release:
+  image:
+    name: registry.gitlab.com/go-semantic-release/semantic-release:latest
+    entrypoint: [""]
+  stage: release
+  when: manual # Add this if you want to manually create releases
+  only:
+    - main
+  script:
+    - semantic-release --changelog-generator default # Add --allow-no-changes if you want to create a release for each push
+
+
