@@ -1448,6 +1448,8 @@ func parseGeometryString(geomString string) (*model.Geometry, error) {
 		geometry.Type = model.GEOJSON_GEOMETRY_POINT
 	case "POLYGON":
 		geometry.Type = model.GEOJSON_GEOMETRY_POLYGON
+	case "LINESTRING":
+		geometry.Type = model.GEOJSON_GEOMETRY_LINESTRING
 	default:
 		return nil, fmt.Errorf("Unexpected GeoJSON type: found %s", matches[0])
 	}
