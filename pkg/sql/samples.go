@@ -23,8 +23,8 @@ const GetSamplingfeatureIdsByFilterBaseQuery = `
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
 coalesce(coords.latitude, 0) as latitude,
 coalesce(coords.longitude, 0) as longitude,
-coalesce(tax.rock_type, 'None') as rockType,
-coalesce(tax.rock_class, 'None') as rockClass,
+(coalesce(tax.rock_types, array['None']))[1] as rockType,
+(coalesce(tax.rock_classes, array['None']))[1] as rockClass,
 spec.samplingfeaturename as samplename
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
@@ -97,7 +97,9 @@ const GetSamplingfeatureIdsByFilterLocationsEnd = `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select s.samplingfeatureid, rt.rock_type, rc.rock_class
+	select s.samplingfeatureid,
+	array_remove(array_agg(distinct rt.rock_type), null) as rock_types, 
+	array_remove(array_agg(distinct rc.rock_class), null) as rock_classes
 	from odm2.samplingfeatures s
 	left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
@@ -154,6 +156,7 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd = `
 	) incmat on incmat.samplingfeatureid = r.samplingfeatureid
 `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
+	group by s.samplingfeatureid
 ) tax on tax.samplingfeatureid = spec.samplingfeatureid
 `
 
