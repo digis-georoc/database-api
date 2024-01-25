@@ -40,22 +40,28 @@ type SampleResponse struct {
 }
 
 type SampleByFilters struct {
-	SampleID   int     `json:"sampleID"`
-	SampleName string  `json:"samplename"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	RockType   string  `json:"rockType"`
-	RockClass  string  `json:"rockClass"`
-	TotalCount int     `json:"totalCount"`
+	SampleID          int     `json:"sampleID"`
+	SampleName        string  `json:"samplename"`
+	Latitude          float64 `json:"latitude"`
+	Longitude         float64 `json:"longitude"`
+	Mineral           *string `json:"mineral"`
+	RockClass         *string `json:"rockClass"`
+	InclusionType     *string `json:"inclusionType"`
+	GeologicalSetting *string `json:"geologicalSetting"`
+	GeologicalAge     *string `json:"geologicalAge"`
+	TotalCount        int     `json:"totalCount"`
 }
 
 type SampleByFiltersData struct {
-	SampleID   int     `json:"sampleID"`
-	SampleName string  `json:"samplename"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	RockType   string  `json:"rockType"`
-	RockClass  string  `json:"rockClass"`
+	SampleID          int     `json:"sampleID"`
+	SampleName        string  `json:"samplename"`
+	Latitude          float64 `json:"latitude"`
+	Longitude         float64 `json:"longitude"`
+	Mineral           *string `json:"mineral"`
+	RockClass         *string `json:"rockClass"`
+	InclusionType     *string `json:"inclusionType"`
+	GeologicalSetting *string `json:"geologicalSetting"`
+	GeologicalAge     *string `json:"geologicalAge"`
 }
 
 type SampleByFilterResponse struct {
