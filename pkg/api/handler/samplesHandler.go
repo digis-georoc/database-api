@@ -69,9 +69,6 @@ const (
 	KEY_POLYGON                 = "key_polygon"
 	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
 	KEY_BOUNDARY_POLY           = "key_boundary_poly"
-
-	KEY_ROCKTYPE  = "key_rocktype"
-	KEY_ROCKCLASS = "key_rockclass"
 )
 
 // GetSampleByID godoc
@@ -187,11 +184,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
 		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
 	}
-	kwargs := map[string]interface{}{
-		KEY_ROCKCLASS: true,
-		KEY_ROCKTYPE:  true,
-	}
-	query, err := buildSampleFilterQuery(c, coordData, kwargs)
+	query, err := buildSampleFilterQuery(c, coordData, nil)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
@@ -217,12 +210,15 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	for _, sample := range result {
 		totalCount = sample.TotalCount
 		data := model.SampleByFiltersData{
-			SampleID:   sample.SampleID,
-			SampleName: sample.SampleName,
-			Latitude:   sample.Latitude,
-			Longitude:  sample.Longitude,
-			RockType:   sample.RockType,
-			RockClass:  sample.RockClass,
+			SampleID:          sample.SampleID,
+			SampleName:        sample.SampleName,
+			Latitude:          sample.Latitude,
+			Longitude:         sample.Longitude,
+			Mineral:           sample.Mineral,
+			RockClass:         sample.RockClass,
+			InclusionType:     sample.InclusionType,
+			GeologicalSetting: sample.GeologicalSetting,
+			GeologicalAge:     sample.GeologicalAge,
 		}
 		responseData = append(responseData, data)
 	}
@@ -958,16 +954,6 @@ func (h *Handler) GetOrganizationNames(c echo.Context) error {
 
 // buildSampleFilterQuery constructs a query using filter params from the request
 func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kwargs map[string]interface{}) (*sql.Query, error) {
-	var returnRockClass, returnRockType bool
-	for k, v := range kwargs {
-		switch k {
-		case KEY_ROCKCLASS:
-			returnRockClass = v.(bool)
-		case KEY_ROCKTYPE:
-			returnRockType = v.(bool)
-		}
-	}
-
 	query := sql.NewQuery(sql.GetSamplingfeatureIdsByFilterBaseQuery)
 	bbox := coordData[KEY_BBOX]
 	if bbox != nil {
@@ -1092,22 +1078,18 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	if returnRockType || returnRockClass || rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add filter for each subquery for significant speedup
-		if returnRockType || rockType != "" {
+		if rockType != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
-			if rockType != "" {
-				query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
-			}
+			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
 		}
-		if returnRockClass || rockClass != "" {
+		if rockClass != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			if rockClass != "" {
-				query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
-			}
+			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
 		}
 		if mineral != "" {

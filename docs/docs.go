@@ -2160,7 +2160,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SpecimenResponse"
+                            "$ref": "#/definitions/model.SpecimenTypeResponse"
                         }
                     },
                     "401": {
@@ -2347,7 +2347,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SiteResponse"
+                            "$ref": "#/definitions/model.GeologicalSettingResponse"
                         }
                     },
                     "401": {
@@ -2525,6 +2525,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "citationLink": {
+                    "type": "string"
+                },
+                "doi": {
                     "type": "string"
                 },
                 "editors": {
@@ -2750,7 +2753,9 @@ const docTemplate = `{
                 },
                 "references": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/model.Citation"
+                    }
                 },
                 "rockClasses": {
                     "type": "array",
@@ -2915,6 +2920,28 @@ const docTemplate = `{
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GeologicalSetting": {
+            "type": "object",
+            "properties": {
+                "setting": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GeologicalSettingResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeologicalSetting"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -3101,16 +3128,25 @@ const docTemplate = `{
         "model.SampleByFiltersData": {
             "type": "object",
             "properties": {
+                "geologicalAge": {
+                    "type": "string"
+                },
+                "geologicalSetting": {
+                    "type": "string"
+                },
+                "inclusionType": {
+                    "type": "string"
+                },
                 "latitude": {
                     "type": "number"
                 },
                 "longitude": {
                     "type": "number"
                 },
-                "rockClass": {
+                "mineral": {
                     "type": "string"
                 },
-                "rockType": {
+                "rockClass": {
                     "type": "string"
                 },
                 "sampleID": {
@@ -3234,6 +3270,28 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SpecimenType": {
+            "type": "object",
+            "properties": {
+                "specimentypecv": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SpecimenTypeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SpecimenType"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.Statistics": {
             "type": "object",
             "properties": {
@@ -3292,7 +3350,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.9",
+	Version:          "0.3.10",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
