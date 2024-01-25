@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.3.9"
+        "version": "0.3.10"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -2157,7 +2157,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SpecimenResponse"
+                            "$ref": "#/definitions/model.SpecimenTypeResponse"
                         }
                     },
                     "401": {
@@ -2344,7 +2344,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SiteResponse"
+                            "$ref": "#/definitions/model.GeologicalSettingResponse"
                         }
                     },
                     "401": {
@@ -2522,6 +2522,9 @@
                     "type": "integer"
                 },
                 "citationLink": {
+                    "type": "string"
+                },
+                "doi": {
                     "type": "string"
                 },
                 "editors": {
@@ -2747,7 +2750,9 @@
                 },
                 "references": {
                     "type": "array",
-                    "items": {}
+                    "items": {
+                        "$ref": "#/definitions/model.Citation"
+                    }
                 },
                 "rockClasses": {
                     "type": "array",
@@ -2912,6 +2917,28 @@
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GeologicalSetting": {
+            "type": "object",
+            "properties": {
+                "setting": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.GeologicalSettingResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.GeologicalSetting"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
                 }
             }
         },
@@ -3098,16 +3125,25 @@
         "model.SampleByFiltersData": {
             "type": "object",
             "properties": {
+                "geologicalAge": {
+                    "type": "string"
+                },
+                "geologicalSetting": {
+                    "type": "string"
+                },
+                "inclusionType": {
+                    "type": "string"
+                },
                 "latitude": {
                     "type": "number"
                 },
                 "longitude": {
                     "type": "number"
                 },
-                "rockClass": {
+                "mineral": {
                     "type": "string"
                 },
-                "rockType": {
+                "rockClass": {
                     "type": "string"
                 },
                 "sampleID": {
@@ -3224,6 +3260,28 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Specimen"
+                    }
+                },
+                "numItems": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.SpecimenType": {
+            "type": "object",
+            "properties": {
+                "specimentypecv": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SpecimenTypeResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SpecimenType"
                     }
                 },
                 "numItems": {
