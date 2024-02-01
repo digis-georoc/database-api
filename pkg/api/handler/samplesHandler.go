@@ -344,7 +344,11 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 
 	// build query string
-	query, err := buildSampleFilterQuery(c, coordData, nil)
+	kwargs := map[string]interface{}{
+		KEY_ROCKCLASS: true,
+		KEY_ROCKTYPE:  true,
+	}
+	query, err := buildSampleFilterQuery(c, coordData, kwargs)
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
