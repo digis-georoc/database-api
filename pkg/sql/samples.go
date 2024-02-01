@@ -101,9 +101,7 @@ const GetSamplingfeatureIdsByFilterLocationsEnd = `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
-	select s.samplingfeatureid,
-	array_remove(array_agg(distinct rt.rock_type), null) as rock_types, 
-	array_remove(array_agg(distinct rc.rock_class), null) as rock_classes
+	select s.samplingfeatureid
 	from odm2.samplingfeatures s
 	left join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid and r.relationshiptypecv != 'Is identical to'
 `
