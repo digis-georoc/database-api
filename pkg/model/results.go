@@ -45,3 +45,12 @@ type CQExpression struct {
 type ChemQuery struct {
 	Expressions []CQExpression
 }
+
+type Result struct {
+	ItemName      *string  `json:"itemName"`
+	ItemGroup     *string  `json:"itemGroup"`
+	StandardName  *string  `json:"standardName"`
+	StandardValue *float32 `json:"standardValue"`
+	Value         *float32 `json:"value"`
+	Unit          *string  `json:"unit"`
+}

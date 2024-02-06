@@ -37,7 +37,12 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
 
-	fullData, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByIdQuery, c.Param(QP_IDENTIFIER))
+	id, err := strconv.Atoi(c.Param(QP_IDENTIFIER))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse identifier")
+	}
+	identifier := []int{id}
+	fullData, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifier)
 	if err != nil {
 		logger.Errorf("Can not retrieve FullDataById: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve full data by id")
