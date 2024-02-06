@@ -1,5 +1,46 @@
 basePath: /api/v1
 definitions:
+  model.Batch:
+    properties:
+      batchID:
+        type: integer
+      batchName:
+        type: string
+      crystal:
+        type: string
+      inclusionTypes:
+        items:
+          type: string
+        type: array
+      materials:
+        items:
+          type: string
+        type: array
+      minerals:
+        items:
+          type: string
+        type: array
+      rimOrCoreInclusion:
+        items:
+          type: string
+        type: array
+      rimOrCoreMineral:
+        items:
+          type: string
+        type: array
+      rockClasses:
+        items:
+          type: string
+        type: array
+      rockTypes:
+        items:
+          type: string
+        type: array
+      sampleID:
+        type: integer
+      specimenMedium:
+        type: string
+    type: object
   model.Citation:
     properties:
       authors:
@@ -95,11 +136,23 @@ definitions:
         type: integer
       ageMin:
         type: integer
-      batches:
+      alterations:
         items:
-          type: integer
+          type: string
+        type: array
+      batchData:
+        items:
+          $ref: '#/definitions/model.Batch'
         type: array
       comment:
+        items:
+          type: string
+        type: array
+      drillDepthMax:
+        items:
+          type: string
+        type: array
+      drillDepthMin:
         items:
           type: string
         type: array
@@ -107,19 +160,15 @@ definitions:
         type: string
       elevationMin:
         type: string
-      inclusionTypes:
+      eruptionDate:
+        type: string
+      geologicalAge:
+        type: string
+      hostMinerals:
         items:
           type: string
         type: array
       institutions:
-        items:
-          type: string
-        type: array
-      itemGroup:
-        items:
-          type: string
-        type: array
-      itemName:
         items:
           type: string
         type: array
@@ -147,10 +196,6 @@ definitions:
         type: string
       longitudeMin:
         type: string
-      materials:
-        items:
-          type: string
-        type: array
       method:
         items:
           type: string
@@ -163,42 +208,30 @@ definitions:
         items:
           $ref: '#/definitions/model.Citation'
         type: array
-      rockClasses:
+      results:
         items:
-          type: string
+          $ref: '#/definitions/model.Result'
         type: array
+      rockClass:
+        type: string
       rockTextures:
         items:
           type: string
         type: array
-      rockTypes:
-        items:
-          type: string
-        type: array
+      rockType:
+        type: string
+      sampleID:
+        type: integer
       sampleName:
         type: string
-      sampleNum:
-        type: integer
-      standardNames:
+      samplingTechniques:
         items:
           type: string
-        type: array
-      standardValues:
-        items:
-          type: number
         type: array
       tectonicSetting:
         type: string
       uniqueID:
         type: string
-      units:
-        items:
-          type: string
-        type: array
-      values:
-        items:
-          type: number
-        type: array
     type: object
   model.FullDataResponse:
     properties:
@@ -360,12 +393,29 @@ definitions:
     type: object
   model.Person:
     properties:
+      authorOrder:
+        type: integer
       personFirstName:
         type: string
       personID:
         type: integer
       personLastName:
         type: string
+    type: object
+  model.Result:
+    properties:
+      itemGroup:
+        type: string
+      itemName:
+        type: string
+      standardName:
+        type: string
+      standardValue:
+        type: number
+      unit:
+        type: string
+      value:
+        type: number
     type: object
   model.Sample:
     properties:
@@ -552,7 +602,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.3.10
+  version: 0.4.0
 paths:
   /alive:
     get:
