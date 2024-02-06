@@ -1,5 +1,16 @@
 basePath: /api/v1
 definitions:
+  model.Author:
+    properties:
+      authorOrder:
+        type: integer
+      personFirstName:
+        type: string
+      personID:
+        type: integer
+      personLastName:
+        type: string
+    type: object
   model.Batch:
     properties:
       batchID:
@@ -45,7 +56,7 @@ definitions:
     properties:
       authors:
         items:
-          $ref: '#/definitions/model.Person'
+          $ref: '#/definitions/model.Author'
         type: array
       bookTitle:
         type: string
@@ -393,8 +404,6 @@ definitions:
     type: object
   model.Person:
     properties:
-      authorOrder:
-        type: integer
       personFirstName:
         type: string
       personID:

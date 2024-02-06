@@ -1,10 +1,9 @@
 package model
 
 type Person struct {
-	PersonID        int    `json:"personID"`
-	PersonFirstName string `json:"personFirstName"`
-	PersonLastName  string `json:"personLastName"`
-	AuthorOrder     int    `json:"authorOrder"`
+	PersonID        int     `json:"personID"`
+	PersonFirstName *string `json:"personFirstName"`
+	PersonLastName  *string `json:"personLastName"`
 }
 
 type PeopleResponse struct {
