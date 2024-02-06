@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.3.10"
+        "version": "0.4.0"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -2506,6 +2506,68 @@
         }
     },
     "definitions": {
+        "model.Batch": {
+            "type": "object",
+            "properties": {
+                "batchID": {
+                    "type": "integer"
+                },
+                "batchName": {
+                    "type": "string"
+                },
+                "crystal": {
+                    "type": "string"
+                },
+                "inclusionTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "materials": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "minerals": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rimOrCoreInclusion": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rimOrCoreMineral": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rockClasses": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rockTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sampleID": {
+                    "type": "integer"
+                },
+                "specimenMedium": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Citation": {
             "type": "object",
             "properties": {
@@ -2652,13 +2714,31 @@
                 "ageMin": {
                     "type": "integer"
                 },
-                "batches": {
+                "alterations": {
                     "type": "array",
                     "items": {
-                        "type": "integer"
+                        "type": "string"
+                    }
+                },
+                "batchData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Batch"
                     }
                 },
                 "comment": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "drillDepthMax": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "drillDepthMin": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2670,25 +2750,19 @@
                 "elevationMin": {
                     "type": "string"
                 },
-                "inclusionTypes": {
+                "eruptionDate": {
+                    "type": "string"
+                },
+                "geologicalAge": {
+                    "type": "string"
+                },
+                "hostMinerals": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "institutions": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "itemGroup": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "itemName": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2730,12 +2804,6 @@
                 "longitudeMin": {
                     "type": "string"
                 },
-                "materials": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "method": {
                     "type": "array",
                     "items": {
@@ -2754,11 +2822,14 @@
                         "$ref": "#/definitions/model.Citation"
                     }
                 },
-                "rockClasses": {
+                "results": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.Result"
                     }
+                },
+                "rockClass": {
+                    "type": "string"
                 },
                 "rockTextures": {
                     "type": "array",
@@ -2766,28 +2837,19 @@
                         "type": "string"
                     }
                 },
-                "rockTypes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "rockType": {
+                    "type": "string"
+                },
+                "sampleID": {
+                    "type": "integer"
                 },
                 "sampleName": {
                     "type": "string"
                 },
-                "sampleNum": {
-                    "type": "integer"
-                },
-                "standardNames": {
+                "samplingTechniques": {
                     "type": "array",
                     "items": {
                         "type": "string"
-                    }
-                },
-                "standardValues": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
                     }
                 },
                 "tectonicSetting": {
@@ -2795,18 +2857,6 @@
                 },
                 "uniqueID": {
                     "type": "string"
-                },
-                "units": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "values": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
                 }
             }
         },
@@ -3059,6 +3109,9 @@
         "model.Person": {
             "type": "object",
             "properties": {
+                "authorOrder": {
+                    "type": "integer"
+                },
                 "personFirstName": {
                     "type": "string"
                 },
@@ -3067,6 +3120,29 @@
                 },
                 "personLastName": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Result": {
+            "type": "object",
+            "properties": {
+                "itemGroup": {
+                    "type": "string"
+                },
+                "itemName": {
+                    "type": "string"
+                },
+                "standardName": {
+                    "type": "string"
+                },
+                "standardValue": {
+                    "type": "number"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
                 }
             }
         },
