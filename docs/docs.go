@@ -2509,6 +2509,23 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.Author": {
+            "type": "object",
+            "properties": {
+                "authorOrder": {
+                    "type": "integer"
+                },
+                "personFirstName": {
+                    "type": "string"
+                },
+                "personID": {
+                    "type": "integer"
+                },
+                "personLastName": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Batch": {
             "type": "object",
             "properties": {
@@ -2577,7 +2594,7 @@ const docTemplate = `{
                 "authors": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Person"
+                        "$ref": "#/definitions/model.Author"
                     }
                 },
                 "bookTitle": {
@@ -3112,9 +3129,6 @@ const docTemplate = `{
         "model.Person": {
             "type": "object",
             "properties": {
-                "authorOrder": {
-                    "type": "integer"
-                },
                 "personFirstName": {
                     "type": "string"
                 },
