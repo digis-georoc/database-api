@@ -13,8 +13,15 @@ type Citation struct {
 	LastPage        *string  `json:"lastPage"`
 	BookTitle       *string  `json:"bookTitle"`
 	Editors         *string  `json:"editors"`
-	Authors         []Person `json:"authors"`
+	Authors         []Author `json:"authors"`
 	DOI             *string  `json:"doi"`
+}
+
+type Author struct {
+	PersonID        int     `json:"personID"`
+	PersonFirstName *string `json:"personFirstName"`
+	PersonLastName  *string `json:"personLastName"`
+	AuthorOrder     *int    `json:"authorOrder"`
 }
 
 type CitationResponse struct {
