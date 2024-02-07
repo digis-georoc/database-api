@@ -28,7 +28,7 @@ type Sample struct {
 	SamplingFeatureDescription *string  `json:"samplingFeatureDescription"`
 	SamplingFeatureGeotypeCV   *string  `json:"samplingFeatureGeoTypeCV"`
 	FeatureGeometryWKT         *string  `json:"featureGeometryWKT"`
-	Elevation_m                *float64 `json:"elevation_m"`
+	ElevationM                 *float64 `json:"elevationM"`
 	ElevationDatumCV           *string  `json:"elevationDatumCV"`
 	ElevationPrecision         *float64 `json:"elevationPrecision"`
 	ElevationPrecisionComment  *string  `json:"elevationPrecisionComment"`
@@ -41,7 +41,7 @@ type SampleResponse struct {
 
 type SampleByFilters struct {
 	SampleID          int     `json:"sampleID"`
-	SampleName        string  `json:"samplename"`
+	SampleName        string  `json:"sampleName"`
 	Latitude          float64 `json:"latitude"`
 	Longitude         float64 `json:"longitude"`
 	Mineral           *string `json:"mineral"`

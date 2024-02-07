@@ -3,14 +3,14 @@ package sql
 const GeoJSONQuery = `
 SELECT s.latitude,
 s.longitude,
-(array_agg(s.samplingfeatureid))[1] AS locationid,
-count(DISTINCT r.samplingfeatureid) AS numsamplingfeatureids,
-array_agg(DISTINCT r.samplingfeatureid) AS samplingfeatureids,
+(array_agg(s.samplingfeatureid))[1] AS locationID,
+count(DISTINCT r.samplingfeatureid) AS numSamplingFeatureIDs,
+array_agg(DISTINCT r.samplingfeatureid) AS samplingFeatureIDs,
 (array_agg(DISTINCT gs.settingname))[1] AS setting,
 (array_agg(DISTINCT toplevelloc.locationname))[1] AS loc1,
 (array_agg(DISTINCT secondlevelloc.locationname))[1] AS loc2,
 (array_agg(DISTINCT thirdlevelloc.locationname))[1] AS loc3,
-(array_agg(DISTINCT s.sitedescription))[1] AS landorsea
+(array_agg(DISTINCT s.sitedescription))[1] AS landOrSea
 FROM odm2.sites s
 LEFT JOIN odm2.sitegeologicalsettings sgs on sgs.samplingfeatureid = s.samplingfeatureid
 LEFT JOIN odm2.geologicalsettings gs on gs.settingid = sgs.settingid
