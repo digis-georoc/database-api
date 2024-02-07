@@ -57,7 +57,7 @@ from
 	(array_remove(array_agg(distinct ann_samptech.annotationtext), null)) as samp_techniques,
 	(array_remove(array_agg(ann_ddmin.annotationtext), null)) as dd_min,
 	(array_remove(array_agg(ann_ddmax.annotationtext), null)) as dd_max,
-	(jsonb_agg(batchdata)) as batchdata
+	(jsonb_agg(distinct batchdata)) as batchdata
 	from 
 	(
 		select * 
