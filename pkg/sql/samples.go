@@ -7,7 +7,7 @@ s.samplingfeaturename,
 s.samplingfeaturedescription,
 s.samplingfeaturegeotypecv,
 s.featuregeometrywkt,
-s.elevation_m,
+s.elevation_m as elevationM,
 s.elevationdatumcv,
 s.elevationprecision,
 s.elevationprecisioncomment
@@ -28,7 +28,7 @@ coalesce(coords.longitude, 0) as longitude,
 (coalesce(sl.inclusion_types, array['None']))[1] as inclusionType,
 (coalesce(sl.geological_settings, array['None']))[1] as geologicalSetting,
 (coalesce(sl.geological_ages, array['None']))[1] as geologicalAge,
-spec.samplingfeaturename as samplename
+spec.samplingfeaturename as sampleName
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
 left join odm2.samplelistinformation sl on sl.samplingfeatureid = spec.samplingfeatureid

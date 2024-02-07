@@ -51,11 +51,11 @@ type GeoJSONSite struct {
 	Latitude              *float64 `json:"latitude"`
 	Longitude             *float64 `json:"longitude"`
 	LocationID            *int     `json:"locationID"`
-	NumSamplingFeatureIDs *int     `json:"numsamplingfeatureids"`
-	SamplingFeatureIDs    []*int   `json:"samplingfeatureids"`
+	NumSamplingFeatureIDs *int     `json:"numSamplingFeatureIDs"`
+	SamplingFeatureIDs    []*int   `json:"samplingFeatureIDs"`
 	Setting               *string  `json:"setting"`
 	Loc1                  *string  `json:"loc1"`
 	Loc2                  *string  `json:"loc2"`
 	Loc3                  *string  `json:"loc3"`
-	LandOrSea             *string  `json:"land_or_sea"`
+	LandOrSea             *string  `json:"landOrSea"`
 }
