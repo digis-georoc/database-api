@@ -144,6 +144,7 @@ func Query[T any](ctx context.Context, pC PostgresConnector, sql string, args ..
 	// manually acquire and release connection to be able to send CancelRequest() on context canceled by client
 	c, err := pC.Connection().Acquire(ctx)
 	if err != nil {
+		log.Warn("It happened again!")
 		return nil, err
 	}
 	defer c.Release()
