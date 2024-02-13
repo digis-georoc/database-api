@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DIGIS Project Group
+#
+# SPDX-License-Identifier: BSD-3-Clause
+
 # syntax=docker/dockerfile:1
 # BUILD-STAGE
 FROM golang:1.19-alpine as build
