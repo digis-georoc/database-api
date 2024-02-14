@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 DIGIS Project Group
+#
+# SPDX-License-Identifier: CC0-1.0
+
 basePath: /api/v1
 definitions:
   model.Author:

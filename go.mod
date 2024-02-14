@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 DIGIS Project Group
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 module gitlab.gwdg.de/fe/digis/database-api
 
 go 1.19

@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2024 DIGIS Project Group
+
+SPDX-License-Identifier: BSD-3-Clause
+-->
+
 # Database-API
 
 API to access the GEOROC2.0 database in the new ODM2-based schema.
@@ -23,6 +29,15 @@ To access the api, a personal access token is needed.
 Access tokens are generated on demand.
 Please note that the api is currently in a testing phase, so bugs or service outages can happen.
 If you want to provide feedback and participate in testing the api, please [contact us](digis-info@uni-goettingen.de).
+
+## License
+
+[![REUSE status](https://api.reuse.software/badge/git.fsfe.org/reuse/api)](https://api.reuse.software/info/git.fsfe.org/reuse/api)
+
+The source code is licensed under the BSD-3-Clause license; generated documentation files are licensed under CC0-1.0.
+The licensing of this repository is [reuse compliant](https://reuse.software/).
+License headers were added with the reuse-helper-tool:
+`docker run --rm --volume ./:/data fsfe/reuse annotate --copyright="DIGIS Project Group" --license="BSD-3-Clause" --recursive ./*`
 
 ## Operation
 

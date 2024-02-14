@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 DIGIS Project Group
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 package sql
 
 // "IN $1" wont work with array but "= ANY ($1)" does
