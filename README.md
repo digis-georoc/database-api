@@ -32,6 +32,8 @@ If you want to provide feedback and participate in testing the api, please [cont
 
 ## License
 
+[![REUSE status](https://api.reuse.software/badge/git.fsfe.org/reuse/api)](https://api.reuse.software/info/git.fsfe.org/reuse/api)
+
 The source code is licensed under the BSD-3-Clause license; generated documentation files are licensed under CC0-1.0.
 The licensing of this repository is [reuse compliant](https://reuse.software/).
 License headers were added with the reuse-helper-tool:
