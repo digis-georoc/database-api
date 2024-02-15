@@ -5,9 +5,11 @@
 package model
 
 type Person struct {
-	PersonID        int     `json:"personID"`
+	PersonID int `json:"personID"`
+	// nullable
 	PersonFirstName *string `json:"personFirstName"`
-	PersonLastName  *string `json:"personLastName"`
+	// nullable
+	PersonLastName *string `json:"personLastName"`
 }
 
 type PeopleResponse struct {
