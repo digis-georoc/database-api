@@ -3239,7 +3239,7 @@
                 "sampleID": {
                     "type": "integer"
                 },
-                "samplename": {
+                "sampleName": {
                     "type": "string"
                 }
             }
