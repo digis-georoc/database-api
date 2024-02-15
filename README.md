@@ -32,7 +32,7 @@ If you want to provide feedback and participate in testing the api, please [cont
 
 ## License
 
-[![REUSE status](https://api.reuse.software/badge/git.fsfe.org/reuse/api)](https://api.reuse.software/info/git.fsfe.org/reuse/api)
+[![REUSE status](https://api.reuse.software/badge/github.com/digis-georoc/database-api)](https://api.reuse.software/info/github.com/digis-georoc/database-api)
 
 The source code is licensed under the BSD-3-Clause license; generated documentation files are licensed under CC0-1.0.
 The licensing of this repository is [reuse compliant](https://reuse.software/).
