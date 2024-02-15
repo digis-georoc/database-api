@@ -58,7 +58,7 @@ type SampleByFilters struct {
 
 type SampleByFiltersData struct {
 	SampleID          int     `json:"sampleID"`
-	SampleName        string  `json:"samplename"`
+	SampleName        string  `json:"sampleName"`
 	Latitude          float64 `json:"latitude"`
 	Longitude         float64 `json:"longitude"`
 	Mineral           *string `json:"mineral"`
