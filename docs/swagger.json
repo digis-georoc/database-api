@@ -2510,15 +2510,18 @@
             "type": "object",
             "properties": {
                 "authorOrder": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "personFirstName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "personID": {
                     "type": "integer"
                 },
                 "personLastName": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -2527,60 +2530,72 @@
             "type": "object",
             "properties": {
                 "batchID": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "batchName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "crystal": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "inclusionTypes": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "materials": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "minerals": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rimOrCoreInclusion": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rimOrCoreMineral": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rockClasses": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rockTypes": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "sampleID": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "specimenMedium": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -2595,42 +2610,54 @@
                     }
                 },
                 "bookTitle": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "citationID": {
                     "type": "integer"
                 },
                 "citationLink": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "doi": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "editors": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "firstPage": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "issue": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "journal": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "lastPage": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "publicationYear": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "publisher": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "title": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "volume": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -2726,108 +2753,133 @@
             "type": "object",
             "properties": {
                 "ageMax": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "ageMin": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "alterations": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "batchData": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Batch"
                     }
                 },
                 "comment": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "drillDepthMax": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "drillDepthMin": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "elevationMax": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "elevationMin": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "eruptionDate": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "geologicalAge": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "hostMinerals": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "institutions": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "landOrSea": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "latitude": {
+                    "description": "nullable",
                     "type": "number"
                 },
                 "latitudeMax": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "latitudeMin": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "locationNames": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "locationNum": {
+                    "description": "nullable",
                     "type": "integer"
                 },
                 "locationTypes": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "longitude": {
+                    "description": "nullable",
                     "type": "number"
                 },
                 "longitudeMax": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "longitudeMin": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "method": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "minerals": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2840,39 +2892,47 @@
                     }
                 },
                 "results": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Result"
                     }
                 },
                 "rockClass": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "rockTextures": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rockType": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "sampleID": {
                     "type": "integer"
                 },
                 "sampleName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "samplingTechniques": {
+                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "tectonicSetting": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "uniqueID": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -3127,12 +3187,14 @@
             "type": "object",
             "properties": {
                 "personFirstName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "personID": {
                     "type": "integer"
                 },
                 "personLastName": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -3141,21 +3203,27 @@
             "type": "object",
             "properties": {
                 "itemGroup": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "itemName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "standardName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "standardValue": {
+                    "description": "nullable",
                     "type": "number"
                 },
                 "unit": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "value": {
+                    "description": "nullable",
                     "type": "number"
                 }
             }
@@ -3164,33 +3232,42 @@
             "type": "object",
             "properties": {
                 "elevationDatumCV": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "elevationM": {
+                    "description": "nullable",
                     "type": "number"
                 },
                 "elevationPrecision": {
+                    "description": "nullable",
                     "type": "number"
                 },
                 "elevationPrecisionComment": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "featureGeometryWKT": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "samplingFeatureDescription": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "samplingFeatureGeoTypeCV": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "samplingFeatureID": {
                     "type": "integer"
                 },
                 "samplingFeatureName": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "samplingFeatureUUID": {
+                    "description": "nullable",
                     "type": "string"
                 }
             }
@@ -3216,12 +3293,15 @@
             "type": "object",
             "properties": {
                 "geologicalAge": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "geologicalSetting": {
+                    "description": "nullable",
                     "type": "string"
                 },
                 "inclusionType": {
+                    "description": "only filled for material=\"Inclusion\"",
                     "type": "string"
                 },
                 "latitude": {
@@ -3231,9 +3311,11 @@
                     "type": "number"
                 },
                 "mineral": {
+                    "description": "only filled for material=\"Mineral\"",
                     "type": "string"
                 },
                 "rockClass": {
+                    "description": "only filled for material=\"WholeRock or Glass\"",
                     "type": "string"
                 },
                 "sampleID": {

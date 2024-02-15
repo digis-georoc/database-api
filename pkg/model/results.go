@@ -51,10 +51,16 @@ type ChemQuery struct {
 }
 
 type Result struct {
-	ItemName      *string  `json:"itemName"`
-	ItemGroup     *string  `json:"itemGroup"`
-	StandardName  *string  `json:"standardName"`
+	// nullable
+	ItemName *string `json:"itemName"`
+	// nullable
+	ItemGroup *string `json:"itemGroup"`
+	// nullable
+	StandardName *string `json:"standardName"`
+	// nullable
 	StandardValue *float32 `json:"standardValue"`
-	Value         *float32 `json:"value"`
-	Unit          *string  `json:"unit"`
+	// nullable
+	Value *float32 `json:"value"`
+	// nullable
+	Unit *string `json:"unit"`
 }

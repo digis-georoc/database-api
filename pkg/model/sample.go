@@ -26,16 +26,25 @@ type SpecimenResponse struct {
 }
 
 type Sample struct {
-	SamplingFeatureID          int      `json:"samplingFeatureID"`
-	SamplingFeatureUUID        *string  `json:"samplingFeatureUUID"`
-	SamplingFeatureName        *string  `json:"samplingFeatureName"`
-	SamplingFeatureDescription *string  `json:"samplingFeatureDescription"`
-	SamplingFeatureGeotypeCV   *string  `json:"samplingFeatureGeoTypeCV"`
-	FeatureGeometryWKT         *string  `json:"featureGeometryWKT"`
-	ElevationM                 *float64 `json:"elevationM"`
-	ElevationDatumCV           *string  `json:"elevationDatumCV"`
-	ElevationPrecision         *float64 `json:"elevationPrecision"`
-	ElevationPrecisionComment  *string  `json:"elevationPrecisionComment"`
+	SamplingFeatureID int `json:"samplingFeatureID"`
+	// nullable
+	SamplingFeatureUUID *string `json:"samplingFeatureUUID"`
+	// nullable
+	SamplingFeatureName *string `json:"samplingFeatureName"`
+	// nullable
+	SamplingFeatureDescription *string `json:"samplingFeatureDescription"`
+	// nullable
+	SamplingFeatureGeotypeCV *string `json:"samplingFeatureGeoTypeCV"`
+	// nullable
+	FeatureGeometryWKT *string `json:"featureGeometryWKT"`
+	// nullable
+	ElevationM *float64 `json:"elevationM"`
+	// nullable
+	ElevationDatumCV *string `json:"elevationDatumCV"`
+	// nullable
+	ElevationPrecision *float64 `json:"elevationPrecision"`
+	// nullable
+	ElevationPrecisionComment *string `json:"elevationPrecisionComment"`
 }
 
 type SampleResponse struct {
@@ -57,15 +66,20 @@ type SampleByFilters struct {
 }
 
 type SampleByFiltersData struct {
-	SampleID          int     `json:"sampleID"`
-	SampleName        string  `json:"sampleName"`
-	Latitude          float64 `json:"latitude"`
-	Longitude         float64 `json:"longitude"`
-	Mineral           *string `json:"mineral"`
-	RockClass         *string `json:"rockClass"`
-	InclusionType     *string `json:"inclusionType"`
+	SampleID   int     `json:"sampleID"`
+	SampleName string  `json:"sampleName"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
+	// only filled for material="Mineral"
+	Mineral *string `json:"mineral"`
+	// only filled for material="WholeRock or Glass"
+	RockClass *string `json:"rockClass"`
+	// only filled for material="Inclusion"
+	InclusionType *string `json:"inclusionType"`
+	// nullable
 	GeologicalSetting *string `json:"geologicalSetting"`
-	GeologicalAge     *string `json:"geologicalAge"`
+	// nullable
+	GeologicalAge *string `json:"geologicalAge"`
 }
 
 type SampleByFilterResponse struct {

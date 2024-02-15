@@ -79,8 +79,7 @@ For installation guides see [the documentation](https://github.com/swaggo/swag#g
 
 To generate the documentation files under **docs/**, execute
 
-`swag fmt && swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go`
-
+`swag fmt && swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go && docker run --rm --volume ./:/data fsfe/reuse annotate --copyright="DIGIS Project Group" --license="CC0-1.0" --recursive --skip-existing ./docs/*`
 ### Update Version
 
 To update the api version, change the version number in the following places:
