@@ -30,7 +30,7 @@ const (
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureids path     string true "Samplingfeature identifier"
-// @Success     200                {object} model.FullDataResponse
+// @Success     200                {object} model.FullData
 // @Failure     401                {object} string
 // @Failure     404                {object} string
 // @Failure     500                {object} string
@@ -55,11 +55,7 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := model.FullDataResponse{
-		NumItems: num,
-		Data:     fullData,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, fullData[0])
 }
 
 // GetFullData godoc

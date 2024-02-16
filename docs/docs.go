@@ -490,7 +490,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.PeopleResponse"
+                            "$ref": "#/definitions/model.Person"
                         }
                     },
                     "401": {
@@ -611,7 +611,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.CitationResponse"
+                            "$ref": "#/definitions/model.Citation"
                         }
                     },
                     "401": {
@@ -721,7 +721,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.FullDataResponse"
+                            "$ref": "#/definitions/model.FullData"
                         }
                     },
                     "401": {
@@ -2225,7 +2225,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SampleResponse"
+                            "$ref": "#/definitions/model.Sample"
                         }
                     },
                     "401": {
@@ -2406,7 +2406,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.SiteResponse"
+                            "$ref": "#/definitions/model.Site"
                         }
                     },
                     "401": {
@@ -3330,20 +3330,6 @@ const docTemplate = `{
                 },
                 "sampleName": {
                     "type": "string"
-                }
-            }
-        },
-        "model.SampleResponse": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Sample"
-                    }
-                },
-                "numItems": {
-                    "type": "integer"
                 }
             }
         },

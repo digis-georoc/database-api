@@ -83,7 +83,7 @@ const (
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureID path     string true "Sample ID"
-// @Success     200               {object} model.SampleResponse
+// @Success     200               {object} model.Sample
 // @Failure     401               {object} string
 // @Failure     404               {object} string
 // @Failure     500               {object} string
@@ -104,11 +104,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := model.SampleResponse{
-		NumItems: num,
-		Data:     samples,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, samples[0])
 }
 
 // GetSamplesFiltered godoc
