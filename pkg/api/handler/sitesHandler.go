@@ -68,7 +68,7 @@ func (h *Handler) GetSites(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       samplingfeatureID path     string true "samplingfeatureID"
-// @Success     200               {object} model.SiteResponse
+// @Success     200               {object} model.Site
 // @Failure     401               {object} string
 // @Failure     404               {object} string
 // @Failure     500               {object} string
@@ -87,11 +87,7 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := model.SiteResponse{
-		NumItems: num,
-		Data:     sites,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, sites[0])
 }
 
 // GetGeoSettings godoc

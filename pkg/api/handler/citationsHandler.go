@@ -68,7 +68,7 @@ func (h *Handler) GetCitations(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       citationID path     string true "Citation ID"
-// @Success     200        {object} model.CitationResponse
+// @Success     200        {object} model.Citation
 // @Failure     401        {object} string
 // @Failure     404        {object} string
 // @Failure     500        {object} string
@@ -88,9 +88,5 @@ func (h *Handler) GetCitationByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := model.CitationResponse{
-		NumItems: num,
-		Data:     citations,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, citations[0])
 }

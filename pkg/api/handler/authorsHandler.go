@@ -68,7 +68,7 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       personID path     string true "Person ID"
-// @Success     200      {object} model.PeopleResponse
+// @Success     200      {object} model.Person
 // @Failure     401      {object} string
 // @Failure     404      {object} string
 // @Failure     500      {object} string
@@ -88,9 +88,5 @@ func (h *Handler) GetAuthorByID(c echo.Context) error {
 	if num == 0 {
 		return c.String(http.StatusNotFound, "No data found")
 	}
-	response := model.PeopleResponse{
-		NumItems: num,
-		Data:     authors,
-	}
-	return c.JSON(http.StatusOK, response)
+	return c.JSON(http.StatusOK, authors[0])
 }
