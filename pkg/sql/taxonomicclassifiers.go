@@ -5,8 +5,8 @@
 package sql
 
 const RockClassQueryStart = `
-select distinct (array_agg(t.taxonomicclassifiername))[1] as value,
-(array_agg(t.taxonomicclassifiercommonname))[1] as label,
+select distinct (array_agg(t.taxonomicclassifierid))[1] as value,
+(array_agg(t.taxonomicclassifiername))[1] as label,
 count(distinct s.samplingfeatureid)
 from odm2.taxonomicclassifiers t
 left join odm2.specimentaxonomicclassifiers s on s.taxonomicclassifierid = t.taxonomicclassifierid

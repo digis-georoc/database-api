@@ -122,7 +122,7 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd = `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart = `
 	left join 
 	(
-		select stc.samplingfeatureid, tax_class.taxonomicclassifiername as rock_class
+		select stc.samplingfeatureid, tax_class.taxonomicclassifiername as rock_class, tax_class.taxonomicclassifierid as rock_class_id
 		from odm2.specimentaxonomicclassifiers stc
 		left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
 `

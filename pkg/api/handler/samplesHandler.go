@@ -134,7 +134,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       latitude          query    string false "latitude (supports Filter DSL)"
 // @Param       longitude         query    string false "longitude (supports Filter DSL)"
 // @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclass         query    string false "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)"
+// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
 // @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
 // @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
 // @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
@@ -253,7 +253,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       latitude          query    string false "latitude (supports Filter DSL)"
 // @Param       longitude         query    string false "longitude (supports Filter DSL)"
 // @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclass         query    string false "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)"
+// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
 // @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
 // @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
 // @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
@@ -1062,7 +1062,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	rockClass, opRClass, err := parseParam(c.QueryParam(QP_ROCKCLASS))
+	rockClassID, opRClass, err := parseParam(c.QueryParam(QP_ROCKCLASS))
 	if err != nil {
 		return nil, err
 	}
@@ -1078,7 +1078,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	if rockType != "" || rockClass != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if rockType != "" || rockClassID != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
 		// add filter for each subquery for significant speedup
@@ -1087,9 +1087,9 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
 		}
-		if rockClass != "" {
+		if rockClassID != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			query.AddFilter("tax_class.taxonomicclassifiername", rockClass, opRClass, sql.OpWhere)
+			query.AddFilter("tax_class.taxonomicclassifierid", rockClassID, opRClass, sql.OpWhere)
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
 		}
 		if mineral != "" {
@@ -1113,8 +1113,8 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
 			junctor = sql.OpAnd
 		}
-		if rockClass != "" {
-			query.AddFilter("rc.rock_class", rockClass, opRClass, junctor)
+		if rockClassID != "" {
+			query.AddFilter("rc.rock_class_id", rockClassID, opRClass, junctor)
 			junctor = sql.OpAnd
 		}
 		if mineral != "" {

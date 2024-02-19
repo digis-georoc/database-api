@@ -767,11 +767,11 @@ paths:
         in: query
         name: rocktype
         type: string
-      - description: taxonomic classifier name - see /queries/samples/rockclasses
+      - description: taxonomic classifier ID - see /queries/samples/rockclasses value
           (supports Filter DSL)
         in: query
-        name: rockclass
-        type: string
+        name: rockclassID
+        type: integer
       - description: mineral - see /queries/samples/minerals (supports Filter DSL)
         in: query
         name: mineral
@@ -1468,11 +1468,11 @@ paths:
         in: query
         name: rocktype
         type: string
-      - description: taxonomic classifier name - see /queries/samples/rockclasses
+      - description: taxonomic classifier ID - see /queries/samples/rockclasses value
           (supports Filter DSL)
         in: query
-        name: rockclass
-        type: string
+        name: rockclassID
+        type: integer
       - description: mineral - see /queries/samples/minerals (supports Filter DSL)
         in: query
         name: mineral
