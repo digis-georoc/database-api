@@ -131,9 +131,9 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)",
-                        "name": "rockclass",
+                        "type": "integer",
+                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)",
+                        "name": "rockclassID",
                         "in": "query"
                     },
                     {
@@ -1176,9 +1176,9 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
-                        "type": "string",
-                        "description": "taxonomic classifier name - see /queries/samples/rockclasses (supports Filter DSL)",
-                        "name": "rockclass",
+                        "type": "integer",
+                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)",
+                        "name": "rockclassID",
                         "in": "query"
                     },
                     {
