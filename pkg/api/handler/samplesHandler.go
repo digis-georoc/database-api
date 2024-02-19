@@ -1114,7 +1114,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			junctor = sql.OpAnd
 		}
 		if rockClassID != "" {
-			query.AddFilter("rc.rock_class", rockClassID, opRClass, junctor)
+			query.AddFilter("rc.rock_class_id", rockClassID, opRClass, junctor)
 			junctor = sql.OpAnd
 		}
 		if mineral != "" {
