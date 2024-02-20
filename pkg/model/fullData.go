@@ -97,9 +97,9 @@ type Batch struct {
 	// nullable
 	InclusionTypes []*string `json:"inclusionTypes"`
 	// nullable
-	RimOrCoreInclusion []*string `json:"rimOrCoreInclusion"`
+	RimOrCoreInclusion *string `json:"rimOrCoreInclusion"`
 	// nullable
-	RimOrCoreMineral []*string `json:"rimOrCoreMineral"`
+	RimOrCoreMineral *string `json:"rimOrCoreMineral"`
 }
 
 type FullDataResponse struct {
