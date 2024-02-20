@@ -75,7 +75,7 @@ func (h *Handler) Alive(c echo.Context) error {
 // @Failure     404 {object} string
 // @Router      /version [get]
 func (h *Handler) Version(c echo.Context) error {
-	return c.JSON(http.StatusOK, "0.4.1")
+	return c.JSON(http.StatusOK, "0.4.2")
 }
 
 // handlePaginationParams reads the pagination parameters from the request and returns them as integers
