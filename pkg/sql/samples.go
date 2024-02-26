@@ -27,15 +27,10 @@ const GetSamplingfeatureIdsByFilterBaseQuery = `
 select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
 coalesce(coords.latitude, 0) as latitude,
 coalesce(coords.longitude, 0) as longitude,
-(coalesce(sl.minerals, array['None']))[1] as mineral,
-(coalesce(sl.rock_classes, array['None']))[1] as rockClass,
-(coalesce(sl.inclusion_types, array['None']))[1] as inclusionType,
-(coalesce(sl.geological_settings, array['None']))[1] as geologicalSetting,
-(coalesce(sl.geological_ages, array['None']))[1] as geologicalAge,
-spec.samplingfeaturename as sampleName
+sle.*
 from odm2.samplingfeatures spec
 left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
-left join odm2.samplelistinformation sl on sl.samplingfeatureid = spec.samplingfeatureid
+left join odm2.samplelistinformationextended sle on sle.samplingfeatureid = spec.samplingfeatureid
 `
 
 // Same as GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
