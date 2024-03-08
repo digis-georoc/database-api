@@ -2571,17 +2571,11 @@ const docTemplate = `{
                 },
                 "rimOrCoreInclusion": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "rimOrCoreMineral": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "rockClasses": {
                     "description": "nullable",
@@ -3154,6 +3148,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Measurement": {
+            "type": "object",
+            "properties": {
+                "element": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
         "model.Organization": {
             "type": "object",
             "properties": {
@@ -3279,6 +3287,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SampleAuthor": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.SampleByFilterResponse": {
             "type": "object",
             "properties": {
@@ -3299,17 +3321,66 @@ const docTemplate = `{
         "model.SampleByFiltersData": {
             "type": "object",
             "properties": {
-                "geologicalAge": {
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SampleAuthor"
+                    }
+                },
+                "batches": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "externalIdentifier": {
                     "description": "nullable",
                     "type": "string"
                 },
-                "geologicalSetting": {
-                    "description": "nullable",
-                    "type": "string"
+                "geologicalAges": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "inclusionType": {
+                "geologicalAgesMax": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "geologicalAgesMin": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "geologicalSettings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hostMinerals": {
                     "description": "only filled for material=\"Inclusion\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionMinerals": {
+                    "description": "only filled for material=\"Inclusion\"",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionTypes": {
+                    "description": "only filled for material=\"Inclusion\"",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "latitude": {
                     "type": "number"
@@ -3317,19 +3388,41 @@ const docTemplate = `{
                 "longitude": {
                     "type": "number"
                 },
-                "mineral": {
+                "minerals": {
                     "description": "only filled for material=\"Mineral\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "rockClass": {
+                "publicationYear": {
+                    "description": "nullable",
+                    "type": "integer"
+                },
+                "rockClasses": {
                     "description": "only filled for material=\"WholeRock or Glass\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rockTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sampleID": {
                     "type": "integer"
                 },
                 "sampleName": {
                     "type": "string"
+                },
+                "selectedMeasurements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Measurement"
+                    }
                 }
             }
         },
@@ -3512,7 +3605,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.4.2",
+	Version:          "0.5.0",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.4.2"
+        "version": "0.5.0"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -2564,17 +2564,11 @@
                 },
                 "rimOrCoreInclusion": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "rimOrCoreMineral": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "rockClasses": {
                     "description": "nullable",
@@ -3147,6 +3141,20 @@
                 }
             }
         },
+        "model.Measurement": {
+            "type": "object",
+            "properties": {
+                "element": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "number"
+                }
+            }
+        },
         "model.Organization": {
             "type": "object",
             "properties": {
@@ -3272,6 +3280,20 @@
                 }
             }
         },
+        "model.SampleAuthor": {
+            "type": "object",
+            "properties": {
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.SampleByFilterResponse": {
             "type": "object",
             "properties": {
@@ -3292,17 +3314,66 @@
         "model.SampleByFiltersData": {
             "type": "object",
             "properties": {
-                "geologicalAge": {
+                "authors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SampleAuthor"
+                    }
+                },
+                "batches": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "externalIdentifier": {
                     "description": "nullable",
                     "type": "string"
                 },
-                "geologicalSetting": {
-                    "description": "nullable",
-                    "type": "string"
+                "geologicalAges": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "inclusionType": {
+                "geologicalAgesMax": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "geologicalAgesMin": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "geologicalSettings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "hostMinerals": {
                     "description": "only filled for material=\"Inclusion\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionMinerals": {
+                    "description": "only filled for material=\"Inclusion\"",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionTypes": {
+                    "description": "only filled for material=\"Inclusion\"",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "latitude": {
                     "type": "number"
@@ -3310,19 +3381,41 @@
                 "longitude": {
                     "type": "number"
                 },
-                "mineral": {
+                "minerals": {
                     "description": "only filled for material=\"Mineral\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "rockClass": {
+                "publicationYear": {
+                    "description": "nullable",
+                    "type": "integer"
+                },
+                "rockClasses": {
                     "description": "only filled for material=\"WholeRock or Glass\"",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rockTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sampleID": {
                     "type": "integer"
                 },
                 "sampleName": {
                     "type": "string"
+                },
+                "selectedMeasurements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Measurement"
+                    }
                 }
             }
         },
