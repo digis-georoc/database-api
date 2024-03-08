@@ -64,3 +64,9 @@ type Result struct {
 	// nullable
 	Unit *string `json:"unit"`
 }
+
+type Measurement struct {
+	Element string  `json:"element"`
+	Value   float32 `json:"value"`
+	Unit    string  `json:"unit"`
+}

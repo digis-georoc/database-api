@@ -210,15 +210,25 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	for _, sample := range result {
 		totalCount = sample.TotalCount
 		data := model.SampleByFiltersData{
-			SampleID:          sample.SampleID,
-			SampleName:        sample.SampleName,
-			Latitude:          sample.Latitude,
-			Longitude:         sample.Longitude,
-			Mineral:           sample.Mineral,
-			RockClass:         sample.RockClass,
-			InclusionType:     sample.InclusionType,
-			GeologicalSetting: sample.GeologicalSetting,
-			GeologicalAge:     sample.GeologicalAge,
+			SampleID:             sample.SampleID,
+			SampleName:           sample.SampleName,
+			Latitude:             sample.Latitude,
+			Longitude:            sample.Longitude,
+			Batches:              sample.Batches,
+			PublicationYear:      sample.PublicationYear,
+			ExternalIdentifier:   sample.ExternalIdentifier,
+			Authors:              sample.Authors,
+			Minerals:             sample.Minerals,
+			HostMinerals:         sample.HostMinerals,
+			InclusionMinerals:    sample.InclusionMinerals,
+			RockTypes:            sample.RockTypes,
+			RockClasses:          sample.RockClasses,
+			InclusionTypes:       sample.InclusionTypes,
+			GeologicalSettings:   sample.GeologicalSettings,
+			GeologicalAges:       sample.GeologicalAges,
+			GeologicalAgesMin:    sample.GeologicalAgesMin,
+			GeologicalAgesMax:    sample.GeologicalAgesMax,
+			SelectedMeasurements: sample.SelectedMeasurements,
 		}
 		responseData = append(responseData, data)
 	}
