@@ -46,14 +46,10 @@ definitions:
         type: array
       rimOrCoreInclusion:
         description: nullable
-        items:
-          type: string
-        type: array
+        type: string
       rimOrCoreMineral:
         description: nullable
-        items:
-          type: string
-        type: array
+        type: string
       rockClasses:
         description: nullable
         items:
@@ -443,6 +439,15 @@ definitions:
       numItems:
         type: integer
     type: object
+  model.Measurement:
+    properties:
+      element:
+        type: string
+      unit:
+        type: string
+      value:
+        type: number
+    type: object
   model.Organization:
     properties:
       name:
@@ -530,6 +535,15 @@ definitions:
         description: nullable
         type: string
     type: object
+  model.SampleAuthor:
+    properties:
+      firstName:
+        type: string
+      lastName:
+        type: string
+      order:
+        type: integer
+    type: object
   model.SampleByFilterResponse:
     properties:
       data:
@@ -543,29 +557,77 @@ definitions:
     type: object
   model.SampleByFiltersData:
     properties:
-      geologicalAge:
+      authors:
+        items:
+          $ref: '#/definitions/model.SampleAuthor'
+        type: array
+      batches:
+        items:
+          type: integer
+        type: array
+      externalIdentifier:
         description: nullable
         type: string
-      geologicalSetting:
-        description: nullable
-        type: string
-      inclusionType:
+      geologicalAges:
+        items:
+          type: string
+        type: array
+      geologicalAgesMax:
+        items:
+          type: string
+        type: array
+      geologicalAgesMin:
+        items:
+          type: string
+        type: array
+      geologicalSettings:
+        items:
+          type: string
+        type: array
+      hostMinerals:
         description: only filled for material="Inclusion"
-        type: string
+        items:
+          type: string
+        type: array
+      inclusionMinerals:
+        description: only filled for material="Inclusion"
+        items:
+          type: string
+        type: array
+      inclusionTypes:
+        description: only filled for material="Inclusion"
+        items:
+          type: string
+        type: array
       latitude:
         type: number
       longitude:
         type: number
-      mineral:
+      minerals:
         description: only filled for material="Mineral"
-        type: string
-      rockClass:
+        items:
+          type: string
+        type: array
+      publicationYear:
+        description: nullable
+        type: integer
+      rockClasses:
         description: only filled for material="WholeRock or Glass"
-        type: string
+        items:
+          type: string
+        type: array
+      rockTypes:
+        items:
+          type: string
+        type: array
       sampleID:
         type: integer
       sampleName:
         type: string
+      selectedMeasurements:
+        items:
+          $ref: '#/definitions/model.Measurement'
+        type: array
     type: object
   model.SamplingTechnique:
     properties:
@@ -688,7 +750,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.4.2
+  version: 0.5.0
 paths:
   /alive:
     get:

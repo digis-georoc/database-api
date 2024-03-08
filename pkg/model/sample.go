@@ -53,16 +53,27 @@ type SampleResponse struct {
 }
 
 type SampleByFilters struct {
-	SampleID          int     `json:"sampleID"`
-	SampleName        string  `json:"sampleName"`
-	Latitude          float64 `json:"latitude"`
-	Longitude         float64 `json:"longitude"`
-	Mineral           *string `json:"mineral"`
-	RockClass         *string `json:"rockClass"`
-	InclusionType     *string `json:"inclusionType"`
-	GeologicalSetting *string `json:"geologicalSetting"`
-	GeologicalAge     *string `json:"geologicalAge"`
-	TotalCount        int     `json:"totalCount"`
+	SampleID             int             `json:"samplingfeatureid" db:"sampleID"`
+	SampleName           string          `json:"sampleName"`
+	Batches              []*int          `json:"batches"`
+	Sites                []*int          `json:"sites"`
+	Latitude             float64         `json:"latitude"`
+	Longitude            float64         `json:"longitude"`
+	PublicationYear      *int            `json:"publicationYear"`
+	ExternalIdentifier   *string         `json:"doi" db:"doi"`
+	Authors              []*SampleAuthor `json:"authors"`
+	Minerals             []*string       `json:"minerals"`
+	HostMinerals         []*string       `json:"hostMinerals"`
+	InclusionMinerals    []*string       `json:"inclusionMinerals"`
+	RockClasses          []*string       `json:"rockClasses"`
+	RockTypes            []*string       `json:"rockTypes"`
+	InclusionTypes       []*string       `json:"inclusionTypes"`
+	GeologicalSettings   []*string       `json:"geologicalSettings"`
+	GeologicalAges       []*string       `json:"geologicalAges"`
+	GeologicalAgesMin    []*string       `json:"geologicalAgesMin"`
+	GeologicalAgesMax    []*string       `json:"geologicalAgesMax"`
+	SelectedMeasurements []*Measurement  `json:"selectedMeasurements"`
+	TotalCount           int             `json:"totalCount"`
 }
 
 type SampleByFiltersData struct {
@@ -70,16 +81,28 @@ type SampleByFiltersData struct {
 	SampleName string  `json:"sampleName"`
 	Latitude   float64 `json:"latitude"`
 	Longitude  float64 `json:"longitude"`
+	Batches    []*int  `json:"batches"`
+	// nullable
+	PublicationYear *int `json:"publicationYear"`
+	// nullable
+	ExternalIdentifier *string         `json:"externalIdentifier"`
+	Authors            []*SampleAuthor `json:"authors"`
 	// only filled for material="Mineral"
-	Mineral *string `json:"mineral"`
-	// only filled for material="WholeRock or Glass"
-	RockClass *string `json:"rockClass"`
+	Minerals []*string `json:"minerals"`
 	// only filled for material="Inclusion"
-	InclusionType *string `json:"inclusionType"`
-	// nullable
-	GeologicalSetting *string `json:"geologicalSetting"`
-	// nullable
-	GeologicalAge *string `json:"geologicalAge"`
+	HostMinerals []*string `json:"hostMinerals"`
+	// only filled for material="Inclusion"
+	InclusionMinerals []*string `json:"inclusionMinerals"`
+	// only filled for material="WholeRock or Glass"
+	RockClasses []*string `json:"rockClasses"`
+	RockTypes   []*string `json:"rockTypes"`
+	// only filled for material="Inclusion"
+	InclusionTypes       []*string      `json:"inclusionTypes"`
+	GeologicalSettings   []*string      `json:"geologicalSettings"`
+	GeologicalAges       []*string      `json:"geologicalAges"`
+	GeologicalAgesMin    []*string      `json:"geologicalAgesMin"`
+	GeologicalAgesMax    []*string      `json:"geologicalAgesMax"`
+	SelectedMeasurements []*Measurement `json:"selectedMeasurements"`
 }
 
 type SampleByFilterResponse struct {
@@ -154,4 +177,10 @@ type Organization struct {
 type OrganizationResponse struct {
 	NumItems int            `json:"numItems"`
 	Data     []Organization `json:"data"`
+}
+
+type SampleAuthor struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
+	Order     int    `json:"order"`
 }
