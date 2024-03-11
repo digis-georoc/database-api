@@ -35,9 +35,10 @@ const (
 
 	QP_ROCKCLASS_QUERY = "q"
 
-	QP_MATERIAL = "material"
-	QP_INCTYPE  = "inclusiontype"
-	QP_SAMPTECH = "sampletech"
+	QP_MATERIAL    = "material"
+	QP_INCTYPE     = "inclusiontype"
+	QP_SAMPTECH    = "sampletech"
+	QP_RIM_OR_CORE = "rimorcore"
 
 	QP_CHEMISTRY = "chemistry"
 
@@ -141,6 +142,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
 // @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
 // @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+// @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
 // @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
 // @Param       title             query    string false "title of publication (supports Filter DSL)"
 // @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
@@ -270,6 +272,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
 // @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
 // @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+// @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
 // @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
 // @Param       title             query    string false "title of publication (supports Filter DSL)"
 // @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
@@ -992,20 +995,41 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	if material != "" || incType != "" || sampTech != "" {
+	rimOrCore, opRimOrCore, err := parseParam(c.QueryParam(QP_RIM_OR_CORE))
+	if err != nil {
+		return nil, err
+	}
+	if material != "" || incType != "" || sampTech != "" || rimOrCore != "" {
 		// add query module annotations
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
+		// add sub-modules
+		if material != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsMaterial)
+		}
+		if incType != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsIncType)
+		}
+		if sampTech != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsSampTech)
+		}
+		if rimOrCore != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsRimOrCore)
+		}
 		// add annotaion filters
 		if material != "" {
-			query.AddFilter("mat.material", material, opMat, junctor)
+			query.AddFilter("ann_mat.annotationtext", material, opMat, junctor)
 			junctor = sql.OpAnd
 		}
 		if incType != "" {
-			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
+			query.AddFilter("ann_inc_type.annotationtext", incType, opIncType, junctor)
 			junctor = sql.OpAnd
 		}
 		if sampTech != "" {
-			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
+			query.AddFilter("ann_stech.annotationtext", sampTech, opSampTech, junctor)
+			junctor = sql.OpAnd
+		}
+		if rimOrCore != "" {
+			query.AddFilter("ann_roc.annotationtext", rimOrCore, opRimOrCore, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
 	}
@@ -1080,63 +1104,58 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	hostMaterial, opHostMaterial, err := parseParam(c.QueryParam(QP_HOSTMAT))
+	hostMineral, opHostMineral, err := parseParam(c.QueryParam(QP_HOSTMAT))
 	if err != nil {
 		return nil, err
 	}
-	inclMaterial, opInclMaterial, err := parseParam(c.QueryParam(QP_INCLUSIONMAT))
+	incMineral, opIncMineral, err := parseParam(c.QueryParam(QP_INCLUSIONMAT))
 	if err != nil {
 		return nil, err
 	}
-	if rockType != "" || rockClassID != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
+	if rockType != "" || rockClassID != "" || mineral != "" || hostMineral != "" || incMineral != "" {
 		// add query module taxonomic classifiers
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
-		// add filter for each subquery for significant speedup
-		if rockType != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
-			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
-		}
-		if rockClassID != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			query.AddFilter("tax_class.taxonomicclassifierid", rockClassID, opRClass, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
-		}
-		if mineral != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralStart)
-			query.AddFilter("tax_min.taxonomicclassifiername", mineral, opMin, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralEnd)
-		}
-		if hostMaterial != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatStart)
-			query.AddFilter("tax_host.taxonomicclassifiername", hostMaterial, opHostMaterial, sql.OpAnd)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatEnd)
-		}
-		if inclMaterial != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatStart)
-			query.AddFilter("tax_inc.taxonomicclassifiername", inclMaterial, opInclMaterial, sql.OpAnd)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd)
-		}
-		// add taxonomic classifiers filters at the end
+		// add taxonomic classifiers filters
 		junctor = sql.OpWhere
+		// we compare to arrays here, so we need to adapt the filters
 		if rockType != "" {
-			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
+			arrayOp, err := sql.MapArrayOperators(opRType)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.rocktypes", rockType, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
 		if rockClassID != "" {
-			query.AddFilter("rc.rock_class_id", rockClassID, opRClass, junctor)
+			arrayOp, err := sql.MapArrayOperators(opRClass)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.rockclassids", rockClassID, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
 		if mineral != "" {
-			query.AddFilter("min.mineral", mineral, opMin, junctor)
+			arrayOp, err := sql.MapArrayOperators(opMin)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.minerals", mineral, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
-		if hostMaterial != "" {
-			query.AddFilter("hostmat.host_material", hostMaterial, opHostMaterial, junctor)
+		if hostMineral != "" {
+			arrayOp, err := sql.MapArrayOperators(opHostMineral)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.hostMinerals", hostMineral, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
-		if inclMaterial != "" {
-			query.AddFilter("incmat.inclusion_material", inclMaterial, opInclMaterial, junctor)
+		if incMineral != "" {
+			arrayOp, err := sql.MapArrayOperators(opIncMineral)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.incMinerals", incMineral, arrayOp, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
 	}

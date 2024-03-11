@@ -40,6 +40,9 @@ const (
 	OpBetween   FilterOperator = "BETWEEN"
 	OpInPolygon FilterOperator = "INPOLYGON"
 
+	OpEqArray FilterOperator = "eq_array"
+	OpInArray FilterOperator = "in_array"
+
 	OpAnd   FilterJunctor = "AND"
 	OpOr    FilterJunctor = "OR"
 	OpWhere FilterJunctor = "WHERE"
@@ -92,6 +95,10 @@ func (q *Query) AddFilter(key string, value string, operator FilterOperator, jun
 		q.AddBetweenFilter(key, value, junctor)
 	case OpInPolygon:
 		q.AddInPolygonFilter(key, value, junctor)
+	case OpEqArray:
+		q.AddEqArrayFilter(key, value, junctor)
+	case OpInArray:
+		q.AddInArrayFilter(key, value, junctor)
 	}
 }
 
@@ -100,6 +107,38 @@ func (q *Query) AddComparisonFilter(key string, value string, junctor FilterJunc
 	q.filterValues = append(q.filterValues, value)
 	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
 	filterString := NewQueryFilter(key, placeholder, comparator, junctor)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
+// Add a filter with equality for arrays to the query
+// yields `junctor value = any(key)`
+func (q *Query) AddEqArrayFilter(key string, value string, junctor FilterJunctor) {
+	q.filterValues = append(q.filterValues, value)
+	placeholder := fmt.Sprintf("$%d", len(q.filterValues))
+	filterString := fmt.Sprintf("%s %s = any(%s)", junctor, placeholder, key)
+	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
+}
+
+// Add a in-filter for arrays to the query
+// yields `junctor value::varchar[] && key`
+// param key: the table.field to check against
+// param values: comma-separated string of values
+func (q *Query) AddInArrayFilter(key string, values string, junctor FilterJunctor) {
+	valueSplit := strings.Split(values, SEPARATOR)
+	placeholderString := ""
+	for i, val := range valueSplit {
+		q.filterValues = append(q.filterValues, val)
+		if i == 0 {
+			// add first value with bracket
+			placeholderString = fmt.Sprintf("[$%d", len(q.filterValues))
+			continue
+		}
+		placeholderString = fmt.Sprintf("%s,$%d", placeholderString, len(q.filterValues))
+	}
+	// add closing bracket
+	placeholderString = fmt.Sprintf("%s]", placeholderString)
+
+	filterString := fmt.Sprintf("%s array%s::varchar[] && %s", junctor, placeholderString, key)
 	q.baseQuery = fmt.Sprintf("%s %s", q.baseQuery, filterString)
 }
 
@@ -237,4 +276,17 @@ func (q *Query) GetQueryString() string {
 		q.baseQuery = fmt.Sprintf("%s OFFSET %d", q.baseQuery, q.offset)
 	}
 	return q.baseQuery
+}
+
+// MapArrayOperators maps the operator from the request to a array-compatibility operator
+// This is needed for filtering on aggregated values, e.g. rockClasses
+func MapArrayOperators(op FilterOperator) (FilterOperator, error) {
+	switch op {
+	case OpEq:
+		return OpEqArray, nil
+	case OpIn:
+		return OpInArray, nil
+	default:
+		return "", fmt.Errorf("Invalid operator for array use-case: '%s'! Use 'eq' or 'in'", op)
+	}
 }
