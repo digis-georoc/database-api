@@ -24,39 +24,36 @@ where s.samplingfeatureid = $1
 // Filter query-modules can be configured with feature comparisons that are concatenated either with "and" or "or"
 const GetSamplingfeatureIdsByFilterBaseQuery = `
 -- modular query for specimenids and coordinates with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+select distinct spec.sampleid,
 coalesce(coords.latitude, 0) as latitude,
 coalesce(coords.longitude, 0) as longitude,
-sle.sampleName,
-sle.batches,
-sle.sites,
-sle.publicationYear,
-sle.doi,
-sle.authors,
-sle.minerals,
-sle.hostMinerals,
-sle.inclusionMinerals,
-sle.rockTypes,
-sle.rockClasses,
-sle.inclusionTypes,
-sle.geologicalSettings,
-sle.geologicalAges,
-sle.geologicalAgesMin,
-sle.geologicalAgesMax,
-sle.selectedMeasurements
-from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
-left join odm2.samplelistinformationextended sle on sle.sampleid = spec.samplingfeatureid
+spec.sampleName,
+spec.batches,
+spec.sites,
+spec.publicationYear,
+spec.doi,
+spec.authors,
+spec.minerals,
+spec.hostMinerals,
+spec.inclusionMinerals,
+spec.rockTypes,
+spec.rockClasses,
+spec.inclusionTypes,
+spec.geologicalSettings,
+spec.geologicalAges,
+spec.geologicalAgesMin,
+spec.geologicalAgesMax,
+spec.selectedMeasurements
+from odm2.samplelistinformationextended spec
 `
 
 // Same as GetSamplingfeatureIdsByFilterBaseQuery but with translated geometries for points outside -180 to 180
 // Depends on QueryModule Geometry being added
 const GetSamplingFeatureIdsByFilteBaseQueryTranslated = `
 -- modular query for specimenids and translated geometries with all filter options
-select distinct (case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end) as sampleid,
+select distinct spec.sampleid,
 case when geom.isInOriginalBBOX then geom.geometry else st_translate(geom.geometry, 360 * translationFactor, 0) end as translatedGeom
-from odm2.samplingfeatures spec
-left join odm2.relatedfeatures r on r.samplingfeatureid = spec.samplingfeatureid
+from odm2.samplelistinformationextended spec
 `
 
 // Filter query-module Locations
@@ -102,7 +99,7 @@ join (
 	left join odm2.relatedfeatures r_sample on r_sample.relatedfeatureid = s.samplingfeatureid -- samples for each location
 `
 const GetSamplingfeatureIdsByFilterLocationsEnd = `
-) loc on loc.sample = spec.samplingfeatureid
+) loc on loc.sample = spec.sampleid
 `
 
 // Filter query-module TaxonomicClassifiers
@@ -117,10 +114,10 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart = `
 join (
 	-- taxonomic classifiers
 	select st.samplingfeatureid
-	from odm2.sampletaxonomicclassifierssingle st
+	from odm2.sampletaxonomicclassifiers st
 `
 const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
-) tax on tax.samplingfeatureid = spec.samplingfeatureid
+) tax on tax.samplingfeatureid = spec.sampleid
 `
 
 // Filter query-module Annotations
@@ -132,8 +129,8 @@ const GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd = `
 const GetSamplingfeatureIdsByFilterAnnotationsStart = `
 join (
 	-- annotations
-	select distinct r.relatedfeatureid as sampleid
-	from odm2.relatedfeatures r
+	select sr.sampleid
+	from odm2.samplerelations sr
 `
 
 const GetSamplingfeatureIdsByFilterAnnotationsMaterial = `
@@ -153,7 +150,7 @@ left join odm2.annotations ann_roc on ann_roc.annotationid = sr.annotationid and
 `
 
 const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
-) ann on ann.sampleid = spec.samplingfeatureid
+) ann on ann.sampleid = spec.sampleid
 `
 
 // Filter query-module Results
@@ -180,7 +177,7 @@ from odm2.measuredvalues mv
 
 const GetSamplingfeatureIdsByFilterResultsEnd = `
 	) res on res.samplingfeatureid = r.samplingfeatureid 
-) results on results.samplingfeatureid = spec.samplingfeatureid
+) results on results.samplingfeatureid = spec.sampleid
 `
 
 // Filter query-module Citations
@@ -201,7 +198,7 @@ join (
 `
 
 const GetSamplingfeatureIdsByFilterCitationsEnd = `
-) citations on citations.samplingfeatureid = spec.samplingfeatureid
+) citations on citations.samplingfeatureid = spec.sampleid
 `
 
 // Filter query-module Ages
@@ -218,7 +215,7 @@ join (
 `
 
 const GetSamplingfeatureIdsByFilterAgesEnd = `
-) ages on ages.samplingfeatureid = spec.samplingfeatureid
+) ages on ages.samplingfeatureid = spec.sampleid
 `
 
 // Filter query-module Organizations
@@ -228,7 +225,6 @@ const GetSamplingfeatureIdsByFilterAgesEnd = `
 const GestSamplingfeatureIdsByFilterOrganizationsStart = `
 join (
 	select 
-	f.samplingfeatureid as fid,
 	s.samplingfeatureid as sid,
 	s.samplingfeaturedescription
 	from odm2.organizations o 
@@ -239,7 +235,7 @@ join (
 `
 
 const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
-) organizations on spec.samplingfeatureid = case when organizations.samplingfeaturedescription = 'Sample' then organizations.sid else organizations.fid end
+) organizations on spec.samplingfeatureid = organizations.sid
 `
 
 // Filter query-module Geometry
@@ -265,7 +261,7 @@ join odm2.relatedfeatures r on r.relatedfeatureid = sg.samplingfeatureid
 `
 
 const GestSamplingfeatureIdsByFilterGeometryEnd = `
-) geom on geom.sampleid = spec.samplingfeatureid
+) geom on geom.sampleid = spec.sampleid
 `
 
 // Filter query-module coordinates
@@ -278,7 +274,8 @@ left join
 	s.longitude
 	from odm2.sites s
 	join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid
-) coords on coords.sampleid = case when spec.samplingfeaturedescription = 'Sample' then spec.samplingfeatureid else r.relatedfeatureid end
+	order by r.samplingfeatureid
+) coords on coords.sampleid = spec.sampleid
 `
 
 // Wrapper for clustering
