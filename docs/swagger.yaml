@@ -750,7 +750,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.5.0
+  version: 0.5.1
 paths:
   /alive:
     get:
@@ -825,16 +825,16 @@ paths:
         in: query
         name: longitude
         type: string
-      - description: rock type - see /queries/samples/rocktypes (supports Filter DSL)
+      - description: rock type - see /queries/samples/rocktypes (supports 'eq', 'in')
         in: query
         name: rocktype
         type: string
       - description: taxonomic classifier ID - see /queries/samples/rockclasses value
-          (supports Filter DSL)
+          (supports 'eq', 'in')
         in: query
         name: rockclassID
         type: integer
-      - description: mineral - see /queries/samples/minerals (supports Filter DSL)
+      - description: mineral - see /queries/samples/minerals (supports 'eq', 'in')
         in: query
         name: mineral
         type: string
@@ -847,20 +847,25 @@ paths:
         in: query
         name: inclusiontype
         type: string
-      - description: host material - see /queries/samples/hostmaterials (supports
-          Filter DSL)
+      - description: host mineral - see /queries/samples/hostmaterials (supports 'eq',
+          'in')
         in: query
-        name: hostmaterial
+        name: hostmineral
         type: string
-      - description: inclusion material - see /queries/samples/inclusionmaterials
-          (supports Filter DSL)
+      - description: inclusion mineral - see /queries/samples/inclusionmaterials (supports
+          'eq', 'in')
         in: query
-        name: inclusionmaterial
+        name: inclusionmineral
         type: string
       - description: sampling technique - see /queries/samples/samplingtechniques
           (supports Filter DSL)
         in: query
         name: sampletech
+        type: string
+      - description: rim or core - R = Rim, C = Core, I = Intermediate (supports Filter
+          DSL)
+        in: query
+        name: rimorcore
         type: string
       - description: chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where
           the filter tuples are evaluated conjunctively
@@ -879,11 +884,11 @@ paths:
         in: query
         name: doi
         type: string
-      - description: Author first name (supports Filter DSL)
+      - description: Author first name (supports 'eq', 'in')
         in: query
         name: firstname
         type: string
-      - description: Author last name (supports Filter DSL)
+      - description: Author last name (supports 'eq', 'in')
         in: query
         name: lastname
         type: string
@@ -1562,6 +1567,11 @@ paths:
           (supports Filter DSL)
         in: query
         name: sampletech
+        type: string
+      - description: rim or core - R = Rim, C = Core, I = Intermediate (supports Filter
+          DSL)
+        in: query
+        name: rimorcore
         type: string
       - description: chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where
           the filter tuples are evaluated conjunctively

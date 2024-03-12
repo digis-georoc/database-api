@@ -142,7 +142,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
 // @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
 // @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
-// @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
+// @Param       rimorcore         query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
 // @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
 // @Param       title             query    string false "title of publication (supports Filter DSL)"
 // @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
@@ -255,43 +255,43 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Tags        geodata
 // @Accept      json
 // @Produce     json
-// @Param       limit             query    int    false "limit"
-// @Param       offset            query    int    false "offset"
-// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
-// @Param       location1         query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
-// @Param       location2         query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
-// @Param       location3         query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
-// @Param       latitude          query    string false "latitude (supports Filter DSL)"
-// @Param       longitude         query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
-// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
-// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports 'eq', 'in')"
-// @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
-// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
+// @Param       limit            query    int    false "limit"
+// @Param       offset           query    int    false "offset"
+// @Param       setting          query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
+// @Param       location1        query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
+// @Param       location2        query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
+// @Param       location3        query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
+// @Param       latitude         query    string false "latitude (supports Filter DSL)"
+// @Param       longitude        query    string false "longitude (supports Filter DSL)"
+// @Param       rocktype         query    string false "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
+// @Param       rockclassID      query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
+// @Param       mineral          query    string false "mineral - see /queries/samples/minerals (supports 'eq', 'in')"
+// @Param       material         query    string false "material - see /queries/samples/materials (supports Filter DSL)"
+// @Param       inclusiontype    query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
 // @Param       hostmineral      query    string false "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')"
 // @Param       inclusionmineral query    string false "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')"
-// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+// @Param       sampletech       query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
 // @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
-// @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
-// @Param       title             query    string false "title of publication (supports Filter DSL)"
-// @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
-// @Param       doi               query    string false "DOI (supports Filter DSL)"
-// @Param       firstname         query    string false "Author first name (supports 'eq', 'in')"
-// @Param       lastname          query    string false "Author last name (supports 'eq', 'in')"
-// @Param       agemin            query    string false "Specimen age min (supports Filter DSL)"
-// @Param       agemax            query    string false "Specimen age max (supports Filter DSL)"
-// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
-// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
-// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox              query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
-// @Param       numClusters       query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
-// @Param       maxDistance       query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Success     200               {object} model.ClusterResponse
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     422               {object} string
-// @Failure     500               {object} string
+// @Param       chemistry        query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
+// @Param       title            query    string false "title of publication (supports Filter DSL)"
+// @Param       publicationyear  query    string false "publication year (supports Filter DSL)"
+// @Param       doi              query    string false "DOI (supports Filter DSL)"
+// @Param       firstname        query    string false "Author first name (supports 'eq', 'in')"
+// @Param       lastname         query    string false "Author last name (supports 'eq', 'in')"
+// @Param       agemin           query    string false "Specimen age min (supports Filter DSL)"
+// @Param       agemax           query    string false "Specimen age max (supports Filter DSL)"
+// @Param       geoage           query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
+// @Param       geoageprefix     query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
+// @Param       lab              query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
+// @Param       polygon          query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       bbox             query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       numClusters      query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+// @Param       maxDistance      query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Success     200              {object} model.ClusterResponse
+// @Failure     401              {object} string
+// @Failure     404              {object} string
+// @Failure     422              {object} string
+// @Failure     500              {object} string
 // @Router      /geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)

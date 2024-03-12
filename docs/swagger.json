@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.5.0"
+        "version": "0.5.1"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -119,19 +119,19 @@
                     },
                     {
                         "type": "string",
-                        "description": "rock type - see /queries/samples/rocktypes (supports Filter DSL)",
+                        "description": "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')",
                         "name": "rocktype",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)",
+                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')",
                         "name": "rockclassID",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "mineral - see /queries/samples/minerals (supports Filter DSL)",
+                        "description": "mineral - see /queries/samples/minerals (supports 'eq', 'in')",
                         "name": "mineral",
                         "in": "query"
                     },
@@ -149,20 +149,26 @@
                     },
                     {
                         "type": "string",
-                        "description": "host material - see /queries/samples/hostmaterials (supports Filter DSL)",
-                        "name": "hostmaterial",
+                        "description": "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')",
+                        "name": "hostmineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)",
-                        "name": "inclusionmaterial",
+                        "description": "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')",
+                        "name": "inclusionmineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)",
+                        "name": "rimorcore",
                         "in": "query"
                     },
                     {
@@ -191,13 +197,13 @@
                     },
                     {
                         "type": "string",
-                        "description": "Author first name (supports Filter DSL)",
+                        "description": "Author first name (supports 'eq', 'in')",
                         "name": "firstname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author last name (supports Filter DSL)",
+                        "description": "Author last name (supports 'eq', 'in')",
                         "name": "lastname",
                         "in": "query"
                     },
@@ -1208,6 +1214,12 @@
                         "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)",
+                        "name": "rimorcore",
                         "in": "query"
                     },
                     {
