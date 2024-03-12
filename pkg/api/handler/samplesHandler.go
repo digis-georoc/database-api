@@ -200,7 +200,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-
 	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
@@ -264,21 +263,21 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       location3         query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
 // @Param       latitude          query    string false "latitude (supports Filter DSL)"
 // @Param       longitude         query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
-// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
+// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
+// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
+// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports 'eq', 'in')"
 // @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
 // @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
-// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
-// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
+// @Param       hostmineral      query    string false "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')"
+// @Param       inclusionmineral query    string false "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')"
 // @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
 // @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
 // @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
 // @Param       title             query    string false "title of publication (supports Filter DSL)"
 // @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
 // @Param       doi               query    string false "DOI (supports Filter DSL)"
-// @Param       firstname         query    string false "Author first name (supports Filter DSL)"
-// @Param       lastname          query    string false "Author last name (supports Filter DSL)"
+// @Param       firstname         query    string false "Author first name (supports 'eq', 'in')"
+// @Param       lastname          query    string false "Author last name (supports 'eq', 'in')"
 // @Param       agemin            query    string false "Specimen age min (supports Filter DSL)"
 // @Param       agemax            query    string false "Specimen age max (supports Filter DSL)"
 // @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
@@ -1015,7 +1014,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 		if rimOrCore != "" {
 			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsRimOrCore)
 		}
-		// add annotaion filters
+		// add annotation filters
 		if material != "" {
 			query.AddFilter("ann_mat.annotationtext", material, opMat, junctor)
 			junctor = sql.OpAnd
@@ -1241,24 +1240,32 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 		// add query module citations
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsStart)
 		if title != "" {
-			query.AddFilter("c.title", title, opTitle, junctor)
+			query.AddFilter("scd.title", title, opTitle, junctor)
 			junctor = sql.OpAnd
 		}
 		if pubYear != "" {
-			query.AddFilter("c.publicationyear", pubYear, opPubYear, junctor)
+			query.AddFilter("scd.publicationyear", pubYear, opPubYear, junctor)
 			junctor = sql.OpAnd
 		}
 		if doi != "" {
-			query.AddFilter("cid.citationexternalidentifier", doi, opDOI, junctor)
-			query.AddFilter("e.externalidentifiersystemname", "DOI", sql.OpEq, sql.OpAnd)
+			query.AddFilter("scd.externalidentifier", doi, opDOI, junctor)
 			junctor = sql.OpAnd
 		}
+		// we compare to arrays here, so we need to adapt the filters
 		if authorFirst != "" {
-			query.AddFilter("p.personfirstname", authorFirst, opAuthorFirst, junctor)
+			arrayOp, err := sql.MapArrayOperators(opAuthorFirst)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("scd.personfirstnames", authorFirst, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
 		if authorLast != "" {
-			query.AddFilter("p.personlastname", authorLast, opAuthorLast, junctor)
+			arrayOp, err := sql.MapArrayOperators(opAuthorLast)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("scd.personlastnames", authorLast, arrayOp, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsEnd)
 	}
