@@ -1131,7 +1131,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			if err != nil {
 				return nil, err
 			}
-			query.AddFilter("st.rockclassids", rockClassID, arrayOp, junctor)
+			query.AddFilter("st.rockclassids::varchar[]", rockClassID, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
 		if mineral != "" {
