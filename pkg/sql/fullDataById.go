@@ -76,7 +76,7 @@ from
 	(
 		select batches.batchid,
 		(array_agg(batches.samplingfeaturename))[1] as batchname,
-		(array_agg(batches.samplingfeatureid))[1] as sampleid,
+		(array_agg(batches.sampleid))[1] as sampleid,
 		(array_agg(spec_batch.specimentexture))[1] as crystal,
 		(array_agg(spec_batch.specimenmediumcv))[1] as specimenmedium,
 		array_remove(array_agg(distinct tax_min.taxonomicclassifiercommonname), null) as minerals,
@@ -89,13 +89,12 @@ from
 		jsonb_agg(batch_res.*) as results
 		from
 		(
-			select s.samplingfeatureid,
-			r.samplingfeatureid as batchid,
+			select sr.sampleid,
+			sr.batch as batchid,
 			s2.samplingfeaturename
-			from odm2.samplingfeatures s 
-			left join odm2.relatedfeatures r on r.relatedfeatureid = s.SamplingFeatureID and r.relationshiptypecv = 'Is child of'
-			left join odm2.samplingfeatures s2 on s2.samplingfeatureid = r.samplingfeatureid 
-			where s.samplingfeatureid = any ($1)
+			from odm2.samplerelations sr
+			left join odm2.samplingfeatures s2 on s2.samplingfeatureid = sr.batch
+			where sr.sampleid = any ($1)
 		) batches 
 		left join odm2.specimens spec_batch on spec_batch.samplingfeatureid = batches.batchid
 		left join
@@ -140,18 +139,11 @@ from
 			std.standardname,
 			std.standardvalue,
 			std.standardvariable
-			from odm2.relatedfeatures rel
-			left join odm2.measuredvalues mv on mv.samplingfeatureid = rel.samplingfeatureid
-			left join
-			(	
-				select fa.samplingfeatureid,
-				standards.standardname,
-				standards.standardvalue,
-				standards.standardvariable
-				from odm2.featureactions fa 
-				join odm2.standards standards on standards.actionid = fa.actionid
-			) std on std.samplingfeatureid = mv.samplingfeatureid
-			where rel.relatedfeatureid = any($1)
+			from odm2.samplerelations sr
+			left join odm2.measuredvalues mv on mv.samplingfeatureid = sr.batch
+			left join odm2.featureactions fa on fa.samplingfeatureid = mv.samplingfeatureid
+			left join odm2.standards std on std.actionid = fa.actionid
+			where sr.sampleid = any($1)
 		) batch_res on batch_res.samplingfeatureid = batches.batchid
 		group by batches.batchid
 	) batchdata on batchdata.sampleid = samples.samplingfeatureid
@@ -210,17 +202,11 @@ left join (
 		std.standardname,
 		std.standardvalue,
 		std.standardvariable
-		from odm2.measuredvalues mv
-		left join
-		(	
-			select fa.samplingfeatureid,
-			standards.standardname,
-			standards.standardvalue,
-			standards.standardvariable
-			from odm2.featureactions fa 
-			join odm2.standards standards on standards.actionid = fa.actionid
-		) std on std.samplingfeatureid = mv.samplingfeatureid
-		where mv.samplingfeatureid = any($1)
+		from odm2.samplerelations sr
+		left join odm2.measuredvalues mv on mv.samplingfeatureid = sr.batch
+		left join odm2.featureactions fa on fa.samplingfeatureid = mv.samplingfeatureid
+		left join odm2.standards std on std.actionid = fa.actionid
+		where sr.sampleid = any($1)
 	)res
 	group by res.samplingfeatureid
 ) results on results.samplingfeatureid = samples.samplingfeatureid
