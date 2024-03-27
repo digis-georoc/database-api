@@ -9,13 +9,12 @@ const FullDataByMultiIdQuery = `
 select
 samples.SamplingFeatureID as sampleID,
 samples.uuid as uniqueID,
-refs.references,
+samples.references,
 samples.name as samplename,
 coalesce (loc.loc_names, array['Unknown']) as locationNames,
 coalesce (loc.loc_types, array['Unknown']) as locationTypes,
 (regexp_match(loc.elevation[1], 'ELEVATION_MIN=(-?\d+\.?\d*);'))[1] as elevationMin,
 (regexp_match(loc.elevation[1], 'ELEVATION_MAX=(-?\d+\.?\d*)'))[1] as elevationMax,
--- no samp_technique in odm2
 (loc.land_or_sea)[1] as landOrSea,
 samples.rock_type as rockType,
 samples.rock_class as rockClass,
@@ -24,8 +23,6 @@ samples.specimentexture as rockTextures,
 (samples.specimenagemax)[1] as ageMax,
 (samples.eruptiondate)[1] as eruptiondate,
 (samples.geologicalage)[1] as geologicalage,
-samples.minerals as minerals,
-samples.host_mineral as hostMinerals,
 loc.loc_data[1].samplingfeatureid as locationNum,
 loc.loc_data[1].latitude as latitude,
 loc.loc_data[1].longitude as longitude,
@@ -38,8 +35,8 @@ methods.method_acronyms as method,
 methods.method_comments as comment,
 (methods.institution) as institutions, -- actionBy seems to be sparsely filled
 results.results,
-samples.alterations as alterations,
-samples.samp_techniques as samplingTechniques,
+samples.alteration as alteration,
+samples.samp_technique as samplingTechnique,
 samples.dd_min as drillDepthMin,
 samples.dd_max as drillDepthMax,
 samples.batchdata
@@ -48,19 +45,18 @@ from
 	select samples.samplingfeatureid, 
 	(array_agg(samples.samplingfeatureuuid))[1] as uuid,
 	(array_agg(samples.samplingfeaturename))[1] as name,
-	(array_agg(distinct tax_type.taxonomicclassifiername))[1] as rock_type,
-	(array_agg(distinct tax_class.taxonomicclassifiername))[1] as rock_class,
-	(array_agg(distinct tax_min.taxonomicclassifiercommonname))[1] as minerals,
-	(array_agg(distinct tax_hostmin.taxonomicclassifiercommonname))[1] as host_mineral,
+	(array_agg(stc.rocktypes))[1] as rock_type,
+	(array_agg(stc.rockclasses))[1] as rock_class,
 	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentexture,
 	(array_agg(sage.specimenagemin)) as specimenagemin,
 	(array_agg(sage.specimenagemax)) as specimenagemax,
 	(array_agg(case when sage.specimengeolageprefix is not null then sage.specimengeolageprefix || '-' || sage.specimengeolage else sage.specimengeolage end)) as geologicalage,
 	(array_agg(sage.eruptionday || '.' || sage.eruptionmonth || '.' || sage.eruptionyear)) as eruptiondate,
-	(array_remove(array_agg(distinct ann_alt.annotationtext), null)) as alterations,
-	(array_remove(array_agg(distinct ann_samptech.annotationtext), null)) as samp_techniques,
-	(array_remove(array_agg(ann_ddmin.annotationtext), null)) as dd_min,
-	(array_remove(array_agg(ann_ddmax.annotationtext), null)) as dd_max,
+	(array_remove(array_agg(ann_alt.annotationtext), null))[1] as alteration,
+	(array_remove(array_agg(ann_samptech.annotationtext), null))[1] as samp_technique,
+	(array_remove(array_agg(ann_ddmin.annotationtext), null))[1] as dd_min,
+	(array_remove(array_agg(ann_ddmax.annotationtext), null))[1] as dd_max,
+	jsonb_agg(distinct scd.*) as references,
 	(jsonb_agg(distinct batchdata)) as batchdata
 	from 
 	(
@@ -69,35 +65,7 @@ from
 		where s.samplingfeatureid = any ($1)
 	) samples
 	left join odm2.specimens spec on spec.samplingfeatureid = samples.samplingfeatureid
-	left join
-	(
-		select stc.samplingfeatureid, tax_type.taxonomicclassifiername 
-		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
-		where tax_type.taxonomicclassifierid is not null
-	) tax_type on tax_type.samplingfeatureid = spec.samplingfeatureid
-	left join
-	(
-		select stc.samplingfeatureid, tax_class.taxonomicclassifiername 
-		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
-		where tax_class.taxonomicclassifierid is not null
-	) tax_class on tax_class.samplingfeatureid = spec.samplingfeatureid
-	left join
-	(
-		select stc.samplingfeatureid, tax_min.taxonomicclassifiercommonname 
-		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifiertypecv = 'Mineral'
-		where tax_min.taxonomicclassifierid is not null
-	) tax_min on tax_min.samplingfeatureid = spec.samplingfeatureid
-	left join
-	(
-		select stc.samplingfeatureid, tax_hostmin.taxonomicclassifiercommonname 
-		from odm2.specimentaxonomicclassifiers stc
-		left join odm2.taxonomicclassifiers tax_hostmin on tax_hostmin.taxonomicclassifierid = stc.taxonomicclassifierid
-		where tax_hostmin.taxonomicclassifierid is not null
-		and stc.specimentaxonomicclassifiertype = 'host mineral'
-	) tax_hostmin on tax_hostmin.samplingfeatureid = spec.samplingfeatureid
+	left join odm2.sampletaxonomicclassifiers stc on stc.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.specimenages sage on sage.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.samplingfeatureannotations sann on sann.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.annotations ann_alt on ann_alt.annotationid = sann.annotationid and ann_alt.annotationcode = 'g_samples.alteration'
@@ -110,14 +78,15 @@ from
 		(array_agg(batches.samplingfeaturename))[1] as batchname,
 		(array_agg(batches.samplingfeatureid))[1] as sampleid,
 		(array_agg(spec_batch.specimentexture))[1] as crystal,
-		(array_agg(spec_batch.specimenmediumcv))[1] as specimenmedium, 
-		array_remove(array_agg(distinct tax_type.taxonomicclassifiername), null) as rocktypes,
-		array_remove(array_agg(distinct tax_class.taxonomicclassifiername), null) as rockclasses, 
-		array_remove(array_agg(distinct tax_min.taxonomicclassifiercommonname), null) as minerals ,
+		(array_agg(spec_batch.specimenmediumcv))[1] as specimenmedium,
+		array_remove(array_agg(distinct tax_min.taxonomicclassifiercommonname), null) as minerals,
+		array_remove(array_agg(distinct tax_hmin.taxonomicclassifiercommonname), null) as hostMinerals,
+		array_remove(array_agg(distinct tax_imin.taxonomicclassifiercommonname), null) as incMinerals,
 		array_remove(array_agg(distinct ann_mat.annotationtext), null) as materials,
 		array_remove(array_agg(distinct ann_inc_type.annotationtext), null) as inclusionTypes,
 		(array_remove(array_agg(distinct ann_rocinc.annotationtext), null))[1] as rimOrCoreInclusion,
-		(array_remove(array_agg(distinct ann_rocmin.annotationtext), null))[1] as rimOrCoreMineral
+		(array_remove(array_agg(distinct ann_rocmin.annotationtext), null))[1] as rimOrCoreMineral,
+		jsonb_agg(batch_res.*) as results
 		from
 		(
 			select s.samplingfeatureid,
@@ -131,61 +100,66 @@ from
 		left join odm2.specimens spec_batch on spec_batch.samplingfeatureid = batches.batchid
 		left join
 		(
-			select stc.samplingfeatureid, tax_type.taxonomicclassifiername 
-			from odm2.specimentaxonomicclassifiers stc
-			left join odm2.taxonomicclassifiers tax_type on tax_type.taxonomicclassifierid = stc.taxonomicclassifierid and tax_type.taxonomicclassifiertypecv = 'Rock'
-			where tax_type.taxonomicclassifierid is not null
-		) tax_type on tax_type.samplingfeatureid = spec_batch.samplingfeatureid
-		left join
-		(
-			select stc.samplingfeatureid, tax_class.taxonomicclassifiername 
-			from odm2.specimentaxonomicclassifiers stc
-			left join odm2.taxonomicclassifiers tax_class on tax_class.taxonomicclassifierid = stc.taxonomicclassifierid and tax_class.taxonomicclassifiertypecv = 'Lithology'
-			where tax_class.taxonomicclassifierid is not null
-		) tax_class on tax_class.samplingfeatureid = spec_batch.samplingfeatureid
-		left join
-		(
 			select stc.samplingfeatureid, tax_min.taxonomicclassifiercommonname 
 			from odm2.specimentaxonomicclassifiers stc
 			left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifiertypecv = 'Mineral'
 			where tax_min.taxonomicclassifierid is not null
 		) tax_min on tax_min.samplingfeatureid = spec_batch.samplingfeatureid
+		left join
+		(
+			select stc.samplingfeatureid, tax_hmin.taxonomicclassifiercommonname 
+			from odm2.specimentaxonomicclassifiers stc
+			left join odm2.taxonomicclassifiers tax_hmin on tax_hmin.taxonomicclassifierid = stc.taxonomicclassifierid
+			where tax_hmin.taxonomicclassifierid is not null
+			and stc.specimentaxonomicclassifiertype = 'host mineral'
+		) tax_hmin on tax_hmin.samplingfeatureid = spec_batch.samplingfeatureid
+		left join
+		(
+			select stc.samplingfeatureid, tax_imin.taxonomicclassifiercommonname 
+			from odm2.specimentaxonomicclassifiers stc
+			left join odm2.taxonomicclassifiers tax_imin on tax_imin.taxonomicclassifierid = stc.taxonomicclassifierid
+			where tax_imin.taxonomicclassifierid is not null
+			and stc.specimentaxonomicclassifiertype = 'mineral inclusion'
+		) tax_imin on tax_imin.samplingfeatureid = spec_batch.samplingfeatureid
 		left join odm2.specimenages sage on sage.samplingfeatureid = spec_batch.samplingfeatureid 
 		left join odm2.samplingfeatureannotations sann_batch on sann_batch.samplingfeatureid = spec_batch.samplingfeatureid
 		left join odm2.annotations ann_mat on ann_mat.annotationid = sann_batch.annotationid and ann_mat.annotationcode = 'g_batches.material'
 		left join odm2.annotations ann_inc_type on ann_inc_type.annotationid = sann_batch.annotationid and ann_inc_type.annotationcode = 'g_inclusions.inclusion_type'
 		left join odm2.annotations ann_rocmin on ann_rocmin.annotationid = sann_batch.annotationid and ann_rocmin.annotationcode = 'g_minerals.rim_or_core_min'
 		left join odm2.annotations ann_rocinc on ann_rocinc.annotationid = sann_batch.annotationid and ann_rocinc.annotationcode = 'g_inclusions.rim_or_core_inc'
+		left join 
+		(
+			-- batch results
+			select mv.samplingfeatureid,
+			mv.sampledmediumcv as medium,
+			mv.valuecount,
+			mv.variabletypecode as itemgroup,
+			mv.variablecode as itemname,
+			mv. datavalue as value,
+			mv.unitgeoroc as unit,
+			std.standardname,
+			std.standardvalue,
+			std.standardvariable
+			from odm2.relatedfeatures rel
+			left join odm2.measuredvalues mv on mv.samplingfeatureid = rel.samplingfeatureid
+			left join
+			(	
+				select fa.samplingfeatureid,
+				standards.standardname,
+				standards.standardvalue,
+				standards.standardvariable
+				from odm2.featureactions fa 
+				join odm2.standards standards on standards.actionid = fa.actionid
+			) std on std.samplingfeatureid = mv.samplingfeatureid
+			where rel.relatedfeatureid = any($1)
+		) batch_res on batch_res.samplingfeatureid = batches.batchid
 		group by batches.batchid
 	) batchdata on batchdata.sampleid = samples.samplingfeatureid
+	left join odm2.samplecitationdata scd on scd.samplingfeatureid = samples.samplingfeatureid
 	where samples.samplingfeaturedescription = 'Sample' 
 	and samples.samplingfeatureid = any ($1)
 	group by samples.samplingfeatureid 
 ) samples
-left join 
-(	
-	select q.samplingfeatureid, array_agg(q.reference) as references from (
-		-- query references and authors
-		select stc_ref.samplingfeatureid,
-		json_build_object('citationid', c_ref.citationid , 'title', c_ref.title , 'publisher', c_ref.publisher, 'publicationyear', c_ref.publicationyear , 'link', c_ref.citationlink, 'journal', c_ref.journal , 'volume', c_ref.volume, 'issue', c_ref.issue, 'firstpage', c_ref.firstpage, 'lastpage', c_ref.lastpage , 'booktitle', c_ref.booktitle, 'editors', c_ref.editors, 'authors', array_agg(distinct authors), 'doi', cei_ref.citationexternalidentifier) as reference 
-		from odm2.specimentaxonomicclassifiers stc_ref
-		left join odm2.citations c_ref on c_ref.citationid = stc_ref.citationid
-		left join odm2.citationexternalidentifiers cei_ref on cei_ref.citationid = c_ref.citationid and cei_ref.externalidentifiersystemid = 1 -- id of externalidentifiersystem "DOI"
-		left join 
-		(
-			select distinct p_ref.personid,
-			a_ref.citationid,
-			a_ref.authororder,
-			p_ref.personfirstname,
-			p_ref.personlastname 
-			from odm2.authorlists a_ref
-			left join odm2.people p_ref on p_ref.personid = a_ref.personid
-		) authors on authors.citationid = c_ref.citationid
-		where stc_ref.samplingfeatureid = any ($1)
-		group by stc_ref.samplingfeatureid, c_ref.citationid, c_ref.title, c_ref.journal, c_ref.firstpage, c_ref.lastpage, c_ref.publicationyear, cei_ref.citationexternalidentifier 
-	) q
-	group by q.samplingfeatureid
-) refs on refs.samplingfeatureid = samples.samplingfeatureid
 left join
 (
 	-- query locations - Until geolocations is refactored, we get multiple outputs here
@@ -222,40 +196,32 @@ left join (
 	group by rel_meth.relatedfeatureid
 ) methods on methods.id = samples.samplingfeatureid
 left join (
-	-- query results
-	select res.sampleID,
+	-- sample results
+	select res.samplingfeatureid,
 	json_agg(res) as results
 	from (
-		select rel_res.relatedfeatureid as sampleID,
-		mv.variablecode as itemName,
-		mv.variabletypecode as itemGroup,
-		std.std_names as standardName,
-		std.std_values as standardValue,
-		mv.datavalue as value,
-		mv.unitgeoroc as unit
-		from odm2.relatedfeatures rel_res
-		join odm2.measuredvalues mv on mv.samplingfeatureid = rel_res.samplingfeatureid
-		left join 
-		(
-			select relf.samplingfeatureid,
-			std.standardname as std_names,
-			std.standardvalue as std_values,
-			std.standardvariable as std_var
-			from odm2.relatedfeatures relf
-			join
-			(	
-				select fa.samplingfeatureid,
-				standards.standardname,
-				standards.standardvalue,
-				standards.standardvariable
-				from odm2.featureactions fa 
-				join odm2.standards standards on standards.actionid = fa.actionid
-			) std on std.samplingfeatureid = relf.samplingfeatureid
-			where relf.relatedfeatureid = any ($1)
-		)std on std.samplingfeatureid = rel_res.samplingfeatureid and std.std_var = mv.variablecode
-		where rel_res.relatedfeatureid = any ($1)
-		and rel_res.relationshiptypecv = 'Is child of'
+		select mv.samplingfeatureid,
+		mv.sampledmediumcv as medium,
+		mv.valuecount,
+		mv.variabletypecode as itemgroup,
+		mv.variablecode as itemname,
+		mv. datavalue as value,
+		mv.unitgeoroc as unit,
+		std.standardname,
+		std.standardvalue,
+		std.standardvariable
+		from odm2.measuredvalues mv
+		left join
+		(	
+			select fa.samplingfeatureid,
+			standards.standardname,
+			standards.standardvalue,
+			standards.standardvariable
+			from odm2.featureactions fa 
+			join odm2.standards standards on standards.actionid = fa.actionid
+		) std on std.samplingfeatureid = mv.samplingfeatureid
+		where mv.samplingfeatureid = any($1)
 	)res
-	group by res.sampleID
-) results on results.sampleID = samples.samplingfeatureid
+	group by res.samplingfeatureid
+) results on results.samplingfeatureid = samples.samplingfeatureid
 `

@@ -17,8 +17,8 @@ c_ref.firstpage,
 c_ref.lastpage,
 c_ref.booktitle,
 c_ref.editors,
-array_agg(json_build_object('personid', p_ref.personid, 'personfirstname', p_ref.personfirstname, 'personlastname', p_ref.personlastname)) as authors,
-(array_agg(distinct cei_ref.citationexternalidentifier))[1] as doi
+array_agg(json_build_object('personid', p_ref.personid, 'firstname', p_ref.personfirstname, 'lastname', p_ref.personlastname, 'order', a_ref.authororder)) as authors,
+(array_agg(distinct cei_ref.citationexternalidentifier))[1] as externalidentifier
 FROM odm2.citations c_ref
 left join odm2.citationexternalidentifiers cei_ref on cei_ref.citationid = c_ref.citationid and cei_ref.externalidentifiersystemid = 1 -- id of externalidentifiersystem "DOI"
 left join odm2.authorlists a_ref on a_ref.citationid = c_ref.citationid
@@ -39,8 +39,8 @@ c_ref.firstpage,
 c_ref.lastpage,
 c_ref.booktitle,
 c_ref.editors,
-array_agg(json_build_object('personid', p_ref.personid, 'personfirstname', p_ref.personfirstname, 'personlastname', p_ref.personlastname)) as authors,
-(array_agg(distinct cei_ref.citationexternalidentifier))[1] as doi
+array_agg(json_build_object('personid', p_ref.personid, 'firstname', p_ref.personfirstname, 'lastname', p_ref.personlastname, 'order', a_ref.authororder)) as authors,
+(array_agg(distinct cei_ref.citationexternalidentifier))[1] as externalidentifier
 FROM odm2.citations c_ref
 left join odm2.citationexternalidentifiers cei_ref on cei_ref.citationid = c_ref.citationid and cei_ref.externalidentifiersystemid = 1 -- id of externalidentifiersystem "DOI"
 left join odm2.authorlists a_ref on a_ref.citationid = c_ref.citationid

@@ -56,9 +56,15 @@ type Result struct {
 	// nullable
 	ItemGroup *string `json:"itemGroup"`
 	// nullable
+	Medium *string `json:"medium"`
+	// nullable
+	ValueCount *int `json:"valueCount"`
+	// nullable
 	StandardName *string `json:"standardName"`
 	// nullable
 	StandardValue *float32 `json:"standardValue"`
+	// nullable
+	StandardVariable *string `json:"standardVariable"`
 	// nullable
 	Value *float32 `json:"value"`
 	// nullable

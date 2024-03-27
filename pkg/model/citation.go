@@ -30,17 +30,17 @@ type Citation struct {
 	Editors *string  `json:"editors"`
 	Authors []Author `json:"authors"`
 	// nullable
-	DOI *string `json:"doi"`
+	Externalidentifier *string `json:"externalIdentifier"`
 }
 
 type Author struct {
 	PersonID int `json:"personID"`
 	// nullable
-	PersonFirstName *string `json:"personFirstName"`
+	PersonFirstName *string `json:"firstName"`
 	// nullable
-	PersonLastName *string `json:"personLastName"`
+	PersonLastName *string `json:"lastName"`
 	// nullable
-	AuthorOrder *int `json:"authorOrder"`
+	AuthorOrder *int `json:"order"`
 }
 
 type CitationResponse struct {
