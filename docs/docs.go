@@ -126,19 +126,19 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "rock type - see /queries/samples/rocktypes (supports Filter DSL)",
+                        "description": "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')",
                         "name": "rocktype",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)",
+                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')",
                         "name": "rockclassID",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "mineral - see /queries/samples/minerals (supports Filter DSL)",
+                        "description": "mineral - see /queries/samples/minerals (supports 'eq', 'in')",
                         "name": "mineral",
                         "in": "query"
                     },
@@ -156,20 +156,26 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "host material - see /queries/samples/hostmaterials (supports Filter DSL)",
-                        "name": "hostmaterial",
+                        "description": "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')",
+                        "name": "hostmineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)",
-                        "name": "inclusionmaterial",
+                        "description": "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')",
+                        "name": "inclusionmineral",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)",
+                        "name": "rimorcore",
                         "in": "query"
                     },
                     {
@@ -198,13 +204,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Author first name (supports Filter DSL)",
+                        "description": "Author first name (supports 'eq', 'in')",
                         "name": "firstname",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Author last name (supports Filter DSL)",
+                        "description": "Author last name (supports 'eq', 'in')",
                         "name": "lastname",
                         "in": "query"
                     },
@@ -1215,6 +1221,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
                         "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)",
+                        "name": "rimorcore",
                         "in": "query"
                     },
                     {
@@ -2516,20 +2528,20 @@ const docTemplate = `{
         "model.Author": {
             "type": "object",
             "properties": {
-                "authorOrder": {
-                    "description": "nullable",
-                    "type": "integer"
-                },
-                "personFirstName": {
+                "firstName": {
                     "description": "nullable",
                     "type": "string"
+                },
+                "lastName": {
+                    "description": "nullable",
+                    "type": "string"
+                },
+                "order": {
+                    "description": "nullable",
+                    "type": "integer"
                 },
                 "personID": {
                     "type": "integer"
-                },
-                "personLastName": {
-                    "description": "nullable",
-                    "type": "string"
                 }
             }
         },
@@ -2547,6 +2559,20 @@ const docTemplate = `{
                 "crystal": {
                     "description": "nullable",
                     "type": "string"
+                },
+                "hostMinerals": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionMinerals": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "inclusionTypes": {
                     "description": "nullable",
@@ -2569,6 +2595,13 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "results": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Result"
+                    }
+                },
                 "rimOrCoreInclusion": {
                     "description": "nullable",
                     "type": "string"
@@ -2576,20 +2609,6 @@ const docTemplate = `{
                 "rimOrCoreMineral": {
                     "description": "nullable",
                     "type": "string"
-                },
-                "rockClasses": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "rockTypes": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "sampleID": {
                     "description": "nullable",
@@ -2621,11 +2640,11 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "doi": {
+                "editors": {
                     "description": "nullable",
                     "type": "string"
                 },
-                "editors": {
+                "externalIdentifier": {
                     "description": "nullable",
                     "type": "string"
                 },
@@ -2761,12 +2780,9 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "integer"
                 },
-                "alterations": {
+                "alteration": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "batchData": {
                     "description": "nullable",
@@ -2784,17 +2800,11 @@ const docTemplate = `{
                 },
                 "drillDepthMax": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "drillDepthMin": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "elevationMax": {
                     "description": "nullable",
@@ -2811,13 +2821,6 @@ const docTemplate = `{
                 "geologicalAge": {
                     "description": "nullable",
                     "type": "string"
-                },
-                "hostMinerals": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "institutions": {
                     "description": "nullable",
@@ -2879,13 +2882,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "minerals": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "references": {
                     "type": "array",
                     "items": {
@@ -2921,12 +2917,9 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "samplingTechniques": {
+                "samplingTechnique": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "tectonicSetting": {
                     "description": "nullable",
@@ -3225,6 +3218,10 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
+                "medium": {
+                    "description": "nullable",
+                    "type": "string"
+                },
                 "standardName": {
                     "description": "nullable",
                     "type": "string"
@@ -3233,6 +3230,10 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "number"
                 },
+                "standardVariable": {
+                    "description": "nullable",
+                    "type": "string"
+                },
                 "unit": {
                     "description": "nullable",
                     "type": "string"
@@ -3240,6 +3241,10 @@ const docTemplate = `{
                 "value": {
                     "description": "nullable",
                     "type": "number"
+                },
+                "valueCount": {
+                    "description": "nullable",
+                    "type": "integer"
                 }
             }
         },
@@ -3605,7 +3610,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.5.0",
+	Version:          "0.5.1",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

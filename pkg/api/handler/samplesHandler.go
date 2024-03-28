@@ -35,9 +35,10 @@ const (
 
 	QP_ROCKCLASS_QUERY = "q"
 
-	QP_MATERIAL = "material"
-	QP_INCTYPE  = "inclusiontype"
-	QP_SAMPTECH = "sampletech"
+	QP_MATERIAL    = "material"
+	QP_INCTYPE     = "inclusiontype"
+	QP_SAMPTECH    = "sampletech"
+	QP_RIM_OR_CORE = "rimorcore"
 
 	QP_CHEMISTRY = "chemistry"
 
@@ -141,6 +142,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
 // @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
 // @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+// @Param       rimorcore         query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
 // @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
 // @Param       title             query    string false "title of publication (supports Filter DSL)"
 // @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
@@ -198,7 +200,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-
 	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
@@ -254,42 +255,43 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Tags        geodata
 // @Accept      json
 // @Produce     json
-// @Param       limit             query    int    false "limit"
-// @Param       offset            query    int    false "offset"
-// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
-// @Param       location1         query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
-// @Param       location2         query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
-// @Param       location3         query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
-// @Param       latitude          query    string false "latitude (supports Filter DSL)"
-// @Param       longitude         query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
-// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
-// @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
-// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
-// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
-// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
-// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
-// @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
-// @Param       title             query    string false "title of publication (supports Filter DSL)"
-// @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
-// @Param       doi               query    string false "DOI (supports Filter DSL)"
-// @Param       firstname         query    string false "Author first name (supports Filter DSL)"
-// @Param       lastname          query    string false "Author last name (supports Filter DSL)"
-// @Param       agemin            query    string false "Specimen age min (supports Filter DSL)"
-// @Param       agemax            query    string false "Specimen age max (supports Filter DSL)"
-// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
-// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
-// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox              query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
-// @Param       numClusters       query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
-// @Param       maxDistance       query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Success     200               {object} model.ClusterResponse
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     422               {object} string
-// @Failure     500               {object} string
+// @Param       limit            query    int    false "limit"
+// @Param       offset           query    int    false "offset"
+// @Param       setting          query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
+// @Param       location1        query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
+// @Param       location2        query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
+// @Param       location3        query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
+// @Param       latitude         query    string false "latitude (supports Filter DSL)"
+// @Param       longitude        query    string false "longitude (supports Filter DSL)"
+// @Param       rocktype         query    string false "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
+// @Param       rockclassID      query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
+// @Param       mineral          query    string false "mineral - see /queries/samples/minerals (supports 'eq', 'in')"
+// @Param       material         query    string false "material - see /queries/samples/materials (supports Filter DSL)"
+// @Param       inclusiontype    query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
+// @Param       hostmineral      query    string false "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')"
+// @Param       inclusionmineral query    string false "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')"
+// @Param       sampletech       query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+// @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
+// @Param       chemistry        query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
+// @Param       title            query    string false "title of publication (supports Filter DSL)"
+// @Param       publicationyear  query    string false "publication year (supports Filter DSL)"
+// @Param       doi              query    string false "DOI (supports Filter DSL)"
+// @Param       firstname        query    string false "Author first name (supports 'eq', 'in')"
+// @Param       lastname         query    string false "Author last name (supports 'eq', 'in')"
+// @Param       agemin           query    string false "Specimen age min (supports Filter DSL)"
+// @Param       agemax           query    string false "Specimen age max (supports Filter DSL)"
+// @Param       geoage           query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
+// @Param       geoageprefix     query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
+// @Param       lab              query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
+// @Param       polygon          query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param       bbox             query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+// @Param       numClusters      query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+// @Param       maxDistance      query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Success     200              {object} model.ClusterResponse
+// @Failure     401              {object} string
+// @Failure     404              {object} string
+// @Failure     422              {object} string
+// @Failure     500              {object} string
 // @Router      /geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -992,22 +994,113 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if err != nil {
 		return nil, err
 	}
-	if material != "" || incType != "" || sampTech != "" {
+	rimOrCore, opRimOrCore, err := parseParam(c.QueryParam(QP_RIM_OR_CORE))
+	if err != nil {
+		return nil, err
+	}
+	if material != "" || incType != "" || sampTech != "" || rimOrCore != "" {
 		// add query module annotations
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsStart)
-		// add annotaion filters
+		// add sub-modules
 		if material != "" {
-			query.AddFilter("mat.material", material, opMat, junctor)
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsMaterial)
+		}
+		if incType != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsIncType)
+		}
+		if sampTech != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsSampTech)
+		}
+		if rimOrCore != "" {
+			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsRimOrCore)
+		}
+		// add annotation filters
+		if material != "" {
+			query.AddFilter("ann_mat.annotationtext", material, opMat, junctor)
 			junctor = sql.OpAnd
 		}
 		if incType != "" {
-			query.AddFilter("inctype.inclusion_type", incType, opIncType, junctor)
+			query.AddFilter("ann_inc_type.annotationtext", incType, opIncType, junctor)
 			junctor = sql.OpAnd
 		}
 		if sampTech != "" {
-			query.AddFilter("stech.sampling_technique", sampTech, opSampTech, junctor)
+			query.AddFilter("ann_stech.annotationtext", sampTech, opSampTech, junctor)
+			junctor = sql.OpAnd
+		}
+		if rimOrCore != "" {
+			query.AddFilter("ann_roc.annotationtext", rimOrCore, opRimOrCore, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
+	}
+
+	// taxonomic classifiers
+	junctor = sql.OpWhere // reset junctor for new subquery
+	rockType, opRType, err := parseParam(c.QueryParam(QP_ROCKTYPE))
+	if err != nil {
+		return nil, err
+	}
+	rockClassID, opRClass, err := parseParam(c.QueryParam(QP_ROCKCLASS))
+	if err != nil {
+		return nil, err
+	}
+	mineral, opMin, err := parseParam(c.QueryParam(QP_MINERAL))
+	if err != nil {
+		return nil, err
+	}
+	hostMineral, opHostMineral, err := parseParam(c.QueryParam(QP_HOSTMAT))
+	if err != nil {
+		return nil, err
+	}
+	incMineral, opIncMineral, err := parseParam(c.QueryParam(QP_INCLUSIONMAT))
+	if err != nil {
+		return nil, err
+	}
+	if rockType != "" || rockClassID != "" || mineral != "" || hostMineral != "" || incMineral != "" {
+		// add query module taxonomic classifiers
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
+		// add taxonomic classifiers filters
+		junctor = sql.OpWhere
+		// we compare to arrays here, so we need to adapt the filters
+		if rockType != "" {
+			arrayOp, err := sql.MapArrayOperators(opRType)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.rocktypes", rockType, arrayOp, junctor)
+			junctor = sql.OpAnd
+		}
+		if rockClassID != "" {
+			arrayOp, err := sql.MapArrayOperators(opRClass)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.rockclassids::varchar[]", rockClassID, arrayOp, junctor)
+			junctor = sql.OpAnd
+		}
+		if mineral != "" {
+			arrayOp, err := sql.MapArrayOperators(opMin)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.minerals", mineral, arrayOp, junctor)
+			junctor = sql.OpAnd
+		}
+		if hostMineral != "" {
+			arrayOp, err := sql.MapArrayOperators(opHostMineral)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.hostMinerals", hostMineral, arrayOp, junctor)
+			junctor = sql.OpAnd
+		}
+		if incMineral != "" {
+			arrayOp, err := sql.MapArrayOperators(opIncMineral)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("st.incMinerals", incMineral, arrayOp, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
 	}
 
 	// location filters
@@ -1064,81 +1157,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddFilter("s.longitude", long, opLong, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsEnd)
-	}
-
-	// taxonomic classifiers
-	junctor = sql.OpWhere // reset junctor for new subquery
-	rockType, opRType, err := parseParam(c.QueryParam(QP_ROCKTYPE))
-	if err != nil {
-		return nil, err
-	}
-	rockClassID, opRClass, err := parseParam(c.QueryParam(QP_ROCKCLASS))
-	if err != nil {
-		return nil, err
-	}
-	mineral, opMin, err := parseParam(c.QueryParam(QP_MINERAL))
-	if err != nil {
-		return nil, err
-	}
-	hostMaterial, opHostMaterial, err := parseParam(c.QueryParam(QP_HOSTMAT))
-	if err != nil {
-		return nil, err
-	}
-	inclMaterial, opInclMaterial, err := parseParam(c.QueryParam(QP_INCLUSIONMAT))
-	if err != nil {
-		return nil, err
-	}
-	if rockType != "" || rockClassID != "" || mineral != "" || hostMaterial != "" || inclMaterial != "" {
-		// add query module taxonomic classifiers
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersStart)
-		// add filter for each subquery for significant speedup
-		if rockType != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeStart)
-			query.AddFilter("tax_type.taxonomicclassifiername", rockType, opRType, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockTypeEnd)
-		}
-		if rockClassID != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassStart)
-			query.AddFilter("tax_class.taxonomicclassifierid", rockClassID, opRClass, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersRockClassEnd)
-		}
-		if mineral != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralStart)
-			query.AddFilter("tax_min.taxonomicclassifiername", mineral, opMin, sql.OpWhere)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersMineralEnd)
-		}
-		if hostMaterial != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatStart)
-			query.AddFilter("tax_host.taxonomicclassifiername", hostMaterial, opHostMaterial, sql.OpAnd)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersHostMatEnd)
-		}
-		if inclMaterial != "" {
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatStart)
-			query.AddFilter("tax_inc.taxonomicclassifiername", inclMaterial, opInclMaterial, sql.OpAnd)
-			query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersIncMatEnd)
-		}
-		// add taxonomic classifiers filters at the end
-		junctor = sql.OpWhere
-		if rockType != "" {
-			query.AddFilter("rt.rock_type", rockType, opRType, junctor)
-			junctor = sql.OpAnd
-		}
-		if rockClassID != "" {
-			query.AddFilter("rc.rock_class_id", rockClassID, opRClass, junctor)
-			junctor = sql.OpAnd
-		}
-		if mineral != "" {
-			query.AddFilter("min.mineral", mineral, opMin, junctor)
-			junctor = sql.OpAnd
-		}
-		if hostMaterial != "" {
-			query.AddFilter("hostmat.host_material", hostMaterial, opHostMaterial, junctor)
-			junctor = sql.OpAnd
-		}
-		if inclMaterial != "" {
-			query.AddFilter("incmat.inclusion_material", inclMaterial, opInclMaterial, junctor)
-		}
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
 	}
 
 	// results
@@ -1222,24 +1240,32 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 		// add query module citations
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsStart)
 		if title != "" {
-			query.AddFilter("c.title", title, opTitle, junctor)
+			query.AddFilter("scd.title", title, opTitle, junctor)
 			junctor = sql.OpAnd
 		}
 		if pubYear != "" {
-			query.AddFilter("c.publicationyear", pubYear, opPubYear, junctor)
+			query.AddFilter("scd.publicationyear", pubYear, opPubYear, junctor)
 			junctor = sql.OpAnd
 		}
 		if doi != "" {
-			query.AddFilter("cid.citationexternalidentifier", doi, opDOI, junctor)
-			query.AddFilter("e.externalidentifiersystemname", "DOI", sql.OpEq, sql.OpAnd)
+			query.AddFilter("scd.externalidentifier", doi, opDOI, junctor)
 			junctor = sql.OpAnd
 		}
+		// we compare to arrays here, so we need to adapt the filters
 		if authorFirst != "" {
-			query.AddFilter("p.personfirstname", authorFirst, opAuthorFirst, junctor)
+			arrayOp, err := sql.MapArrayOperators(opAuthorFirst)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("scd.personfirstnames", authorFirst, arrayOp, junctor)
 			junctor = sql.OpAnd
 		}
 		if authorLast != "" {
-			query.AddFilter("p.personlastname", authorLast, opAuthorLast, junctor)
+			arrayOp, err := sql.MapArrayOperators(opAuthorLast)
+			if err != nil {
+				return nil, err
+			}
+			query.AddFilter("scd.personlastnames", authorLast, arrayOp, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterCitationsEnd)
 	}

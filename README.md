@@ -8,7 +8,7 @@ SPDX-License-Identifier: BSD-3-Clause
 
 API to access the GEOROC2.0 database in the new ODM2-based schema.
 
-Current version: **0.5.0**
+Current version: **0.5.1**
 
 This api is currently in a testing phase.
 
@@ -80,6 +80,7 @@ For installation guides see [the documentation](https://github.com/swaggo/swag#g
 To generate the documentation files under **docs/**, execute
 
 `swag fmt && swag init -d pkg/api/,pkg/api/handler/,pkg/model/ -g api.go && docker run --rm --volume ./:/data fsfe/reuse annotate --copyright="DIGIS Project Group" --license="CC0-1.0" --recursive --skip-existing ./docs/*`
+
 ### Update Version
 
 To update the api version, change the version number in the following places:
