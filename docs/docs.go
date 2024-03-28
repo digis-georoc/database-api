@@ -2528,20 +2528,20 @@ const docTemplate = `{
         "model.Author": {
             "type": "object",
             "properties": {
-                "authorOrder": {
-                    "description": "nullable",
-                    "type": "integer"
-                },
-                "personFirstName": {
+                "firstName": {
                     "description": "nullable",
                     "type": "string"
+                },
+                "lastName": {
+                    "description": "nullable",
+                    "type": "string"
+                },
+                "order": {
+                    "description": "nullable",
+                    "type": "integer"
                 },
                 "personID": {
                     "type": "integer"
-                },
-                "personLastName": {
-                    "description": "nullable",
-                    "type": "string"
                 }
             }
         },
@@ -2559,6 +2559,20 @@ const docTemplate = `{
                 "crystal": {
                     "description": "nullable",
                     "type": "string"
+                },
+                "hostMinerals": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "inclusionMinerals": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "inclusionTypes": {
                     "description": "nullable",
@@ -2581,6 +2595,13 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "results": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Result"
+                    }
+                },
                 "rimOrCoreInclusion": {
                     "description": "nullable",
                     "type": "string"
@@ -2588,20 +2609,6 @@ const docTemplate = `{
                 "rimOrCoreMineral": {
                     "description": "nullable",
                     "type": "string"
-                },
-                "rockClasses": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "rockTypes": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "sampleID": {
                     "description": "nullable",
@@ -2633,11 +2640,11 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "doi": {
+                "editors": {
                     "description": "nullable",
                     "type": "string"
                 },
-                "editors": {
+                "externalIdentifier": {
                     "description": "nullable",
                     "type": "string"
                 },
@@ -2773,12 +2780,9 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "integer"
                 },
-                "alterations": {
+                "alteration": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "batchData": {
                     "description": "nullable",
@@ -2796,17 +2800,11 @@ const docTemplate = `{
                 },
                 "drillDepthMax": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "drillDepthMin": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "elevationMax": {
                     "description": "nullable",
@@ -2823,13 +2821,6 @@ const docTemplate = `{
                 "geologicalAge": {
                     "description": "nullable",
                     "type": "string"
-                },
-                "hostMinerals": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "institutions": {
                     "description": "nullable",
@@ -2891,13 +2882,6 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "minerals": {
-                    "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "references": {
                     "type": "array",
                     "items": {
@@ -2933,12 +2917,9 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "samplingTechniques": {
+                "samplingTechnique": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "tectonicSetting": {
                     "description": "nullable",
@@ -3237,6 +3218,10 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
+                "medium": {
+                    "description": "nullable",
+                    "type": "string"
+                },
                 "standardName": {
                     "description": "nullable",
                     "type": "string"
@@ -3245,6 +3230,10 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "number"
                 },
+                "standardVariable": {
+                    "description": "nullable",
+                    "type": "string"
+                },
                 "unit": {
                     "description": "nullable",
                     "type": "string"
@@ -3252,6 +3241,10 @@ const docTemplate = `{
                 "value": {
                     "description": "nullable",
                     "type": "number"
+                },
+                "valueCount": {
+                    "description": "nullable",
+                    "type": "integer"
                 }
             }
         },
