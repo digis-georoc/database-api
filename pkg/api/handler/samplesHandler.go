@@ -1033,62 +1033,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterAnnotationsEnd)
 	}
 
-	// location filters
-	junctor = sql.OpWhere // reset junctor for new subquery
-	setting, opSetting, err := parseParam(c.QueryParam(QP_SETTING))
-	if err != nil {
-		return nil, err
-	}
-	location1, opLoc1, err := parseParam(c.QueryParam(QP_LOC1))
-	if err != nil {
-		return nil, err
-	}
-	location2, opLoc2, err := parseParam(c.QueryParam(QP_LOC2))
-	if err != nil {
-		return nil, err
-	}
-	location3, opLoc3, err := parseParam(c.QueryParam(QP_LOC3))
-	if err != nil {
-		return nil, err
-	}
-	lat, opLat, err := parseParam(c.QueryParam(QP_LAT))
-	if err != nil {
-		return nil, err
-	}
-	long, opLong, err := parseParam(c.QueryParam(QP_LONG))
-	if err != nil {
-		return nil, err
-	}
-	if setting != "" || location1 != "" || location2 != "" || location3 != "" || lat != "" || long != "" {
-		// add query module Location
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsStart)
-		// add location filters
-		if setting != "" {
-			query.AddFilter("gs.settingname", setting, opSetting, junctor)
-			junctor = sql.OpAnd // after first filter is added with "WHERE", change to "AND" for following filters
-		}
-		if location1 != "" {
-			query.AddFilter("toplevelloc.locationname", location1, opLoc1, junctor)
-			junctor = sql.OpAnd
-		}
-		if location2 != "" {
-			query.AddFilter("secondlevelloc.locationname", location2, opLoc2, junctor)
-			junctor = sql.OpAnd
-		}
-		if location3 != "" {
-			query.AddFilter("thirdlevelloc.locationname", location3, opLoc3, junctor)
-			junctor = sql.OpAnd
-		}
-		if lat != "" {
-			query.AddFilter("s.latitude", lat, opLat, junctor)
-			junctor = sql.OpAnd
-		}
-		if long != "" {
-			query.AddFilter("s.longitude", long, opLong, junctor)
-		}
-		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsEnd)
-	}
-
 	// taxonomic classifiers
 	junctor = sql.OpWhere // reset junctor for new subquery
 	rockType, opRType, err := parseParam(c.QueryParam(QP_ROCKTYPE))
@@ -1157,6 +1101,62 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddFilter("st.incMinerals", incMineral, arrayOp, junctor)
 		}
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterTaxonomicClassifiersEnd)
+	}
+
+	// location filters
+	junctor = sql.OpWhere // reset junctor for new subquery
+	setting, opSetting, err := parseParam(c.QueryParam(QP_SETTING))
+	if err != nil {
+		return nil, err
+	}
+	location1, opLoc1, err := parseParam(c.QueryParam(QP_LOC1))
+	if err != nil {
+		return nil, err
+	}
+	location2, opLoc2, err := parseParam(c.QueryParam(QP_LOC2))
+	if err != nil {
+		return nil, err
+	}
+	location3, opLoc3, err := parseParam(c.QueryParam(QP_LOC3))
+	if err != nil {
+		return nil, err
+	}
+	lat, opLat, err := parseParam(c.QueryParam(QP_LAT))
+	if err != nil {
+		return nil, err
+	}
+	long, opLong, err := parseParam(c.QueryParam(QP_LONG))
+	if err != nil {
+		return nil, err
+	}
+	if setting != "" || location1 != "" || location2 != "" || location3 != "" || lat != "" || long != "" {
+		// add query module Location
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsStart)
+		// add location filters
+		if setting != "" {
+			query.AddFilter("gs.settingname", setting, opSetting, junctor)
+			junctor = sql.OpAnd // after first filter is added with "WHERE", change to "AND" for following filters
+		}
+		if location1 != "" {
+			query.AddFilter("toplevelloc.locationname", location1, opLoc1, junctor)
+			junctor = sql.OpAnd
+		}
+		if location2 != "" {
+			query.AddFilter("secondlevelloc.locationname", location2, opLoc2, junctor)
+			junctor = sql.OpAnd
+		}
+		if location3 != "" {
+			query.AddFilter("thirdlevelloc.locationname", location3, opLoc3, junctor)
+			junctor = sql.OpAnd
+		}
+		if lat != "" {
+			query.AddFilter("s.latitude", lat, opLat, junctor)
+			junctor = sql.OpAnd
+		}
+		if long != "" {
+			query.AddFilter("s.longitude", long, opLong, junctor)
+		}
+		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterLocationsEnd)
 	}
 
 	// results

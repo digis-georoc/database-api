@@ -269,7 +269,6 @@ left join
 	s.longitude
 	from odm2.sites s
 	join odm2.relatedfeatures r on r.relatedfeatureid = s.samplingfeatureid
-	order by r.samplingfeatureid
 ) coords on coords.sampleid = spec.sampleid
 `
 
