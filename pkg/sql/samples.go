@@ -230,7 +230,7 @@ join (
 `
 
 const GestSamplingfeatureIdsByFilterOrganizationsEnd = `
-) organizations on spec.samplingfeatureid = organizations.sid
+) organizations on spec.sampleid = organizations.sid
 `
 
 // Filter query-module Geometry
