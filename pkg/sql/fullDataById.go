@@ -16,8 +16,8 @@ coalesce (loc.loc_types, array['Unknown']) as locationTypes,
 (regexp_match(loc.elevation[1], 'ELEVATION_MIN=(-?\d+\.?\d*);'))[1] as elevationMin,
 (regexp_match(loc.elevation[1], 'ELEVATION_MAX=(-?\d+\.?\d*)'))[1] as elevationMax,
 (loc.land_or_sea)[1] as landOrSea,
-samples.rock_type as rockType,
-samples.rock_class as rockClass,
+samples.rock_type as rockTypes,
+samples.rock_class as rockClasses,
 samples.specimentexture as rockTextures,
 (samples.specimenagemin)[1] as ageMin,
 (samples.specimenagemax)[1] as ageMax,
@@ -31,8 +31,9 @@ loc.loc_data[1].longitude as longitude,
 (regexp_match(loc.loc_data[1].locationprecisioncomment, 'LONGITUDE_MIN=(-?\d+\.?\d*);'))[1] as longitudeMin,
 (regexp_match(loc.loc_data[1].locationprecisioncomment, 'LONGITUDE_MAX=(-?\d+\.?\d*)'))[1] as longitudeMax,
 (loc.setting)[1] as tectonicSetting,
-methods.method_acronyms as method,
-methods.method_comments as comment,
+loc.location_comments as locationComments,
+methods.method_acronyms as methods,
+methods.method_comments as comments,
 (methods.institution) as institutions, -- actionBy seems to be sparsely filled
 results.results,
 samples.alteration as alteration,
@@ -45,8 +46,8 @@ from
 	select samples.samplingfeatureid, 
 	(array_agg(samples.samplingfeatureuuid))[1] as uuid,
 	(array_agg(samples.samplingfeaturename))[1] as name,
-	(array_agg(stc.rocktypes))[1] as rock_type,
-	(array_agg(stc.rockclasses))[1] as rock_class,
+	array(select unnest(array_agg(distinct stc.rockTypeObj))) as rock_type,
+	array(select unnest(array_agg(distinct stc.rockClassObj))) as rock_class,
 	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentexture,
 	(array_agg(sage.specimenagemin)) as specimenagemin,
 	(array_agg(sage.specimenagemax)) as specimenagemax,
@@ -67,7 +68,7 @@ from
 	left join odm2.specimens spec on spec.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.sampletaxonomicclassifiers stc on stc.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.specimenages sage on sage.samplingfeatureid = samples.samplingfeatureid
-	left join odm2.samplingfeatureannotations sann on sann.samplingfeatureid = samples.samplingfeatureid
+	left join odm2.samplerelations sann on sann.sampleid = samples.samplingfeatureid
 	left join odm2.annotations ann_alt on ann_alt.annotationid = sann.annotationid and ann_alt.annotationcode = 'g_samples.alteration'
 	left join odm2.annotations ann_samptech on ann_samptech.annotationid = sann.annotationid and ann_samptech.annotationcode = 'g_samples.samp_technique'
 	left join odm2.annotations ann_ddmin on ann_ddmin.annotationid = sann.annotationid and ann_ddmin.annotationcode = 'g_samples.drill_depth_min'
@@ -79,14 +80,14 @@ from
 		(array_agg(batches.sampleid))[1] as sampleid,
 		(array_agg(spec_batch.specimentexture))[1] as crystal,
 		(array_agg(spec_batch.specimenmediumcv))[1] as specimenmedium,
-		array_remove(array_agg(distinct tax_min.taxonomicclassifiercommonname), null) as minerals,
-		array_remove(array_agg(distinct tax_hmin.taxonomicclassifiercommonname), null) as hostMinerals,
-		array_remove(array_agg(distinct tax_imin.taxonomicclassifiercommonname), null) as incMinerals,
+		array_remove(array_agg(distinct (case when tax_min.taxonomicclassifierid is not null then jsonb_build_object('id', tax_min.taxonomicclassifierid, 'value', tax_min.taxonomicclassifiername, 'label', tax_min.taxonomicclassifiercommonname) end)), null) as minerals,
+		array_remove(array_agg(distinct (case when tax_hmin.taxonomicclassifierid is not null then jsonb_build_object('id', tax_hmin.taxonomicclassifierid, 'value', tax_hmin.taxonomicclassifiername, 'label', tax_hmin.taxonomicclassifiercommonname) end)), null) as hostMinerals,
+		array_remove(array_agg(distinct (case when tax_imin.taxonomicclassifierid is not null then jsonb_build_object('id', tax_imin.taxonomicclassifierid, 'value', tax_imin.taxonomicclassifiername, 'label', tax_imin.taxonomicclassifiercommonname) end)), null) as inclusionMinerals,
 		array_remove(array_agg(distinct ann_mat.annotationtext), null) as materials,
 		array_remove(array_agg(distinct ann_inc_type.annotationtext), null) as inclusionTypes,
 		(array_remove(array_agg(distinct ann_rocinc.annotationtext), null))[1] as rimOrCoreInclusion,
 		(array_remove(array_agg(distinct ann_rocmin.annotationtext), null))[1] as rimOrCoreMineral,
-		jsonb_agg(batch_res.*) as results
+		jsonb_agg(distinct batch_res.*) as results
 		from
 		(
 			select sr.sampleid,
@@ -99,14 +100,14 @@ from
 		left join odm2.specimens spec_batch on spec_batch.samplingfeatureid = batches.batchid
 		left join
 		(
-			select stc.samplingfeatureid, tax_min.taxonomicclassifiercommonname 
+			select stc.samplingfeatureid, tax_min.taxonomicclassifierid, tax_min.taxonomicclassifiername, tax_min.taxonomicclassifiercommonname 
 			from odm2.specimentaxonomicclassifiers stc
 			left join odm2.taxonomicclassifiers tax_min on tax_min.taxonomicclassifierid = stc.taxonomicclassifierid and tax_min.taxonomicclassifiertypecv = 'Mineral'
 			where tax_min.taxonomicclassifierid is not null
 		) tax_min on tax_min.samplingfeatureid = spec_batch.samplingfeatureid
 		left join
 		(
-			select stc.samplingfeatureid, tax_hmin.taxonomicclassifiercommonname 
+			select stc.samplingfeatureid, tax_hmin.taxonomicclassifierid,  tax_hmin.taxonomicclassifiername, tax_hmin.taxonomicclassifiercommonname 
 			from odm2.specimentaxonomicclassifiers stc
 			left join odm2.taxonomicclassifiers tax_hmin on tax_hmin.taxonomicclassifierid = stc.taxonomicclassifierid
 			where tax_hmin.taxonomicclassifierid is not null
@@ -114,7 +115,7 @@ from
 		) tax_hmin on tax_hmin.samplingfeatureid = spec_batch.samplingfeatureid
 		left join
 		(
-			select stc.samplingfeatureid, tax_imin.taxonomicclassifiercommonname 
+			select stc.samplingfeatureid, tax_imin.taxonomicclassifierid, tax_imin.taxonomicclassifiername, tax_imin.taxonomicclassifiercommonname  
 			from odm2.specimentaxonomicclassifiers stc
 			left join odm2.taxonomicclassifiers tax_imin on tax_imin.taxonomicclassifierid = stc.taxonomicclassifierid
 			where tax_imin.taxonomicclassifierid is not null
@@ -136,6 +137,7 @@ from
 			mv.variablecode as itemname,
 			mv. datavalue as value,
 			mv.unitgeoroc as unit,
+			mv.methodcode as method,
 			std.standardname,
 			std.standardvalue,
 			std.standardvariable
@@ -150,7 +152,7 @@ from
 	left join odm2.samplecitationdata scd on scd.samplingfeatureid = samples.samplingfeatureid
 	where samples.samplingfeaturedescription = 'Sample' 
 	and samples.samplingfeatureid = any ($1)
-	group by samples.samplingfeatureid 
+	group by samples.samplingfeatureid
 ) samples
 left join
 (
@@ -161,7 +163,8 @@ left join
 	array_remove(array_agg(distinct g_loc.geolocationtype), null) as loc_types ,
 	array_remove(array_agg(loc.elevationprecisioncomment), null) as elevation,
 	array_remove(array_agg(distinct si_loc.sitedescription), null) as land_or_sea,
-	array_remove(array_agg(distinct gs.settingname), null) as setting
+	array_remove(array_agg(distinct gs.settingname), null) as setting,
+	array_remove(array_agg(distinct a_loc.annotationtext), null) as location_comments
 	from odm2.relatedfeatures rel_loc
 	left join odm2.samplingfeatures loc on loc.samplingfeatureid = rel_loc.relatedfeatureid 
 	left join odm2.sites si_loc on si_loc.samplingfeatureid = rel_loc.relatedfeatureid 
@@ -169,28 +172,29 @@ left join
 	left join odm2.geologicalsettings gs on gs.settingid = sgs.settingid
 	left join odm2.sitegeolocations sg_loc on sg_loc.samplingfeatureid  = si_loc.samplingfeatureid
 	left join odm2.geolocations g_loc on g_loc.geolocationid = sg_loc.geolocationid 
+	left join odm2.samplingfeatureannotations sa_loc on sa_loc.samplingfeatureid = si_loc.samplingfeatureid
+	left join odm2.annotations a_loc on a_loc.annotationid = sa_loc.annotationid and a_loc.annotationcode = 'g_locations.location_comment'
 	where rel_loc.samplingfeatureid = any ($1)
 	group by rel_loc.samplingfeatureid 
 ) loc on loc.samplingfeatureid = samples.samplingfeatureid
 left join (
-	-- query methods
-	select rel_meth.relatedfeatureid as id,
-	(array_agg(distinct meth.methodcode)) as method_acronyms,
+	-- query sample methods
+	select f_meth.samplingfeatureid as id,
+	array_remove(array_agg(distinct meth.methodcode), null) as method_acronyms,
 	(array_remove((array_agg(distinct a_meth.actiondescription)),null)) as method_comments,
 	array_agg(distinct org.organizationname) as institution
-	from odm2.relatedfeatures rel_meth
-	left join odm2.featureactions f_meth on f_meth.samplingfeatureid = rel_meth.samplingfeatureid
+	from odm2.featureactions f_meth
 	left join odm2.actions a_meth on a_meth.actionid = f_meth.actionid
 	left join odm2.methods meth on meth.methodid = a_meth.methodid
 	left join odm2.actionby ab_meth on ab_meth.actionid = a_meth.actionid 
 	left join odm2.organizations org on org.organizationid = ab_meth.organizationid
-	where rel_meth.relatedfeatureid = any ($1)
-	group by rel_meth.relatedfeatureid
+	where f_meth.samplingfeatureid = any ($1)
+	group by f_meth.samplingfeatureid
 ) methods on methods.id = samples.samplingfeatureid
 left join (
 	-- sample results
 	select res.samplingfeatureid,
-	json_agg(res) as results
+	jsonb_agg(distinct res) as results
 	from (
 		select mv.samplingfeatureid,
 		mv.sampledmediumcv as medium,
@@ -199,6 +203,7 @@ left join (
 		mv.variablecode as itemname,
 		mv. datavalue as value,
 		mv.unitgeoroc as unit,
+		mv.methodcode as method,
 		std.standardname,
 		std.standardvalue,
 		std.standardvariable

@@ -16,15 +16,17 @@ type FullData struct {
 	// nullable
 	LocationTypes []*string `json:"locationTypes"`
 	// nullable
+	LocationComments []*string `json:"locationComments"`
+	// nullable
 	ElevationMin *string `json:"elevationMin"`
 	// nullable
 	ElevationMax *string `json:"elevationMax"`
 	// nullable
 	LandOrSea *string `json:"landOrSea"`
 	// nullable
-	RockType *string `json:"rockType"`
+	RockTypes []*FullDataTaxonomicClassifier `json:"rockTypes"`
 	// nullable
-	RockClass *string `json:"rockClass"`
+	RockClasses []*FullDataTaxonomicClassifier `json:"rockClasses"`
 	// nullable
 	RockTextures []*string `json:"rockTextures"`
 	// nullable
@@ -52,9 +54,9 @@ type FullData struct {
 	// nullable
 	TectonicSetting *string `json:"tectonicSetting"`
 	// nullable
-	Method []*string `json:"method"`
+	Methods []*string `json:"methods"`
 	// nullable
-	Comment []*string `json:"comment"`
+	Comments []*string `json:"comments"`
 	// nullable
 	Institutions []*string `json:"institutions"`
 	// nullable
@@ -83,11 +85,11 @@ type Batch struct {
 	// nullable
 	SpecimenMedium *string `json:"specimenMedium"`
 	// nullable
-	Minerals []*string `json:"minerals"`
+	Minerals []*FullDataTaxonomicClassifier `json:"minerals"`
 	// nullable
-	HostMinerals []*string `json:"hostMinerals"`
+	HostMinerals []*FullDataTaxonomicClassifier `json:"hostMinerals"`
 	// nullable
-	InclusionMinerals []*string `json:"inclusionMinerals"`
+	InclusionMinerals []*FullDataTaxonomicClassifier `json:"inclusionMinerals"`
 	// nullable
 	Materials []*string `json:"materials"`
 	// nullable
@@ -103,4 +105,10 @@ type Batch struct {
 type FullDataResponse struct {
 	NumItems int        `json:"numItems"`
 	Data     []FullData `json:"data"`
+}
+
+type FullDataTaxonomicClassifier struct {
+	Value string  `json:"value"`
+	Label *string `json:"label"`
+	ID    int     `json:"id"`
 }
