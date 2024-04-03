@@ -2564,14 +2564,14 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionMinerals": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionTypes": {
@@ -2592,7 +2592,7 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "results": {
@@ -2791,7 +2791,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Batch"
                     }
                 },
-                "comment": {
+                "comments": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
@@ -2845,6 +2845,13 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
+                "locationComments": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "locationNames": {
                     "description": "nullable",
                     "type": "array",
@@ -2875,7 +2882,7 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "method": {
+                "methods": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
@@ -2895,9 +2902,12 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Result"
                     }
                 },
-                "rockClass": {
+                "rockClasses": {
                     "description": "nullable",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
+                    }
                 },
                 "rockTextures": {
                     "description": "nullable",
@@ -2906,9 +2916,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "rockType": {
+                "rockTypes": {
                     "description": "nullable",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
+                    }
                 },
                 "sampleID": {
                     "type": "integer"
@@ -2942,6 +2955,20 @@ const docTemplate = `{
                 },
                 "numItems": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.FullDataTaxonomicClassifier": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
@@ -3219,6 +3246,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "medium": {
+                    "description": "nullable",
+                    "type": "string"
+                },
+                "method": {
                     "description": "nullable",
                     "type": "string"
                 },

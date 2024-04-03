@@ -2557,14 +2557,14 @@
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionMinerals": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionTypes": {
@@ -2585,7 +2585,7 @@
                     "description": "nullable",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "results": {
@@ -2784,7 +2784,7 @@
                         "$ref": "#/definitions/model.Batch"
                     }
                 },
-                "comment": {
+                "comments": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
@@ -2838,6 +2838,13 @@
                     "description": "nullable",
                     "type": "string"
                 },
+                "locationComments": {
+                    "description": "nullable",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "locationNames": {
                     "description": "nullable",
                     "type": "array",
@@ -2868,7 +2875,7 @@
                     "description": "nullable",
                     "type": "string"
                 },
-                "method": {
+                "methods": {
                     "description": "nullable",
                     "type": "array",
                     "items": {
@@ -2888,9 +2895,12 @@
                         "$ref": "#/definitions/model.Result"
                     }
                 },
-                "rockClass": {
+                "rockClasses": {
                     "description": "nullable",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
+                    }
                 },
                 "rockTextures": {
                     "description": "nullable",
@@ -2899,9 +2909,12 @@
                         "type": "string"
                     }
                 },
-                "rockType": {
+                "rockTypes": {
                     "description": "nullable",
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
+                    }
                 },
                 "sampleID": {
                     "type": "integer"
@@ -2935,6 +2948,20 @@
                 },
                 "numItems": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.FullDataTaxonomicClassifier": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
                 }
             }
         },
@@ -3212,6 +3239,10 @@
                     "type": "string"
                 },
                 "medium": {
+                    "description": "nullable",
+                    "type": "string"
+                },
+                "method": {
                     "description": "nullable",
                     "type": "string"
                 },

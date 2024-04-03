@@ -32,12 +32,12 @@ definitions:
       hostMinerals:
         description: nullable
         items:
-          type: string
+          $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       inclusionMinerals:
         description: nullable
         items:
-          type: string
+          $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       inclusionTypes:
         description: nullable
@@ -52,7 +52,7 @@ definitions:
       minerals:
         description: nullable
         items:
-          type: string
+          $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       results:
         description: nullable
@@ -189,7 +189,7 @@ definitions:
         items:
           $ref: '#/definitions/model.Batch'
         type: array
-      comment:
+      comments:
         description: nullable
         items:
           type: string
@@ -229,6 +229,11 @@ definitions:
       latitudeMin:
         description: nullable
         type: string
+      locationComments:
+        description: nullable
+        items:
+          type: string
+        type: array
       locationNames:
         description: nullable
         items:
@@ -251,7 +256,7 @@ definitions:
       longitudeMin:
         description: nullable
         type: string
-      method:
+      methods:
         description: nullable
         items:
           type: string
@@ -265,17 +270,21 @@ definitions:
         items:
           $ref: '#/definitions/model.Result'
         type: array
-      rockClass:
+      rockClasses:
         description: nullable
-        type: string
+        items:
+          $ref: '#/definitions/model.FullDataTaxonomicClassifier'
+        type: array
       rockTextures:
         description: nullable
         items:
           type: string
         type: array
-      rockType:
+      rockTypes:
         description: nullable
-        type: string
+        items:
+          $ref: '#/definitions/model.FullDataTaxonomicClassifier'
+        type: array
       sampleID:
         type: integer
       sampleName:
@@ -299,6 +308,15 @@ definitions:
         type: array
       numItems:
         type: integer
+    type: object
+  model.FullDataTaxonomicClassifier:
+    properties:
+      id:
+        type: integer
+      label:
+        type: string
+      value:
+        type: string
     type: object
   model.GeoAge:
     properties:
@@ -478,6 +496,9 @@ definitions:
         description: nullable
         type: string
       medium:
+        description: nullable
+        type: string
+      method:
         description: nullable
         type: string
       standardName:
