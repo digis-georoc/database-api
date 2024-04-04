@@ -16,9 +16,10 @@ coalesce (loc.loc_types, array['Unknown']) as locationTypes,
 (regexp_match(loc.elevation[1], 'ELEVATION_MIN=(-?\d+\.?\d*);'))[1] as elevationMin,
 (regexp_match(loc.elevation[1], 'ELEVATION_MAX=(-?\d+\.?\d*)'))[1] as elevationMax,
 (loc.land_or_sea)[1] as landOrSea,
-samples.rock_type as rockTypes,
-samples.rock_class as rockClasses,
-samples.specimentexture as rockTextures,
+samples.materials as materials,
+samples.rock_types as rockTypes,
+samples.rock_classwa as rockClasses,
+samples.specimentextures as rockTextures,
 (samples.specimenagemin)[1] as ageMin,
 (samples.specimenagemax)[1] as ageMax,
 (samples.eruptiondate)[1] as eruptiondate,
@@ -31,11 +32,11 @@ loc.loc_data[1].longitude as longitude,
 (regexp_match(loc.loc_data[1].locationprecisioncomment, 'LONGITUDE_MIN=(-?\d+\.?\d*);'))[1] as longitudeMin,
 (regexp_match(loc.loc_data[1].locationprecisioncomment, 'LONGITUDE_MAX=(-?\d+\.?\d*)'))[1] as longitudeMax,
 (loc.setting)[1] as tectonicSetting,
-loc.location_comments as locationComments,
-methods.method_acronyms as methods,
-methods.method_comments as comments,
-(methods.institution) as institutions, -- actionBy seems to be sparsely filled
-results.results,
+coalesce(loc.location_comments, array[]::varchar[])  as locationComments,
+coalesce(methods.method_acronyms, array[]::varchar[]) as methods,
+coalesce(methods.method_comments, array[]::varchar[])  as comments,
+coalesce(methods.institutions, array[]::varchar[])  as institutions, -- actionBy seems to be sparsely filled
+coalesce(results.results, array[]::varchar[]) as results ,
 samples.alteration as alteration,
 samples.samp_technique as samplingTechnique,
 samples.dd_min as drillDepthMin,
@@ -46,9 +47,10 @@ from
 	select samples.samplingfeatureid, 
 	(array_agg(samples.samplingfeatureuuid))[1] as uuid,
 	(array_agg(samples.samplingfeaturename))[1] as name,
-	array(select unnest(array_agg(distinct stc.rockTypeObj))) as rock_type,
-	array(select unnest(array_agg(distinct stc.rockClassObj))) as rock_class,
-	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentexture,
+	array(select unnest(array_agg(distinct stc.rockTypeObj))) as rock_types,
+	array(select unnest(array_agg(distinct stc.rockClassObj))) as rock_classes,
+	array_remove(array_agg(distinct ann_mat.annotationtext), null) as materials,
+	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentextures,
 	(array_agg(sage.specimenagemin)) as specimenagemin,
 	(array_agg(sage.specimenagemax)) as specimenagemax,
 	(array_agg(case when sage.specimengeolageprefix is not null then sage.specimengeolageprefix || '-' || sage.specimengeolage else sage.specimengeolage end)) as geologicalage,
@@ -69,6 +71,7 @@ from
 	left join odm2.sampletaxonomicclassifiers stc on stc.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.specimenages sage on sage.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.samplerelations sann on sann.sampleid = samples.samplingfeatureid
+	left join odm2.annotations ann_mat on ann_mat.annotationid = sann.annotationid and ann_mat.annotationcode = 'g_batches.material'
 	left join odm2.annotations ann_alt on ann_alt.annotationid = sann.annotationid and ann_alt.annotationcode = 'g_samples.alteration'
 	left join odm2.annotations ann_samptech on ann_samptech.annotationid = sann.annotationid and ann_samptech.annotationcode = 'g_samples.samp_technique'
 	left join odm2.annotations ann_ddmin on ann_ddmin.annotationid = sann.annotationid and ann_ddmin.annotationcode = 'g_samples.drill_depth_min'
@@ -83,7 +86,7 @@ from
 		array_remove(array_agg(distinct (case when tax_min.taxonomicclassifierid is not null then jsonb_build_object('id', tax_min.taxonomicclassifierid, 'value', tax_min.taxonomicclassifiername, 'label', tax_min.taxonomicclassifiercommonname) end)), null) as minerals,
 		array_remove(array_agg(distinct (case when tax_hmin.taxonomicclassifierid is not null then jsonb_build_object('id', tax_hmin.taxonomicclassifierid, 'value', tax_hmin.taxonomicclassifiername, 'label', tax_hmin.taxonomicclassifiercommonname) end)), null) as hostMinerals,
 		array_remove(array_agg(distinct (case when tax_imin.taxonomicclassifierid is not null then jsonb_build_object('id', tax_imin.taxonomicclassifierid, 'value', tax_imin.taxonomicclassifiername, 'label', tax_imin.taxonomicclassifiercommonname) end)), null) as inclusionMinerals,
-		array_remove(array_agg(distinct ann_mat.annotationtext), null) as materials,
+		(array_remove(array_agg(distinct ann_mat.annotationtext), null))[1] as material,
 		array_remove(array_agg(distinct ann_inc_type.annotationtext), null) as inclusionTypes,
 		(array_remove(array_agg(distinct ann_rocinc.annotationtext), null))[1] as rimOrCoreInclusion,
 		(array_remove(array_agg(distinct ann_rocmin.annotationtext), null))[1] as rimOrCoreMineral,
@@ -135,7 +138,7 @@ from
 			mv.valuecount,
 			mv.variabletypecode as itemgroup,
 			mv.variablecode as itemname,
-			mv. datavalue as value,
+			mv.datavalue as value,
 			mv.unitgeoroc as unit,
 			mv.methodcode as method,
 			std.standardname,
@@ -182,7 +185,7 @@ left join (
 	select f_meth.samplingfeatureid as id,
 	array_remove(array_agg(distinct meth.methodcode), null) as method_acronyms,
 	(array_remove((array_agg(distinct a_meth.actiondescription)),null)) as method_comments,
-	array_agg(distinct org.organizationname) as institution
+	array_agg(distinct org.organizationname) as institutions
 	from odm2.featureactions f_meth
 	left join odm2.actions a_meth on a_meth.actionid = f_meth.actionid
 	left join odm2.methods meth on meth.methodid = a_meth.methodid

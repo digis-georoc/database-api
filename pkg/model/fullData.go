@@ -10,25 +10,19 @@ type FullData struct {
 	UniqueID   *string    `json:"uniqueID"`
 	References []Citation `json:"references"`
 	// nullable
-	SampleName *string `json:"sampleName"`
-	// nullable
-	LocationNames []*string `json:"locationNames"`
-	// nullable
-	LocationTypes []*string `json:"locationTypes"`
-	// nullable
+	SampleName       *string   `json:"sampleName"`
+	LocationNames    []*string `json:"locationNames"`
+	LocationTypes    []*string `json:"locationTypes"`
 	LocationComments []*string `json:"locationComments"`
 	// nullable
 	ElevationMin *string `json:"elevationMin"`
 	// nullable
 	ElevationMax *string `json:"elevationMax"`
 	// nullable
-	LandOrSea *string `json:"landOrSea"`
-	// nullable
-	RockTypes []*FullDataTaxonomicClassifier `json:"rockTypes"`
-	// nullable
-	RockClasses []*FullDataTaxonomicClassifier `json:"rockClasses"`
-	// nullable
-	RockTextures []*string `json:"rockTextures"`
+	LandOrSea    *string                        `json:"landOrSea"`
+	RockTypes    []*FullDataTaxonomicClassifier `json:"rockTypes"`
+	RockClasses  []*FullDataTaxonomicClassifier `json:"rockClasses"`
+	RockTextures []*string                      `json:"rockTextures"`
 	// nullable
 	AgeMin *int `json:"ageMin"`
 	// nullable
@@ -52,15 +46,11 @@ type FullData struct {
 	// nullable
 	LongitudeMax *string `json:"longitudeMax"`
 	// nullable
-	TectonicSetting *string `json:"tectonicSetting"`
-	// nullable
-	Methods []*string `json:"methods"`
-	// nullable
-	Comments []*string `json:"comments"`
-	// nullable
-	Institutions []*string `json:"institutions"`
-	// nullable
-	Results []*Result `json:"results"`
+	TectonicSetting *string   `json:"tectonicSetting"`
+	Methods         []*string `json:"methods"`
+	Comments        []*string `json:"comments"`
+	Institutions    []*string `json:"institutions"`
+	Results         []*Result `json:"results"`
 	// nullable
 	Alteration *string `json:"alteration"`
 	// nullable
@@ -68,9 +58,8 @@ type FullData struct {
 	// nullable
 	DrillDepthMin *string `json:"drillDepthMin"`
 	// nullable
-	DrillDepthMax *string `json:"drillDepthMax"`
-	// nullable
-	BatchData []*Batch `json:"batchData"`
+	DrillDepthMax *string  `json:"drillDepthMax"`
+	BatchData     []*Batch `json:"batchData"`
 }
 
 type Batch struct {
@@ -83,23 +72,18 @@ type Batch struct {
 	// nullable
 	Crystal *string `json:"crystal"`
 	// nullable
-	SpecimenMedium *string `json:"specimenMedium"`
-	// nullable
-	Minerals []*FullDataTaxonomicClassifier `json:"minerals"`
-	// nullable
-	HostMinerals []*FullDataTaxonomicClassifier `json:"hostMinerals"`
-	// nullable
+	SpecimenMedium    *string                        `json:"specimenMedium"`
+	Minerals          []*FullDataTaxonomicClassifier `json:"minerals"`
+	HostMinerals      []*FullDataTaxonomicClassifier `json:"hostMinerals"`
 	InclusionMinerals []*FullDataTaxonomicClassifier `json:"inclusionMinerals"`
 	// nullable
-	Materials []*string `json:"materials"`
-	// nullable
+	Material       *string   `json:"material"`
 	InclusionTypes []*string `json:"inclusionTypes"`
 	// nullable
 	RimOrCoreInclusion *string `json:"rimOrCoreInclusion"`
 	// nullable
-	RimOrCoreMineral *string `json:"rimOrCoreMineral"`
-	// nullable
-	Results []*Result `json:"results"`
+	RimOrCoreMineral *string   `json:"rimOrCoreMineral"`
+	Results          []*Result `json:"results"`
 }
 
 type FullDataResponse struct {
