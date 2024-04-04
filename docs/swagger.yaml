@@ -30,32 +30,25 @@ definitions:
         description: nullable
         type: string
       hostMinerals:
-        description: nullable
         items:
           $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       inclusionMinerals:
-        description: nullable
         items:
           $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       inclusionTypes:
-        description: nullable
         items:
           type: string
         type: array
-      materials:
+      material:
         description: nullable
-        items:
-          type: string
-        type: array
+        type: string
       minerals:
-        description: nullable
         items:
           $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       results:
-        description: nullable
         items:
           $ref: '#/definitions/model.Result'
         type: array
@@ -185,12 +178,10 @@ definitions:
         description: nullable
         type: string
       batchData:
-        description: nullable
         items:
           $ref: '#/definitions/model.Batch'
         type: array
       comments:
-        description: nullable
         items:
           type: string
         type: array
@@ -213,7 +204,6 @@ definitions:
         description: nullable
         type: string
       institutions:
-        description: nullable
         items:
           type: string
         type: array
@@ -230,12 +220,10 @@ definitions:
         description: nullable
         type: string
       locationComments:
-        description: nullable
         items:
           type: string
         type: array
       locationNames:
-        description: nullable
         items:
           type: string
         type: array
@@ -243,7 +231,6 @@ definitions:
         description: nullable
         type: integer
       locationTypes:
-        description: nullable
         items:
           type: string
         type: array
@@ -257,7 +244,6 @@ definitions:
         description: nullable
         type: string
       methods:
-        description: nullable
         items:
           type: string
         type: array
@@ -266,22 +252,18 @@ definitions:
           $ref: '#/definitions/model.Citation'
         type: array
       results:
-        description: nullable
         items:
           $ref: '#/definitions/model.Result'
         type: array
       rockClasses:
-        description: nullable
         items:
           $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array
       rockTextures:
-        description: nullable
         items:
           type: string
         type: array
       rockTypes:
-        description: nullable
         items:
           $ref: '#/definitions/model.FullDataTaxonomicClassifier'
         type: array

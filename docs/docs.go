@@ -2561,42 +2561,34 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "hostMinerals": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionMinerals": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "inclusionTypes": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "materials": {
+                "material": {
                     "description": "nullable",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "minerals": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "results": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Result"
@@ -2785,14 +2777,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "batchData": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Batch"
                     }
                 },
                 "comments": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2823,7 +2813,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "institutions": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2846,14 +2835,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "locationComments": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "locationNames": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2864,7 +2851,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "locationTypes": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2883,7 +2869,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "methods": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -2896,28 +2881,24 @@ const docTemplate = `{
                     }
                 },
                 "results": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Result"
                     }
                 },
                 "rockClasses": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
                     }
                 },
                 "rockTextures": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "rockTypes": {
-                    "description": "nullable",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.FullDataTaxonomicClassifier"
