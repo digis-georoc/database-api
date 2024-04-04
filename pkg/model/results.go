@@ -69,6 +69,8 @@ type Result struct {
 	Value *float32 `json:"value"`
 	// nullable
 	Unit *string `json:"unit"`
+	// nullable
+	Method *string `json:"method"`
 }
 
 type Measurement struct {
