@@ -16,7 +16,6 @@ coalesce (loc.loc_types, array['Unknown']) as locationTypes,
 (regexp_match(loc.elevation[1], 'ELEVATION_MIN=(-?\d+\.?\d*);'))[1] as elevationMin,
 (regexp_match(loc.elevation[1], 'ELEVATION_MAX=(-?\d+\.?\d*)'))[1] as elevationMax,
 (loc.land_or_sea)[1] as landOrSea,
-samples.materials as materials,
 samples.rock_types as rockTypes,
 samples.rock_classes as rockClasses,
 samples.specimentextures as rockTextures,
@@ -36,7 +35,7 @@ coalesce(loc.location_comments, array[]::varchar[])  as locationComments,
 coalesce(methods.method_acronyms, array[]::varchar[]) as methods,
 coalesce(methods.method_comments, array[]::varchar[])  as comments,
 coalesce(methods.institutions, array[]::varchar[])  as institutions, -- actionBy seems to be sparsely filled
-coalesce(results.results, array[]::varchar[]) as results ,
+coalesce(results.results, '[]'::jsonb) as results ,
 samples.alteration as alteration,
 samples.samp_technique as samplingTechnique,
 samples.dd_min as drillDepthMin,
@@ -49,7 +48,6 @@ from
 	(array_agg(samples.samplingfeaturename))[1] as name,
 	array(select unnest(array_agg(distinct stc.rockTypeObj))) as rock_types,
 	array(select unnest(array_agg(distinct stc.rockClassObj))) as rock_classes,
-	array_remove(array_agg(distinct ann_mat.annotationtext), null) as materials,
 	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentextures,
 	(array_agg(sage.specimenagemin)) as specimenagemin,
 	(array_agg(sage.specimenagemax)) as specimenagemax,
@@ -71,7 +69,6 @@ from
 	left join odm2.sampletaxonomicclassifiers stc on stc.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.specimenages sage on sage.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.samplerelations sann on sann.sampleid = samples.samplingfeatureid
-	left join odm2.annotations ann_mat on ann_mat.annotationid = sann.annotationid and ann_mat.annotationcode = 'g_batches.material'
 	left join odm2.annotations ann_alt on ann_alt.annotationid = sann.annotationid and ann_alt.annotationcode = 'g_samples.alteration'
 	left join odm2.annotations ann_samptech on ann_samptech.annotationid = sann.annotationid and ann_samptech.annotationcode = 'g_samples.samp_technique'
 	left join odm2.annotations ann_ddmin on ann_ddmin.annotationid = sann.annotationid and ann_ddmin.annotationcode = 'g_samples.drill_depth_min'
