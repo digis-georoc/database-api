@@ -499,15 +499,10 @@ definitions:
       method:
         description: nullable
         type: string
-      standardName:
-        description: nullable
-        type: string
-      standardValue:
-        description: nullable
-        type: number
-      standardVariable:
-        description: nullable
-        type: string
+      standards:
+        items:
+          $ref: '#/definitions/model.Standard'
+        type: array
       unit:
         description: nullable
         type: string
@@ -721,6 +716,17 @@ definitions:
         type: array
       numItems:
         type: integer
+    type: object
+  model.Standard:
+    properties:
+      standardName:
+        type: string
+      standardUnit:
+        type: string
+      standardValue:
+        type: number
+      standardVariable:
+        type: string
     type: object
   model.Statistics:
     properties:

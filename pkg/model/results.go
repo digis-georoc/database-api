@@ -58,19 +58,21 @@ type Result struct {
 	// nullable
 	Medium *string `json:"medium"`
 	// nullable
-	ValueCount *int `json:"valueCount"`
-	// nullable
-	StandardName *string `json:"standardName"`
-	// nullable
-	StandardValue *float64 `json:"standardValue"`
-	// nullable
-	StandardVariable *string `json:"standardVariable"`
+	ValueCount *int       `json:"valueCount"`
+	Standards  []Standard `json:"standards"`
 	// nullable
 	Value *float64 `json:"value"`
 	// nullable
 	Unit *string `json:"unit"`
 	// nullable
 	Method *string `json:"method"`
+}
+
+type Standard struct {
+	StandardName     string  `json:"standardName"`
+	StandardValue    float64 `json:"standardValue"`
+	StandardVariable string  `json:"standardVariable"`
+	StandardUnit     string  `json:"standardUnit"`
 }
 
 type Measurement struct {
