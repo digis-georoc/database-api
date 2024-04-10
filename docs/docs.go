@@ -3234,17 +3234,11 @@ const docTemplate = `{
                     "description": "nullable",
                     "type": "string"
                 },
-                "standardName": {
-                    "description": "nullable",
-                    "type": "string"
-                },
-                "standardValue": {
-                    "description": "nullable",
-                    "type": "number"
-                },
-                "standardVariable": {
-                    "description": "nullable",
-                    "type": "string"
+                "standards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Standard"
+                    }
                 },
                 "unit": {
                     "description": "nullable",
@@ -3561,6 +3555,23 @@ const docTemplate = `{
                 },
                 "numItems": {
                     "type": "integer"
+                }
+            }
+        },
+        "model.Standard": {
+            "type": "object",
+            "properties": {
+                "standardName": {
+                    "type": "string"
+                },
+                "standardUnit": {
+                    "type": "string"
+                },
+                "standardValue": {
+                    "type": "number"
+                },
+                "standardVariable": {
+                    "type": "string"
                 }
             }
         },
