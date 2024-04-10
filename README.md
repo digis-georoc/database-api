@@ -8,7 +8,7 @@ SPDX-License-Identifier: BSD-3-Clause
 
 API to access the GEOROC2.0 database in the new ODM2-based schema.
 
-Current version: **0.5.1**
+Current version: **0.5.2**
 
 This api is currently in a testing phase.
 
