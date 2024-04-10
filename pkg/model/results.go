@@ -62,11 +62,11 @@ type Result struct {
 	// nullable
 	StandardName *string `json:"standardName"`
 	// nullable
-	StandardValue *float32 `json:"standardValue"`
+	StandardValue *float64 `json:"standardValue"`
 	// nullable
 	StandardVariable *string `json:"standardVariable"`
 	// nullable
-	Value *float32 `json:"value"`
+	Value *float64 `json:"value"`
 	// nullable
 	Unit *string `json:"unit"`
 	// nullable
@@ -75,6 +75,6 @@ type Result struct {
 
 type Measurement struct {
 	Element string  `json:"element"`
-	Value   float32 `json:"value"`
+	Value   float64 `json:"value"`
 	Unit    string  `json:"unit"`
 }
