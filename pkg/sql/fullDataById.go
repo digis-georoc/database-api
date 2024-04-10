@@ -138,14 +138,17 @@ from
 			mv.datavalue as value,
 			mv.unitgeoroc as unit,
 			mv.methodcode as method,
-			std.standardname,
-			std.standardvalue,
-			std.standardvariable
-			from odm2.samplerelations sr
+			coalesce(array_agg(jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
+			from (
+				select distinct sr.batch
+				from odm2.samplerelations sr
+				where sr.sampleid = any($1)
+			) sr
 			left join odm2.measuredvalues mv on mv.samplingfeatureid = sr.batch
 			left join odm2.featureactions fa on fa.samplingfeatureid = mv.samplingfeatureid
-			left join odm2.standards std on std.actionid = fa.actionid
-			where sr.sampleid = any($1)
+			left join odm2.standards std on std.actionid = fa.actionid and std.standardvariable = mv.variablecode
+			left join odm2.units u on u.unitsid = std.unitsid
+			group by mv.samplingfeatureid, mv.sampledmediumcv, mv.valuecount,mv.variabletypecode, mv.variablecode, mv.datavalue, mv.unitgeoroc, mv.methodcode
 		) batch_res on batch_res.samplingfeatureid = batches.batchid
 		group by batches.batchid
 	) batchdata on batchdata.sampleid = samples.samplingfeatureid
@@ -201,17 +204,20 @@ left join (
 		mv.valuecount,
 		mv.variabletypecode as itemgroup,
 		mv.variablecode as itemname,
-		mv. datavalue as value,
+		mv.datavalue as value,
 		mv.unitgeoroc as unit,
 		mv.methodcode as method,
-		std.standardname,
-		std.standardvalue,
-		std.standardvariable
-		from odm2.samplerelations sr
+		coalesce(array_agg(jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
+		from (
+			select distinct sr.batch
+			from odm2.samplerelations sr
+			where sr.sampleid = any($1)
+		) sr
 		left join odm2.measuredvalues mv on mv.samplingfeatureid = sr.batch
 		left join odm2.featureactions fa on fa.samplingfeatureid = mv.samplingfeatureid
-		left join odm2.standards std on std.actionid = fa.actionid
-		where sr.sampleid = any($1)
+		left join odm2.standards std on std.actionid = fa.actionid and std.standardvariable = mv.variablecode
+		left join odm2.units u on u.unitsid = std.unitsid
+		group by mv.samplingfeatureid, mv.sampledmediumcv, mv.valuecount,mv.variabletypecode, mv.variablecode, mv.datavalue, mv.unitgeoroc, mv.methodcode
 	)res
 	group by res.samplingfeatureid
 ) results on results.samplingfeatureid = samples.samplingfeatureid
