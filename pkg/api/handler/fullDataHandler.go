@@ -24,6 +24,8 @@ const (
 	TAS_SIO2 = "SIO2"
 	TAS_K2O  = "K2O"
 	TAS_NA2O = "NA2O"
+
+	TAS_NO_DATA = -1
 )
 
 // GetFullDataByID godoc
@@ -135,34 +137,61 @@ var unitFactors = map[string]float64{
 	"WT%": 1,
 }
 
+type TASData struct {
+	SIO2 *float64
+	NA2O *float64
+	K2O  *float64
+}
+
 func getTASData(results []*model.Result) (*model.DiagramData, error) {
-	data := &model.DiagramData{}
-	xSum := 0.0
-	ySum := 0.0
+	diagram := &model.DiagramData{}
+	// aggregate results by method; first method to have all 3 values is put as TAS values
+	methodsMap := map[string]TASData{}
 	for _, result := range results {
 		if result == nil {
 			continue
 		}
+		data, ok := methodsMap[*result.Method]
+		if !ok {
+			data = TASData{}
+		}
 		if *result.ItemName == TAS_SIO2 {
-			// extract data for TAS x-value
-			data.XAxisLabel = TAS_SIO2
-			// recalculate to WT%
+			// recalculate value to WT%
 			factor, ok := unitFactors[*result.Unit]
 			if !ok {
 				return nil, fmt.Errorf("Invalid unit: %v", *result.Unit)
 			}
-			xSum += *result.Value * factor
-		} else if *result.ItemName == TAS_K2O || *result.ItemName == TAS_NA2O {
-			// extract data for TAS y-value
-			data.YAxisLabel = TAS_NA2O + "+" + TAS_K2O
-			// recalculate to WT%
+			value := (*result.Value * factor)
+			data.SIO2 = &value
+		} else if *result.ItemName == TAS_K2O {
+			// recalculate value to WT%
 			factor, ok := unitFactors[*result.Unit]
 			if !ok {
 				return nil, fmt.Errorf("Invalid unit: %v", *result.Unit)
 			}
-			ySum += *result.Value * factor
+			value := (*result.Value * factor)
+			data.K2O = &value
+		} else if *result.ItemName == TAS_NA2O {
+			// recalculate value to WT%
+			factor, ok := unitFactors[*result.Unit]
+			if !ok {
+				return nil, fmt.Errorf("Invalid unit: %v", *result.Unit)
+			}
+			value := (*result.Value * factor)
+			data.NA2O = &value
+		}
+		methodsMap[*result.Method] = data
+		if isTASDataComplete(data) {
+			return &model.DiagramData{
+				XAxisLabel: TAS_SIO2,
+				YAxisLabel: TAS_NA2O + "+" + TAS_K2O,
+				Values:     [][]float64{{*data.SIO2, *data.K2O + *data.NA2O}},
+			}, nil
 		}
 	}
-	data.Values = [][]float64{{xSum, ySum}}
-	return data, nil
+	return diagram, nil
+}
+
+func isTASDataComplete(data TASData) bool {
+	return data.SIO2 != nil && data.NA2O != nil && data.K2O != nil
 }
