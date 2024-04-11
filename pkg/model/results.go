@@ -61,7 +61,7 @@ type Result struct {
 	ValueCount *int       `json:"valueCount"`
 	Standards  []Standard `json:"standards"`
 	// nullable
-	Value *float32 `json:"value"`
+	Value *float64 `json:"value"`
 	// nullable
 	Unit *string `json:"unit"`
 	// nullable
@@ -77,6 +77,6 @@ type Standard struct {
 
 type Measurement struct {
 	Element string  `json:"element"`
-	Value   float32 `json:"value"`
+	Value   float64 `json:"value"`
 	Unit    string  `json:"unit"`
 }

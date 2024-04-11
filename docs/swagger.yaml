@@ -64,6 +64,9 @@ definitions:
       specimenMedium:
         description: nullable
         type: string
+      tasData:
+        $ref: '#/definitions/model.DiagramData'
+        description: nullable
     type: object
   model.Citation:
     properties:
@@ -131,6 +134,19 @@ definitions:
         items:
           $ref: '#/definitions/model.GeoJSONFeature'
         type: array
+    type: object
+  model.DiagramData:
+    properties:
+      values:
+        items:
+          items:
+            type: number
+          type: array
+        type: array
+      xAxisLabel:
+        type: string
+      yAxisLabel:
+        type: string
     type: object
   model.Element:
     properties:
@@ -755,7 +771,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.5.1
+  version: 0.5.2
 paths:
   /alive:
     get:

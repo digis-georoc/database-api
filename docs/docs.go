@@ -2609,6 +2609,10 @@ const docTemplate = `{
                 "specimenMedium": {
                     "description": "nullable",
                     "type": "string"
+                },
+                "tasData": {
+                    "description": "nullable",
+                    "$ref": "#/definitions/model.DiagramData"
                 }
             }
         },
@@ -2705,6 +2709,26 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.GeoJSONFeature"
                     }
+                }
+            }
+        },
+        "model.DiagramData": {
+            "type": "object",
+            "properties": {
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                },
+                "xAxisLabel": {
+                    "type": "string"
+                },
+                "yAxisLabel": {
+                    "type": "string"
                 }
             }
         },
@@ -3633,7 +3657,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.5.1",
+	Version:          "0.5.2",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

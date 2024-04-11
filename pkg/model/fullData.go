@@ -84,6 +84,14 @@ type Batch struct {
 	// nullable
 	RimOrCoreMineral *string   `json:"rimOrCoreMineral"`
 	Results          []*Result `json:"results"`
+	// nullable
+	TASData *DiagramData `json:"tasData" db:"-"`
+}
+
+type DiagramData struct {
+	XAxisLabel string      `json:"xAxisLabel"`
+	YAxisLabel string      `json:"yAxisLabel"`
+	Values     [][]float64 `json:"values"`
 }
 
 type FullDataResponse struct {
