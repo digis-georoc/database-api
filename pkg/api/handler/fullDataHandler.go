@@ -26,6 +26,10 @@ const (
 	TAS_NA2O = "NA2O"
 
 	TAS_NO_DATA = -1
+
+	ITEM_GROUP_MJ  = "mj"
+	ITEM_GROUP_REE = "ree"
+	ITEM_GROUP_TE  = "te"
 )
 
 // GetFullDataByID godoc
@@ -137,18 +141,51 @@ var unitFactors = map[string]float64{
 	"WT%": 1,
 }
 
+// priority maps for methods
+// major elements
+var methodPriosMj = map[string]int{
+	"XRF":        10,
+	"WET":        9,
+	"EMP (EPMA)": 8,
+	"AES":        7,
+	"AAS":        6,
+}
+
+// Rare earth elements
+var methodPriosRee = map[string]int{
+	"TIMS_ID": 10,
+	"ICPMS":   9,
+	"AES":     8,
+	"SSMS":    7,
+	"INAA":    6,
+	"XRF":     5,
+}
+
+// trace elements:
+var methodPriosTe = map[string]int{
+	"TIMS_ID": 10,
+	"ICPMS":   9,
+	"SSMS":    8,
+	"XRF":     7,
+	"AES":     6,
+	"INAA":    5,
+	"AAS":     4,
+	"SIMS":    3,
+	"WET":     2,
+}
+
 type TASData struct {
-	SIO2 *float64
-	NA2O *float64
-	K2O  *float64
+	SIO2       *float64
+	NA2O       *float64
+	K2O        *float64
+	Itemgroups []string
 }
 
 func getTASData(results []*model.Result) (*model.DiagramData, error) {
-	diagram := &model.DiagramData{}
 	// aggregate results by method; first method to have all 3 values is put as TAS values
 	methodsMap := map[string]TASData{}
 	for _, result := range results {
-		if result == nil {
+		if result == nil || (*result.ItemName != TAS_SIO2 && *result.ItemName != TAS_NA2O && *result.ItemName != TAS_K2O) {
 			continue
 		}
 		data, ok := methodsMap[*result.Method]
@@ -163,6 +200,7 @@ func getTASData(results []*model.Result) (*model.DiagramData, error) {
 			}
 			value := (*result.Value * factor)
 			data.SIO2 = &value
+			data.Itemgroups = append(data.Itemgroups, *result.ItemGroup)
 		} else if *result.ItemName == TAS_K2O {
 			// recalculate value to WT%
 			factor, ok := unitFactors[*result.Unit]
@@ -171,6 +209,7 @@ func getTASData(results []*model.Result) (*model.DiagramData, error) {
 			}
 			value := (*result.Value * factor)
 			data.K2O = &value
+			data.Itemgroups = append(data.Itemgroups, *result.ItemGroup)
 		} else if *result.ItemName == TAS_NA2O {
 			// recalculate value to WT%
 			factor, ok := unitFactors[*result.Unit]
@@ -179,17 +218,62 @@ func getTASData(results []*model.Result) (*model.DiagramData, error) {
 			}
 			value := (*result.Value * factor)
 			data.NA2O = &value
+			data.Itemgroups = append(data.Itemgroups, *result.ItemGroup)
 		}
 		methodsMap[*result.Method] = data
+	}
+	curMethod := ""
+	var prioTASData *TASData = nil
+	for method, data := range methodsMap {
 		if isTASDataComplete(data) {
-			return &model.DiagramData{
-				XAxisLabel: TAS_SIO2,
-				YAxisLabel: TAS_NA2O + "+" + TAS_K2O,
-				Values:     [][]float64{{*data.SIO2, *data.K2O + *data.NA2O}},
-			}, nil
+			if prioTASData == nil {
+				prioTASData = &data
+				curMethod = method
+				continue
+			}
+			switch data.Itemgroups[0] {
+			case ITEM_GROUP_MJ:
+				if prio, ok := methodPriosMj[method]; ok {
+					curPrio, ok := methodPriosMj[curMethod]
+					if !ok || prio > curPrio {
+						// overwrite with higher prio
+						prioTASData = &data
+						curMethod = method
+						continue
+					}
+				}
+			case ITEM_GROUP_REE:
+				if prio, ok := methodPriosRee[method]; ok {
+					curPrio, ok := methodPriosRee[curMethod]
+					if !ok || prio > curPrio {
+						// overwrite with higher prio
+						prioTASData = &data
+						curMethod = method
+						continue
+					}
+				}
+			case ITEM_GROUP_TE:
+				if prio, ok := methodPriosTe[method]; ok {
+					curPrio, ok := methodPriosTe[curMethod]
+					if !ok || prio > curPrio {
+						// overwrite with higher prio
+						prioTASData = &data
+						curMethod = method
+						continue
+					}
+				}
+			}
 		}
 	}
-	return diagram, nil
+	values := [][]float64{}
+	if prioTASData != nil {
+		values = [][]float64{{*prioTASData.SIO2, *prioTASData.K2O + *prioTASData.NA2O}}
+	}
+	return &model.DiagramData{
+		XAxisLabel: TAS_SIO2,
+		YAxisLabel: TAS_NA2O + "+" + TAS_K2O,
+		Values:     values,
+	}, nil
 }
 
 func isTASDataComplete(data TASData) bool {
