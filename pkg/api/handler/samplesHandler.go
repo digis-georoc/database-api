@@ -66,7 +66,9 @@ const (
 	DEFAULT_NUM_CLUSTERS = "1"  // 1 produces any number of clusters that satisfy the max_distance but prevents error where fewer samples that NUM_CLUSTERS exist
 	DEFAULT_MAX_DISTANCE = "50" // not in use currently
 
-	CLUSTERING_THRESHOLD = 15 // clusters with less points are returned as individual points instead of a cluster
+	CLUSTERING_THRESHOLD     = 15 // clusters with less points are returned as individual points instead of a cluster
+	CLUSTER_THRESHOLD_BBOX   = 7  // if bbox width is smaller than this threshold, do not cluster at all
+	CLUSTER_ID_NO_CLUSTERING = -1 // use this ID for cluster-query without actual clustering (to keep the same result shape)
 
 	KEY_BBOX                    = "key_bbox"
 	KEY_TRANSLATION_FACTOR      = "key_translation_factor"
@@ -371,12 +373,19 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
 	}
 
-	// wrap query in clustering postGIS-sql with parameters
-	params := map[string]interface{}{
-		"numClusters": numClusters,
-		"maxDistance": maxDistance,
+	if width < CLUSTER_THRESHOLD_BBOX {
+		params := map[string]interface{}{
+			"fakeID": CLUSTER_ID_NO_CLUSTERING,
+		}
+		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperNoClusteringPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
+	} else {
+		// wrap query in clustering postGIS-sql with parameters
+		params := map[string]interface{}{
+			"numClusters": numClusters,
+			"maxDistance": maxDistance,
+		}
+		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
 	}
-	query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
 
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
@@ -1374,7 +1383,7 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
 	points := []model.GeoJSONFeature{}
 	for _, cluster := range clusterData {
-		if len(cluster.PointStrings) <= CLUSTERING_THRESHOLD {
+		if len(cluster.PointStrings) <= CLUSTERING_THRESHOLD || cluster.ClusterID == CLUSTER_ID_NO_CLUSTERING {
 			for i, p := range cluster.PointStrings {
 				pointGeom, err := parseGeometryString(p)
 				if err != nil {

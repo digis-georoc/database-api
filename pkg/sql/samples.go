@@ -288,6 +288,21 @@ from (
 	from (
 `
 
+const GetSamplesClusteredWrapperNoClusteringPrefix = `
+-- filter query with clustering
+select
+clusters.clusterid,
+'NoClustering' as convexHullString,
+'NoClustering' as centroidString,
+array_agg(st_astext(clusters.translatedGeom)) as pointStrings,
+array_agg(clusters.sampleid) as samples
+from (
+	select samples.sampleid,
+	samples.translatedGeom,
+	fakeID::int4 as clusterid
+	from (
+`
+
 const GetSamplesClusteredWrapperPostfix = `
 	) samples
 ) clusters
