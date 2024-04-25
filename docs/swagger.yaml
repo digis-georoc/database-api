@@ -730,6 +730,8 @@ definitions:
     type: object
   model.Statistics:
     properties:
+      latestDate:
+        type: string
       numAnalyses:
         type: integer
       numCitations:

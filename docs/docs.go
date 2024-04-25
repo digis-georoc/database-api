@@ -3602,6 +3602,9 @@ const docTemplate = `{
         "model.Statistics": {
             "type": "object",
             "properties": {
+                "latestDate": {
+                    "type": "string"
+                },
                 "numAnalyses": {
                     "type": "integer"
                 },
