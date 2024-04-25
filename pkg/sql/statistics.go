@@ -21,3 +21,8 @@ where s.samplingfeaturedescription = 'Sample'
 const CountResultsQuery = `
 select count(r.resultid) as numResults from odm2.results r
 `
+
+const LatestTimestampQuery = `
+select max(c.created_at)::varchar as latestDate
+from odm2.citations c
+`
