@@ -63,5 +63,12 @@ func (h *Handler) GetStatistics(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
 	}
 	statisticsResponse.NumResults = results[0].NumResults
+	query = sql.NewQuery(sql.LatestTimestampQuery)
+	dateResult, err := repository.Query[struct{ LatestDate string }](c.Request().Context(), h.db, query.GetQueryString())
+	if err != nil || len(dateResult) == 0 {
+		logger.Errorf("Can not GetStatistics Results: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve statistics data")
+	}
+	statisticsResponse.LatestDate = dateResult[0].LatestDate
 	return c.JSON(http.StatusOK, statisticsResponse)
 }
