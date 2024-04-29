@@ -52,6 +52,23 @@ from odm2.samplelistinformationextended spec
 const GetSamplingFeatureIdsByFilteBaseQueryTranslated = `
 -- modular query for specimenids and translated geometries with all filter options
 select distinct spec.sampleid,
+spec.sampleName,
+spec.batches,
+spec.sites,
+spec.publicationYear,
+spec.doi,
+spec.authors,
+spec.minerals,
+spec.hostMinerals,
+spec.inclusionMinerals,
+spec.rockTypes,
+spec.rockClasses,
+spec.inclusionTypes,
+spec.geologicalSettings,
+spec.geologicalAges,
+spec.geologicalAgesMin,
+spec.geologicalAgesMax,
+spec.selectedMeasurements,
 case when geom.isInOriginalBBOX then geom.geometry else st_translate(geom.geometry, 360 * translationFactor, 0) end as translatedGeom
 from odm2.samplelistinformationextended spec
 `
@@ -280,10 +297,28 @@ clusters.clusterid,
 st_asText(st_convexhull(st_collect(clusters.translatedGeom))) as convexHullString,
 st_asText(ST_Centroid(ST_Union(clusters.translatedGeom))) as centroidString,
 array_agg(st_astext(clusters.translatedGeom)) as pointStrings,
-array_agg(clusters.sampleid) as samples
+array_agg((
+	clusters.sampleID,
+	clusters.sampleName,
+	clusters.batches,
+	clusters.sites,
+	clusters.publicationYear,
+	clusters.doi,
+	clusters.authors,
+	clusters.minerals,
+	clusters.hostMinerals,
+	clusters.inclusionMinerals,
+	clusters.rockTypes,
+	clusters.rockClasses,
+	clusters.inclusionTypes,
+	clusters.geologicalSettings,
+	clusters.geologicalAges,
+	clusters.geologicalAgesMin,
+	clusters.geologicalAgesMax,
+	clusters.selectedMeasurements
+)) as samples
 from (
-	select samples.sampleid,
-	samples.translatedGeom,
+	select samples.*,
 	st_clusterkmeans(samples.translatedGeom, numClusters, maxDistance) over () as clusterid
 	from (
 `
@@ -295,10 +330,28 @@ clusters.clusterid,
 'NoClustering' as convexHullString,
 'NoClustering' as centroidString,
 array_agg(st_astext(clusters.translatedGeom)) as pointStrings,
-array_agg(clusters.sampleid) as samples
+array_agg((
+	clusters.sampleID,
+	clusters.sampleName,
+	clusters.batches,
+	clusters.sites,
+	clusters.publicationYear,
+	clusters.doi,
+	clusters.authors,
+	clusters.minerals,
+	clusters.hostMinerals,
+	clusters.inclusionMinerals,
+	clusters.rockTypes,
+	clusters.rockClasses,
+	clusters.inclusionTypes,
+	clusters.geologicalSettings,
+	clusters.geologicalAges,
+	clusters.geologicalAgesMin,
+	clusters.geologicalAgesMax,
+	clusters.selectedMeasurements
+)) as samples
 from (
-	select samples.sampleid,
-	samples.translatedGeom,
+	select samples.*,
 	fakeID::int4 as clusterid
 	from (
 `

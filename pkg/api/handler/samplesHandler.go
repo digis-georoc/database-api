@@ -1393,7 +1393,8 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 					Type:     model.GEOJSONTYPE_FEATURE,
 					Geometry: *pointGeom,
 					Properties: map[string]interface{}{
-						"sampleID": cluster.Samples[i],
+						"sampleID":   cluster.Samples[i].SampleID,
+						"sampleData": cluster.Samples[i],
 					},
 				}
 				points = append(points, point)

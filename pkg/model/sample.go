@@ -52,6 +52,27 @@ type SampleResponse struct {
 	Data     []Sample `json:"data"`
 }
 
+type SampleInCluster struct {
+	SampleID             int             `json:"samplingfeatureid" db:"sampleID"`
+	SampleName           string          `json:"sampleName"`
+	Batches              []*int          `json:"batches"`
+	Sites                []*int          `json:"sites"`
+	PublicationYear      *int            `json:"publicationYear"`
+	ExternalIdentifier   *string         `json:"doi" db:"doi"`
+	Authors              []*SampleAuthor `json:"authors"`
+	Minerals             []*string       `json:"minerals"`
+	HostMinerals         []*string       `json:"hostMinerals"`
+	InclusionMinerals    []*string       `json:"inclusionMinerals"`
+	RockTypes            []*string       `json:"rockTypes"`
+	RockClasses          []*string       `json:"rockClasses"`
+	InclusionTypes       []*string       `json:"inclusionTypes"`
+	GeologicalSettings   []*string       `json:"geologicalSettings"`
+	GeologicalAges       []*string       `json:"geologicalAges"`
+	GeologicalAgesMin    []*string       `json:"geologicalAgesMin"`
+	GeologicalAgesMax    []*string       `json:"geologicalAgesMax"`
+	SelectedMeasurements []*Measurement  `json:"selectedMeasurements"`
+}
+
 type SampleByFilters struct {
 	SampleID             int             `json:"samplingfeatureid" db:"sampleID"`
 	SampleName           string          `json:"sampleName"`
@@ -112,11 +133,11 @@ type SampleByFilterResponse struct {
 }
 
 type ClusteredSample struct {
-	ClusterID        int      `json:"clusterID"`
-	CentroidString   string   `json:"centroid"`
-	ConvexHullString string   `json:"convexHull"`
-	PointStrings     []string `json:"points"`
-	Samples          []int64  `json:"samples"`
+	ClusterID        int               `json:"clusterID"`
+	CentroidString   string            `json:"centroid"`
+	ConvexHullString string            `json:"convexHull"`
+	PointStrings     []string          `json:"points"`
+	Samples          []SampleInCluster `json:"samples"`
 }
 
 type ClusterResponse struct {
