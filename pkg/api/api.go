@@ -136,5 +136,8 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	geoData.GET("/sites", h.GetGeoJSONSites)
 	geoData.GET("/samplesclustered", h.GetSamplesFilteredClustered)
 
+	download := v1.Group("/download")
+	download.Use(middleware.GetAccessKeyMiddleware(secStore))
+	download.GET("/:format", h.GetDataDownload)
 	return e
 }
