@@ -23,6 +23,7 @@ samples.specimentextures as rockTextures,
 (samples.specimenagemax)[1] as ageMax,
 (samples.eruptiondate)[1] as eruptiondate,
 (samples.geologicalage)[1] as geologicalage,
+(samples.geologicalagePrefix)[1] as geologicalagePrefix,
 loc.loc_data[1].samplingfeatureid as locationNum,
 loc.loc_data[1].latitude as latitude,
 loc.loc_data[1].longitude as longitude,
@@ -37,6 +38,7 @@ coalesce(methods.method_comments, array[]::varchar[])  as comments,
 coalesce(methods.institutions, array[]::varchar[])  as institutions, -- actionBy seems to be sparsely filled
 coalesce(results.results, '[]'::jsonb) as results ,
 samples.alteration as alteration,
+samples.alterationType as alterationType,
 samples.samp_technique as samplingTechnique,
 samples.dd_min as drillDepthMin,
 samples.dd_max as drillDepthMax,
@@ -51,9 +53,11 @@ from
 	(array_remove(array_agg(distinct spec.specimentexture), null)) as specimentextures,
 	(array_agg(sage.specimenagemin)) as specimenagemin,
 	(array_agg(sage.specimenagemax)) as specimenagemax,
-	(array_agg(case when sage.specimengeolageprefix is not null then sage.specimengeolageprefix || '-' || sage.specimengeolage else sage.specimengeolage end)) as geologicalage,
+	(array_agg(sage.specimengeolage)) as geologicalage,
+	(array_agg(sage.specimengeolageprefix)) as geologicalageprefix,
 	(array_agg(sage.eruptionday || '.' || sage.eruptionmonth || '.' || sage.eruptionyear)) as eruptiondate,
 	(array_remove(array_agg(ann_alt.annotationtext), null))[1] as alteration,
+	(array_remove(array_agg(ann_alt_type.annotationtext), null))[1] as alterationType,
 	(array_remove(array_agg(ann_samptech.annotationtext), null))[1] as samp_technique,
 	(array_remove(array_agg(ann_ddmin.annotationtext), null))[1] as dd_min,
 	(array_remove(array_agg(ann_ddmax.annotationtext), null))[1] as dd_max,
@@ -70,6 +74,7 @@ from
 	left join odm2.specimenages sage on sage.samplingfeatureid = samples.samplingfeatureid
 	left join odm2.samplerelations sann on sann.sampleid = samples.samplingfeatureid
 	left join odm2.annotations ann_alt on ann_alt.annotationid = sann.annotationid and ann_alt.annotationcode = 'g_samples.alteration'
+	left join odm2.annotations ann_alt_type on ann_alt_type.annotationid = sann.annotationid and ann_alt_type.annotationcode = 'g_samples.alteration_type'
 	left join odm2.annotations ann_samptech on ann_samptech.annotationid = sann.annotationid and ann_samptech.annotationcode = 'g_samples.samp_technique'
 	left join odm2.annotations ann_ddmin on ann_ddmin.annotationid = sann.annotationid and ann_ddmin.annotationcode = 'g_samples.drill_depth_min'
 	left join odm2.annotations ann_ddmax on ann_ddmax.annotationid = sann.annotationid and ann_ddmax.annotationcode = 'g_samples.drill_depth_max'
