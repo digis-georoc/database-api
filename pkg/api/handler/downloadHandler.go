@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -56,7 +57,7 @@ func (h *Handler) GetDataDownload(c echo.Context) error {
 	}
 	// create temp download file
 	targetFormat := c.Param(PARAM_FORMAT)
-	fileName := c.Request().Header.Get("requestID") + "-" + targetFormat
+	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
 	f, err := os.Create(fileName)
 	defer cleanupDownloadFile(f, logger)
 	if err != nil {
@@ -76,7 +77,7 @@ func (h *Handler) GetDataDownload(c echo.Context) error {
 	data, err := formatData(samples, targetFormat)
 	if err != nil {
 		logger.Errorf("Can not format given data as %s: %s", targetFormat, err.Error())
-		return c.String(http.StatusInternalServerError, "Data formatting failed")
+		return c.String(http.StatusInternalServerError, "Data formatting failed (supported formats are 'csv' and 'xlsx')")
 	}
 
 	// write the formatted data to the download file and set the response headers

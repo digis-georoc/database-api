@@ -88,7 +88,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	v1.GET("/version", h.Version)
 	v1.GET("/docs/*", echoSwagger.WrapHandler)
 
-	// accesskey queries
+	// Accesskey queries
 	queries := v1.Group("/queries")
 	queries.Use(middleware.GetAccessKeyMiddleware(secStore))
 	// authors
@@ -135,7 +135,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// Sites as GeoJSON
 	geoData.GET("/sites", h.GetGeoJSONSites)
 	geoData.GET("/samplesclustered", h.GetSamplesFilteredClustered)
-
+	// download
 	download := v1.Group("/download")
 	download.Use(middleware.GetAccessKeyMiddleware(secStore))
 	download.GET("/:format", h.GetDataDownload)

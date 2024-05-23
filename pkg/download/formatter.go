@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/xuri/excelize/v2"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/model"
 )
 
@@ -73,6 +74,99 @@ func NewCSVFormatter(separator string) Formatter {
 }
 
 func (f *CSVFormatter) FormatData(samples []model.FullData) ([]byte, error) {
+	rows := makeRows(samples)
+	csv := ""
+	for _, row := range rows {
+		csv += strings.Join(row, ",")
+		csv += "\n"
+	}
+	data := []byte(csv)
+	return data, nil
+}
+
+// XSLX Formatter for excel files
+type XLSXFormatter struct {
+}
+
+func NewXLSXFormatter() Formatter {
+	return &XLSXFormatter{}
+}
+
+func (f *XLSXFormatter) FormatData(samples []model.FullData) ([]byte, error) {
+	file := excelize.NewFile()
+	defer file.Close()
+	rows := makeRows(samples)
+	for i, row := range rows {
+		for j, val := range row {
+			cell, err := excelize.CoordinatesToCellName(j+1, i+1) // cells are 1-based
+			if err != nil {
+				return nil, fmt.Errorf("Can not convert coordinates (%d, %d) to cellName: %s", i+1, j+1, err.Error())
+			}
+			err = file.SetCellValue("Sheet1", cell, val)
+			if err != nil {
+				return nil, fmt.Errorf("Can not set cell value (%s) to %+v", cell, val)
+			}
+		}
+	}
+	buf, err := file.WriteToBuffer()
+	if err != nil {
+		return nil, fmt.Errorf("Can not write xlsx data to buffer: %s", err.Error())
+	}
+	return buf.Bytes(), nil
+}
+
+// join implemebts strings.Join() for type []*string
+func join(stringSlice []*string, delimiter string) string {
+	join := ""
+	for i, s := range stringSlice {
+		if s != nil {
+			if i > 0 {
+				join += delimiter
+			}
+			join += *s
+		}
+	}
+	return join
+}
+
+// getString returns the string s refers to or empty string
+func getString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// getInt returns the integer s refers to as a string or empty string
+func getInt(i *int) string {
+	if i == nil {
+		return ""
+	}
+	return strconv.Itoa(*i)
+}
+
+// getFloat64 returns the float64 s refers to as a string or empty string
+func getFloat64(f *float64) string {
+	if f == nil {
+		return ""
+	}
+	return strconv.FormatFloat(*f, 'f', -1, 64)
+}
+
+// parseTaxonomicclassifier takes a slice of Taxonomicclassifiers and returns the labels ";"-separated as a string
+func parseTaxonomicclassifier(types []*model.FullDataTaxonomicClassifier) string {
+	rt := ""
+	for i, t := range types {
+		if i > 0 {
+			rt += ";"
+		}
+		rt += getString(t.Label)
+	}
+	return rt
+}
+
+// makeRows formats a slice of FullData models as table rows
+func makeRows(samples []model.FullData) [][]string {
 	rows := make([][]string, 0, len(samples))
 	// column headers
 	rows = append(rows, []string{"YEAR", "CITATION", "SAMPLE NAME", "UNIQUE_ID", "LOCATION", "ELEVATION (MIN.)", "ELEVATION (MAX.)", "SAMPLING TECHNIQUE", "DRILLING DEPTH (MIN.)", "DRILLING DEPTH (MAX.)", "LAND/SEA (SAMPLING)", "ROCK TYPE", "ROCK NAME", "ROCK TEXTURE", "SAMPLE COMMENT", "AGE (MIN.)", "AGE (MAX.)", "GEOLOGICAL AGE", "GEOLOGICAL AGE PREFIX", "ERUPTION DATE", "ALTERATION", "ALTERATION TYPE", "TYPE OF MATERIAL", "MINERAL / COMPONENT", "CRYSTAL", "RIM / CORE (MINERAL GRAINS)", "INCLUSION TYPE", "MINERAL (INCLUSION)", "RIM / CORE (INCLUSION)", "HOSTMINERAL (INCLUSION)", "LATITUDE (MIN.)", "LONGITUDE (MIN.)", "LATITUDE (MAX.)", "LONGITUDE (MAX.)", "SIO2(WT%)", "TIO2(WT%)", "AL2O3(WT%)", "CR2O3(WT%)", "FE2O3T(WT%)", "FE2O3(WT%)", "FEOT(WT%)", "FEO(WT%)", "CAO(WT%)", "MGO(WT%)", "MNO(WT%)", "BAO(WT%)", "K2O(WT%)", "NA2O(WT%)", "P2O5(WT%)", "H2OP(WT%)", "H2OM(WT%)", "CL(WT%)", "SO3(WT%)", "S(WT%)", "LOI(WT%)", "SR(WT%)", "LI(PPM)", "BE(PPM)", "B(PPM)", "F(PPM)", "NA(PPM)", "MG(PPM)", "AL(PPM)", "SI(PPM)", "P(PPM)", "S(PPM)", "CL(PPM)", "K(PPM)", "CA(PPM)", "SC(PPM)", "TI(PPM)", "V(PPM)", "CR(PPM)", "MN(PPM)", "FE(PPM)", "CO(PPM)", "NI(PPM)", "CU(PPM)", "ZN(PPM)", "GA(PPM)", "GE(PPM)", "AS(PPM)", "SE(PPM)", "BR(PPM)", "RB(PPM)", "SR(PPM)", "Y(PPM)", "ZR(PPM)", "NB(PPM)", "MO(PPM)", "PD(PPM)", "PD(PPB)", "AG(PPM)", "CD(PPM)", "IN(PPM)", "SN(PPM)", "SB(PPM)", "TE(PPM)", "CS(PPM)", "BA(PPM)", "LA(PPM)", "CE(PPM)", "PR(PPM)", "ND(PPM)", "SM(PPM)", "EU(PPM)", "GD(PPM)", "TB(PPM)", "DY(PPM)", "HO(PPM)", "ER(PPM)", "TM(PPM)", "YB(PPM)", "LU(PPM)", "HF(PPM)", "TA(PPM)", "W(PPM)", "RE(PPM)", "PT(PPM)", "PT(PPB)", "AU(PPM)", "AU(PPB)", "HG(PPM)", "TL(PPM)", "PB(PPM)", "PB204(PPM)", "PB206(PPM)", "PB207(PPM)", "PB208(PPM)", "BI(PPM)", "TH(PPM)", "U(PPM)", "U238(PPM)", "ND143_ND144", "EPSILON_ND_INI", "SM147_ND144", "SR87_SR86", "RB87_SR86", "PB206_PB204", "PB207_PB204", "PB207_PB206", "PB208_PB204", "PB208_PB206", "HF176_HF177", "PB206_U238", "PB207_U235", "D13C(VS VPDB)", "D18O(VS VPDB)", "D18O(VS VSMOW)", "D34S(VS VCDT)", "ALBITE(MOL%)", "ALMANDINE(MOL%)", "ANORTHITE(MOL%)", "ENSTATITE(MOL%)", "FERROSILITE(MOL%)", "GROSSULAR(MOL%)", "ORTHOCLASE(MOL%)", "PYROPE(MOL%)", "SPESSARTINE(MOL%)", "WOLLASTONITE(MOL%)", "AGE_PB207_PB206(MA)", "AGE_PB207_U235(MA)", "AGE_PB206_U238(MA)"})
@@ -145,74 +239,5 @@ func (f *CSVFormatter) FormatData(samples []model.FullData) ([]byte, error) {
 		}
 		rows = append(rows, row)
 	}
-	csv := ""
-	for _, row := range rows {
-		csv += strings.Join(row, ",")
-		csv += "\n"
-	}
-	data := []byte(csv)
-	return data, nil
-}
-
-// XSLX Formatter for excel files
-type XLSXFormatter struct {
-}
-
-func NewXLSXFormatter() Formatter {
-	return &XLSXFormatter{}
-}
-
-func (f *XLSXFormatter) FormatData(samples []model.FullData) ([]byte, error) {
-	data := make([]byte, 0)
-	return data, nil
-}
-
-// join implemebts strings.Join() for type []*string
-func join(stringSlice []*string, delimiter string) string {
-	join := ""
-	for i, s := range stringSlice {
-		if s != nil {
-			if i > 0 {
-				join += delimiter
-			}
-			join += *s
-		}
-	}
-	return join
-}
-
-// getString returns the string s refers to or empty string
-func getString(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
-}
-
-// getInt returns the integer s refers to as a string or empty string
-func getInt(i *int) string {
-	if i == nil {
-		return ""
-	}
-	return strconv.Itoa(*i)
-}
-
-// getFloat64 returns the float64 s refers to as a string or empty string
-func getFloat64(f *float64) string {
-	if f == nil {
-		return ""
-	}
-	return strconv.FormatFloat(*f, 'f', -1, 64)
-}
-
-// parseTaxonomicclassifier takes a slice of Taxonomicclassifiers and returns the labels ";"-separated as a string
-func parseTaxonomicclassifier(types []*model.FullDataTaxonomicClassifier) string {
-	rt := ""
-	for i, t := range types {
-		if i > 0 {
-			rt += ";"
-		}
-		rt += getString(t.Label)
-	}
-	return rt
+	return rows
 }
