@@ -193,6 +193,9 @@ definitions:
       alteration:
         description: nullable
         type: string
+      alterationType:
+        description: nullable
+        type: string
       batchData:
         items:
           $ref: '#/definitions/model.Batch'
@@ -217,6 +220,9 @@ definitions:
         description: nullable
         type: string
       geologicalAge:
+        description: nullable
+        type: string
+      geologicalAgePrefix:
         description: nullable
         type: string
       institutions:
@@ -773,7 +779,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.5.2
+  version: 0.6.0
 paths:
   /alive:
     get:
@@ -794,6 +800,227 @@ paths:
       summary: Health request to check if api is responsive
       tags:
       - general
+  /download/filter:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        get the full data for the given filters as a csv or xlsx file
+        Filter DSL syntax:
+        FIELD=OPERATOR:VALUE
+        where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
+        and VALUE is an unquoted string, integer or decimal
+        Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+        The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
+        The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
+        The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
+        If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
+        The filters are evaluated conjunctively.
+        Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
+      parameters:
+      - description: 'Desired output format: csv (default) or xlsx'
+        in: query
+        name: format
+        required: true
+        type: string
+      - description: limit
+        in: query
+        name: limit
+        type: integer
+      - description: offset
+        in: query
+        name: offset
+        type: integer
+      - description: tectonic setting - see /queries/sites/settings (supports Filter
+          DSL)
+        in: query
+        name: setting
+        type: string
+      - description: location level 1 - see /queries/locations/l1 (supports Filter
+          DSL)
+        in: query
+        name: location1
+        type: string
+      - description: location level 2 - see /queries/locations/l2 (supports Filter
+          DSL)
+        in: query
+        name: location2
+        type: string
+      - description: location level 3 - see /queries/locations/l3 (supports Filter
+          DSL)
+        in: query
+        name: location3
+        type: string
+      - description: latitude (supports Filter DSL)
+        in: query
+        name: latitude
+        type: string
+      - description: longitude (supports Filter DSL)
+        in: query
+        name: longitude
+        type: string
+      - description: rock type - see /queries/samples/rocktypes (supports Filter DSL)
+        in: query
+        name: rocktype
+        type: string
+      - description: taxonomic classifier ID - see /queries/samples/rockclasses value
+          (supports Filter DSL)
+        in: query
+        name: rockclassID
+        type: integer
+      - description: mineral - see /queries/samples/minerals (supports Filter DSL)
+        in: query
+        name: mineral
+        type: string
+      - description: material - see /queries/samples/materials (supports Filter DSL)
+        in: query
+        name: material
+        type: string
+      - description: inclusion type - see /queries/samples/inclusiontypes (supports
+          Filter DSL)
+        in: query
+        name: inclusiontype
+        type: string
+      - description: host material - see /queries/samples/hostmaterials (supports
+          Filter DSL)
+        in: query
+        name: hostmaterial
+        type: string
+      - description: inclusion material - see /queries/samples/inclusionmaterials
+          (supports Filter DSL)
+        in: query
+        name: inclusionmaterial
+        type: string
+      - description: sampling technique - see /queries/samples/samplingtechniques
+          (supports Filter DSL)
+        in: query
+        name: sampletech
+        type: string
+      - description: rim or core - R = Rim, C = Core, I = Intermediate (supports Filter
+          DSL)
+        in: query
+        name: rimorcore
+        type: string
+      - description: chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where
+          the filter tuples are evaluated conjunctively
+        in: query
+        name: chemistry
+        type: string
+      - description: title of publication (supports Filter DSL)
+        in: query
+        name: title
+        type: string
+      - description: publication year (supports Filter DSL)
+        in: query
+        name: publicationyear
+        type: string
+      - description: DOI (supports Filter DSL)
+        in: query
+        name: doi
+        type: string
+      - description: Author first name (supports Filter DSL)
+        in: query
+        name: firstname
+        type: string
+      - description: Author last name (supports Filter DSL)
+        in: query
+        name: lastname
+        type: string
+      - description: Specimen age min (supports Filter DSL)
+        in: query
+        name: agemin
+        type: string
+      - description: Specimen age max (supports Filter DSL)
+        in: query
+        name: agemax
+        type: string
+      - description: Specimen geological age - see /queries/samples/geoages (supports
+          Filter DSL)
+        in: query
+        name: geoage
+        type: string
+      - description: Specimen geological age prefix - see /queries/samples/geoageprefixes
+          (supports Filter DSL)
+        in: query
+        name: geoageprefix
+        type: string
+      - description: Laboratory name - see /queries/samples/organizationnames (supports
+          Filter DSL)
+        in: query
+        name: lab
+        type: string
+      - description: 'Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]'
+        in: query
+        name: polygon
+        type: string
+      - description: Add coordinates to each sample
+        in: query
+        name: addcoordinates
+        type: boolean
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve download data for the given filters
+      tags:
+      - download
+  /download/sampleid:
+    get:
+      consumes:
+      - application/json
+      description: get the full data for a list of sample IDs as a csv or xlsx file
+      parameters:
+      - description: List of Sample identifiers
+        in: query
+        name: sampleids
+        required: true
+        type: string
+      - description: 'Desired output format: csv (default) or xlsx'
+        in: query
+        name: format
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Retrieve download data for the given sample IDs
+      tags:
+      - download
   /geodata/samplesclustered:
     get:
       consumes:

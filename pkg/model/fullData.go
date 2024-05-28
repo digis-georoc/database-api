@@ -32,6 +32,8 @@ type FullData struct {
 	// nullable
 	GeologicalAge *string `json:"geologicalAge"`
 	// nullable
+	GeologicalAgePrefix *string `json:"geologicalAgePrefix"`
+	// nullable
 	LocationNum *int `json:"locationNum"`
 	// nullable
 	Latitude *float32 `json:"latitude"`
@@ -53,6 +55,8 @@ type FullData struct {
 	Results         []*Result `json:"results"`
 	// nullable
 	Alteration *string `json:"alteration"`
+	// nullable
+	AlterationType *string `json:"alterationType"`
 	// nullable
 	SamplingTechnique *string `json:"samplingTechnique"`
 	// nullable
