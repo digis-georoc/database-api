@@ -138,6 +138,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	// download
 	download := v1.Group("/download")
 	download.Use(middleware.GetAccessKeyMiddleware(secStore))
-	download.GET("/:format", h.GetDataDownload)
+	download.GET("/sampleid", h.GetDataDownloadByIDs)
+	download.GET("/filter", h.GetDataDownloadByFilter)
 	return e
 }

@@ -176,6 +176,8 @@ func makeRows(samples []model.FullData) [][]string {
 	rows := make([][]string, 0, len(samples))
 	// column headers
 	headerRow := []string{KEY_YEAR, KEY_DOI, KEY_CITATION, KEY_CITATION_METADATA, KEY_AUTHORS, KEY_SAMPLENAME, KEY_UNIQUE_ID, KEY_LOCATION, KEY_ELEVATION_MIN, KEY_ELEVATION_MAX, KEY_SAMPLING_TECHNIQUE, KEY_DRILLDEPTH_MIN, KEY_DRILLDEPTH_MAX, KEY_LANDORSEA, KEY_ROCKTYPE, KEY_ROCKNAME, KEY_ROCKTEXTURE, KEY_SAMPLECOMMENT, KEY_AGE_MIN, KEY_AGE_MAX, KEY_GEO_AGE, KEY_AGE_PREFIX, KEY_ERUPTION_DATE, KEY_ALTERATION, KEY_ALTERATION_TYPE, KEY_MATERIAL_TYPE, KEY_MINERAL, KEY_CRYSTAL, KEY_RIMORCORE, KEY_INCLUSIONTYPE, KEY_INCLUSION_MINERAL, KEY_RIMORCORE_INC, KEY_HOST_MINERAL, KEY_LAT_MIN, KEY_LONG_MIN, KEY_LAT_MAX, KEY_LONG_MAX}
+	itemsMap := map[string]map[string]bool{}
+	rowMaps := make([]map[string]string, 0, len(samples))
 	for _, sample := range samples {
 		rowMap := map[string]string{}
 		// citation metadata
@@ -217,7 +219,6 @@ func makeRows(samples []model.FullData) [][]string {
 		rowMap[KEY_ALTERATION_TYPE] = getString(sample.AlterationType)
 
 		// batch data
-		itemsMap := map[string][]string{}
 		for _, batch := range sample.BatchData {
 			rowMap[KEY_MATERIAL_TYPE] = getString(batch.Material)
 			rowMap[KEY_MINERAL] = parseTaxonomicclassifier(batch.Minerals)
@@ -248,27 +249,40 @@ func makeRows(samples []model.FullData) [][]string {
 				if method != "" {
 					key += fmt.Sprintf("[%s]", method)
 				}
-				itemsMap[itemType] = append(itemsMap[itemType], key)
+				if typeMap := itemsMap[itemType]; typeMap == nil {
+					itemsMap[itemType] = map[string]bool{}
+				}
+				itemsMap[itemType][key] = true
 				rowMap[key] = value
 			}
 		}
-		// append sorted items to headerRow
-		for _, itemType := range []string{"mj", "ree", "te", "rg", "ir", "is", "us", "em", "age"} {
-			items := itemsMap[itemType]
-			sort.SliceStable(items, func(i, j int) bool { return items[i] < items[j] })
-			headerRow = append(headerRow, items...)
-		}
+		rowMaps = append(rowMaps, rowMap)
+	}
+	// append sorted items to headerRow
+	for _, itemType := range []string{"mj", "ree", "te", "rg", "ir", "is", "us", "em", "age"} {
+		items := getKeySlice(itemsMap[itemType])
+		sort.SliceStable(items, func(i, j int) bool { return items[i] < items[j] })
+		headerRow = append(headerRow, items...)
+	}
+	rows = append(rows, headerRow)
+	for _, rowMap := range rowMaps {
 		// every row must have the same order (as defined by the header row), especially for the chemical items - so we lookup each column name in the map
 		row := make([]string, 0, len(headerRow))
 		for _, key := range headerRow {
-			metaData, ok := rowMap[key]
-			if !ok {
-				fmt.Printf("No value for key %s in rowMap", key)
-			}
+			metaData := rowMap[key]
 			row = append(row, fmt.Sprintf("\"%s\"", metaData))
 		}
 		rows = append(rows, row)
 	}
-	rows = append([][]string{headerRow}, rows...)
 	return rows
+}
+
+func getKeySlice(m map[string]bool) []string {
+	s := make([]string, len(m))
+	i := 0
+	for k := range m {
+		s[i] = k
+		i++
+	}
+	return s
 }
