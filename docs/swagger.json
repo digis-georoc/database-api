@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.5.2"
+        "version": "0.6.0"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -43,6 +43,303 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/download/filter": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get the full data for the given filters as a csv or xlsx file\nFilter DSL syntax:\nFIELD=OPERATOR:VALUE\nwhere FIELD is one of the accepted query params; OPERATOR is one of \"lt\" (\u003c), \"gt\" (\u003e), \"eq\" (=), \"in\" (IN), \"lk\" (LIKE), \"btw\" (BETWEEN)\nand VALUE is an unquoted string, integer or decimal\nMultiple VALUEs for an \"in\"-filter must be comma-separated and will be interpreted as a discunctive filter.\nThe OPERATORs \"lt\", \"gt\" and \"btw\" are only applicable to numerical values.\nThe OPERATOR \"lk\" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).\nThe OPERATOR \"btw\" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.\nIf no OPERATOR is specified, \"eq\" is assumed as the default OPERATOR.\nThe filters are evaluated conjunctively.\nNote that applying more filters can slow down the query as more tables have to be considered in the evaluation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "download"
+                ],
+                "summary": "Retrieve download data for the given filters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Desired output format: csv (default) or xlsx",
+                        "name": "format",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "limit",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "tectonic setting - see /queries/sites/settings (supports Filter DSL)",
+                        "name": "setting",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 1 - see /queries/locations/l1 (supports Filter DSL)",
+                        "name": "location1",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 2 - see /queries/locations/l2 (supports Filter DSL)",
+                        "name": "location2",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "location level 3 - see /queries/locations/l3 (supports Filter DSL)",
+                        "name": "location3",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "latitude (supports Filter DSL)",
+                        "name": "latitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "longitude (supports Filter DSL)",
+                        "name": "longitude",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rock type - see /queries/samples/rocktypes (supports Filter DSL)",
+                        "name": "rocktype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)",
+                        "name": "rockclassID",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "mineral - see /queries/samples/minerals (supports Filter DSL)",
+                        "name": "mineral",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "material - see /queries/samples/materials (supports Filter DSL)",
+                        "name": "material",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)",
+                        "name": "inclusiontype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "host material - see /queries/samples/hostmaterials (supports Filter DSL)",
+                        "name": "hostmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)",
+                        "name": "inclusionmaterial",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)",
+                        "name": "sampletech",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)",
+                        "name": "rimorcore",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively",
+                        "name": "chemistry",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "title of publication (supports Filter DSL)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "publication year (supports Filter DSL)",
+                        "name": "publicationyear",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "DOI (supports Filter DSL)",
+                        "name": "doi",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author first name (supports Filter DSL)",
+                        "name": "firstname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Author last name (supports Filter DSL)",
+                        "name": "lastname",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age min (supports Filter DSL)",
+                        "name": "agemin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen age max (supports Filter DSL)",
+                        "name": "agemax",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)",
+                        "name": "geoage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)",
+                        "name": "geoageprefix",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)",
+                        "name": "lab",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]",
+                        "name": "polygon",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Add coordinates to each sample",
+                        "name": "addcoordinates",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/download/sampleid": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get the full data for a list of sample IDs as a csv or xlsx file",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "download"
+                ],
+                "summary": "Retrieve download data for the given sample IDs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "List of Sample identifiers",
+                        "name": "sampleids",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Desired output format: csv (default) or xlsx",
+                        "name": "format",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -2793,6 +3090,10 @@
                     "description": "nullable",
                     "type": "string"
                 },
+                "alterationType": {
+                    "description": "nullable",
+                    "type": "string"
+                },
                 "batchData": {
                     "type": "array",
                     "items": {
@@ -2826,6 +3127,10 @@
                     "type": "string"
                 },
                 "geologicalAge": {
+                    "description": "nullable",
+                    "type": "string"
+                },
+                "geologicalAgePrefix": {
                     "description": "nullable",
                     "type": "string"
                 },

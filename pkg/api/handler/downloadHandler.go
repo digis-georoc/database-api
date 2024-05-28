@@ -32,13 +32,13 @@ const (
 // @Security    ApiKeyAuth
 // @Tags        download
 // @Accept      json
-// @Produce     file
+// @Produce     plain
 // @Param       sampleids query    string true "List of Sample identifiers"
-// @Param format query string true "Desired output format: csv (default) or xlsx"
-// @Success     200                {object} file
-// @Failure     401                {object} string
-// @Failure     404                {object} string
-// @Failure     500                {object} string
+// @Param       format    query    string true "Desired output format: csv (default) or xlsx"
+// @Success     200       {file}   file
+// @Failure     401       {object} string
+// @Failure     404       {object} string
+// @Failure     500       {object} string
 // @Router      /download/sampleid [get]
 func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
@@ -116,8 +116,8 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 // @Security    ApiKeyAuth
 // @Tags        download
 // @Accept      json
-// @Produce     file
-// @Param format query string true "Desired output format: csv (default) or xlsx"
+// @Produce     plain
+// @Param       format            query    string true  "Desired output format: csv (default) or xlsx"
 // @Param       limit             query    int    false "limit"
 // @Param       offset            query    int    false "offset"
 // @Param       setting           query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
@@ -148,10 +148,10 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 // @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 // @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
-// @Success     200                {object} file
-// @Failure     401                {object} string
-// @Failure     404                {object} string
-// @Failure     500                {object} string
+// @Success     200               {file}   file
+// @Failure     401               {object} string
+// @Failure     404               {object} string
+// @Failure     500               {object} string
 // @Router      /download/filter [get]
 func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
