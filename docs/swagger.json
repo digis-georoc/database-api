@@ -50,7 +50,7 @@
                 }
             }
         },
-        "/download/filter": {
+        "/download/filtered": {
             "get": {
                 "security": [
                     {
