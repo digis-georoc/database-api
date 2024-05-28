@@ -57,7 +57,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/download/filter": {
+        "/download/filtered": {
             "get": {
                 "security": [
                     {

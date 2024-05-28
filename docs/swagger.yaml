@@ -800,7 +800,7 @@ paths:
       summary: Health request to check if api is responsive
       tags:
       - general
-  /download/filter:
+  /download/filtered:
     get:
       consumes:
       - application/json
