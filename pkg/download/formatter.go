@@ -2,6 +2,7 @@ package download
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -15,7 +16,10 @@ const (
 
 	// csv column keys
 	KEY_YEAR               = "YEAR"
+	KEY_DOI                = "DOI"
 	KEY_CITATION           = "CITATION"
+	KEY_AUTHORS            = "AUTHORS"
+	KEY_CITATION_METADATA  = "CITATION METADATA"
 	KEY_SAMPLENAME         = "SAMPLE NAME"
 	KEY_UNIQUE_ID          = "UNIQUE_ID"
 	KEY_LOCATION           = "LOCATION"
@@ -76,9 +80,11 @@ func NewCSVFormatter(separator string) Formatter {
 func (f *CSVFormatter) FormatData(samples []model.FullData) ([]byte, error) {
 	rows := makeRows(samples)
 	csv := ""
-	for _, row := range rows {
+	for i, row := range rows {
 		csv += strings.Join(row, ",")
-		csv += "\n"
+		if i < len(rows)-1 {
+			csv += "\n"
+		}
 	}
 	data := []byte(csv)
 	return data, nil
@@ -115,7 +121,7 @@ func (f *XLSXFormatter) FormatData(samples []model.FullData) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-// join implemebts strings.Join() for type []*string
+// join implements strings.Join() for type []*string
 func join(stringSlice []*string, delimiter string) string {
 	join := ""
 	for i, s := range stringSlice {
@@ -169,14 +175,24 @@ func parseTaxonomicclassifier(types []*model.FullDataTaxonomicClassifier) string
 func makeRows(samples []model.FullData) [][]string {
 	rows := make([][]string, 0, len(samples))
 	// column headers
-	rows = append(rows, []string{"YEAR", "CITATION", "SAMPLE NAME", "UNIQUE_ID", "LOCATION", "ELEVATION (MIN.)", "ELEVATION (MAX.)", "SAMPLING TECHNIQUE", "DRILLING DEPTH (MIN.)", "DRILLING DEPTH (MAX.)", "LAND/SEA (SAMPLING)", "ROCK TYPE", "ROCK NAME", "ROCK TEXTURE", "SAMPLE COMMENT", "AGE (MIN.)", "AGE (MAX.)", "GEOLOGICAL AGE", "GEOLOGICAL AGE PREFIX", "ERUPTION DATE", "ALTERATION", "ALTERATION TYPE", "TYPE OF MATERIAL", "MINERAL / COMPONENT", "CRYSTAL", "RIM / CORE (MINERAL GRAINS)", "INCLUSION TYPE", "MINERAL (INCLUSION)", "RIM / CORE (INCLUSION)", "HOSTMINERAL (INCLUSION)", "LATITUDE (MIN.)", "LONGITUDE (MIN.)", "LATITUDE (MAX.)", "LONGITUDE (MAX.)", "SIO2(WT%)", "TIO2(WT%)", "AL2O3(WT%)", "CR2O3(WT%)", "FE2O3T(WT%)", "FE2O3(WT%)", "FEOT(WT%)", "FEO(WT%)", "CAO(WT%)", "MGO(WT%)", "MNO(WT%)", "BAO(WT%)", "K2O(WT%)", "NA2O(WT%)", "P2O5(WT%)", "H2OP(WT%)", "H2OM(WT%)", "CL(WT%)", "SO3(WT%)", "S(WT%)", "LOI(WT%)", "SR(WT%)", "LI(PPM)", "BE(PPM)", "B(PPM)", "F(PPM)", "NA(PPM)", "MG(PPM)", "AL(PPM)", "SI(PPM)", "P(PPM)", "S(PPM)", "CL(PPM)", "K(PPM)", "CA(PPM)", "SC(PPM)", "TI(PPM)", "V(PPM)", "CR(PPM)", "MN(PPM)", "FE(PPM)", "CO(PPM)", "NI(PPM)", "CU(PPM)", "ZN(PPM)", "GA(PPM)", "GE(PPM)", "AS(PPM)", "SE(PPM)", "BR(PPM)", "RB(PPM)", "SR(PPM)", "Y(PPM)", "ZR(PPM)", "NB(PPM)", "MO(PPM)", "PD(PPM)", "PD(PPB)", "AG(PPM)", "CD(PPM)", "IN(PPM)", "SN(PPM)", "SB(PPM)", "TE(PPM)", "CS(PPM)", "BA(PPM)", "LA(PPM)", "CE(PPM)", "PR(PPM)", "ND(PPM)", "SM(PPM)", "EU(PPM)", "GD(PPM)", "TB(PPM)", "DY(PPM)", "HO(PPM)", "ER(PPM)", "TM(PPM)", "YB(PPM)", "LU(PPM)", "HF(PPM)", "TA(PPM)", "W(PPM)", "RE(PPM)", "PT(PPM)", "PT(PPB)", "AU(PPM)", "AU(PPB)", "HG(PPM)", "TL(PPM)", "PB(PPM)", "PB204(PPM)", "PB206(PPM)", "PB207(PPM)", "PB208(PPM)", "BI(PPM)", "TH(PPM)", "U(PPM)", "U238(PPM)", "ND143_ND144", "EPSILON_ND_INI", "SM147_ND144", "SR87_SR86", "RB87_SR86", "PB206_PB204", "PB207_PB204", "PB207_PB206", "PB208_PB204", "PB208_PB206", "HF176_HF177", "PB206_U238", "PB207_U235", "D13C(VS VPDB)", "D18O(VS VPDB)", "D18O(VS VSMOW)", "D34S(VS VCDT)", "ALBITE(MOL%)", "ALMANDINE(MOL%)", "ANORTHITE(MOL%)", "ENSTATITE(MOL%)", "FERROSILITE(MOL%)", "GROSSULAR(MOL%)", "ORTHOCLASE(MOL%)", "PYROPE(MOL%)", "SPESSARTINE(MOL%)", "WOLLASTONITE(MOL%)", "AGE_PB207_PB206(MA)", "AGE_PB207_U235(MA)", "AGE_PB206_U238(MA)"})
+	headerRow := []string{KEY_YEAR, KEY_DOI, KEY_CITATION, KEY_CITATION_METADATA, KEY_AUTHORS, KEY_SAMPLENAME, KEY_UNIQUE_ID, KEY_LOCATION, KEY_ELEVATION_MIN, KEY_ELEVATION_MAX, KEY_SAMPLING_TECHNIQUE, KEY_DRILLDEPTH_MIN, KEY_DRILLDEPTH_MAX, KEY_LANDORSEA, KEY_ROCKTYPE, KEY_ROCKNAME, KEY_ROCKTEXTURE, KEY_SAMPLECOMMENT, KEY_AGE_MIN, KEY_AGE_MAX, KEY_GEO_AGE, KEY_AGE_PREFIX, KEY_ERUPTION_DATE, KEY_ALTERATION, KEY_ALTERATION_TYPE, KEY_MATERIAL_TYPE, KEY_MINERAL, KEY_CRYSTAL, KEY_RIMORCORE, KEY_INCLUSIONTYPE, KEY_INCLUSION_MINERAL, KEY_RIMORCORE_INC, KEY_HOST_MINERAL, KEY_LAT_MIN, KEY_LONG_MIN, KEY_LAT_MAX, KEY_LONG_MAX}
 	for _, sample := range samples {
-		rowMap := map[string]string{"YEAR": "", "CITATION": "", "SAMPLE NAME": "", "UNIQUE_ID": "", "LOCATION": "", "ELEVATION (MIN.)": "", "ELEVATION (MAX.)": "", "SAMPLING TECHNIQUE": "", "DRILLING DEPTH (MIN.)": "", "DRILLING DEPTH (MAX.)": "", "LAND/SEA (SAMPLING)": "", "ROCK TYPE": "", "ROCK NAME": "", "ROCK TEXTURE": "", "SAMPLE COMMENT": "", "AGE (MIN.)": "", "AGE (MAX.)": "", "GEOLOGICAL AGE": "", "GEOLOGICAL AGE PREFIX": "", "ERUPTION DATE": "", "ALTERATION": "", "ALTERATION TYPE": "", "TYPE OF MATERIAL": "", "MINERAL / COMPONENT": "", "CRYSTAL": "", "RIM / CORE (MINERAL GRAINS)": "", "INCLUSION TYPE": "", "MINERAL (INCLUSION)": "", "RIM / CORE (INCLUSION)": "", "HOSTMINERAL (INCLUSION)": "", "LATITUDE (MIN.)": "", "LONGITUDE (MIN.)": "", "LATITUDE (MAX.)": "", "LONGITUDE (MAX.)": "", "SIO2(WT%)": "", "TIO2(WT%)": "", "AL2O3(WT%)": "", "CR2O3(WT%)": "", "FE2O3T(WT%)": "", "FE2O3(WT%)": "", "FEOT(WT%)": "", "FEO(WT%)": "", "CAO(WT%)": "", "MGO(WT%)": "", "MNO(WT%)": "", "BAO(WT%)": "", "K2O(WT%)": "", "NA2O(WT%)": "", "P2O5(WT%)": "", "H2OP(WT%)": "", "H2OM(WT%)": "", "CL(WT%)": "", "SO3(WT%)": "", "S(WT%)": "", "LOI(WT%)": "", "SR(WT%)": "", "LI(PPM)": "", "BE(PPM)": "", "B(PPM)": "", "F(PPM)": "", "NA(PPM)": "", "MG(PPM)": "", "AL(PPM)": "", "SI(PPM)": "", "P(PPM)": "", "S(PPM)": "", "CL(PPM)": "", "K(PPM)": "", "CA(PPM)": "", "SC(PPM)": "", "TI(PPM)": "", "V(PPM)": "", "CR(PPM)": "", "MN(PPM)": "", "FE(PPM)": "", "CO(PPM)": "", "NI(PPM)": "", "CU(PPM)": "", "ZN(PPM)": "", "GA(PPM)": "", "GE(PPM)": "", "AS(PPM)": "", "SE(PPM)": "", "BR(PPM)": "", "RB(PPM)": "", "SR(PPM)": "", "Y(PPM)": "", "ZR(PPM)": "", "NB(PPM)": "", "MO(PPM)": "", "PD(PPM)": "", "PD(PPB)": "", "AG(PPM)": "", "CD(PPM)": "", "IN(PPM)": "", "SN(PPM)": "", "SB(PPM)": "", "TE(PPM)": "", "CS(PPM)": "", "BA(PPM)": "", "LA(PPM)": "", "CE(PPM)": "", "PR(PPM)": "", "ND(PPM)": "", "SM(PPM)": "", "EU(PPM)": "", "GD(PPM)": "", "TB(PPM)": "", "DY(PPM)": "", "HO(PPM)": "", "ER(PPM)": "", "TM(PPM)": "", "YB(PPM)": "", "LU(PPM)": "", "HF(PPM)": "", "TA(PPM)": "", "W(PPM)": "", "RE(PPM)": "", "PT(PPM)": "", "PT(PPB)": "", "AU(PPM)": "", "AU(PPB)": "", "HG(PPM)": "", "TL(PPM)": "", "PB(PPM)": "", "PB204(PPM)": "", "PB206(PPM)": "", "PB207(PPM)": "", "PB208(PPM)": "", "BI(PPM)": "", "TH(PPM)": "", "U(PPM)": "", "U238(PPM)": "", "ND143_ND144": "", "EPSILON_ND_INI": "", "SM147_ND144": "", "SR87_SR86": "", "RB87_SR86": "", "PB206_PB204": "", "PB207_PB204": "", "PB207_PB206": "", "PB208_PB204": "", "PB208_PB206": "", "HF176_HF177": "", "PB206_U238": "", "PB207_U235": "", "D13C(VS VPDB)": "", "D18O(VS VPDB)": "", "D18O(VS VSMOW)": "", "D34S(VS VCDT)": "", "ALBITE(MOL%)": "", "ALMANDINE(MOL%)": "", "ANORTHITE(MOL%)": "", "ENSTATITE(MOL%)": "", "FERROSILITE(MOL%)": "", "GROSSULAR(MOL%)": "", "ORTHOCLASE(MOL%)": "", "PYROPE(MOL%)": "", "SPESSARTINE(MOL%)": "", "WOLLASTONITE(MOL%)": "", "AGE_PB207_PB206(MA)": "", "AGE_PB207_U235(MA)": "", "AGE_PB206_U238(MA)": ""}
+		rowMap := map[string]string{}
 		// citation metadata
 		if len(sample.References) > 0 {
 			ref := sample.References[0]
 			rowMap[KEY_YEAR] = getInt(ref.Publicationyear)
-			rowMap[KEY_CITATION] = fmt.Sprintf("[%v]%v", getString(ref.Externalidentifier), getString(ref.Title))
+			rowMap[KEY_DOI] = getString(ref.Externalidentifier)
+			rowMap[KEY_CITATION] = getString(ref.Title)
+			authors := ""
+			for i, author := range ref.Authors {
+				if i > 0 {
+					authors += ";"
+				}
+				authors += fmt.Sprintf("%s %s", getString(author.PersonLastName), getString(author.PersonFirstName))
+			}
+			rowMap[KEY_AUTHORS] = authors
+			rowMap[KEY_CITATION_METADATA] = fmt.Sprintf("Journal:%s;Volume:%s;Issue:%s;BookTitle:%s;FirstPage:%s;LastPage:%s", getString(ref.Journal), getString(ref.Volume), getString(ref.Issue), getString(ref.BookTitle), getString(ref.FirstPage), getString(ref.LastPage))
 		}
 		// sample data
 		rowMap[KEY_SAMPLENAME] = getString(sample.SampleName)
@@ -201,6 +217,7 @@ func makeRows(samples []model.FullData) [][]string {
 		rowMap[KEY_ALTERATION_TYPE] = getString(sample.AlterationType)
 
 		// batch data
+		itemsMap := map[string][]string{}
 		for _, batch := range sample.BatchData {
 			rowMap[KEY_MATERIAL_TYPE] = getString(batch.Material)
 			rowMap[KEY_MINERAL] = parseTaxonomicclassifier(batch.Minerals)
@@ -217,27 +234,41 @@ func makeRows(samples []model.FullData) [][]string {
 			// add result data
 			for _, result := range batch.Results {
 				itemName := getString(result.ItemName)
+				itemType := getString(result.ItemGroup)
 				value := getFloat64(result.Value)
 				unit := getString(result.Unit)
+				method := getString(result.Method)
 				if itemName == "" || value == "" {
 					continue
 				}
 				key := itemName
 				if unit != "" {
-					key = fmt.Sprintf("%s(%s)", itemName, unit)
+					key += fmt.Sprintf("(%s)", unit)
 				}
-				if _, ok := rowMap[key]; !ok {
-					fmt.Printf("No column for key: %s\n", key)
+				if method != "" {
+					key += fmt.Sprintf("[%s]", method)
 				}
+				itemsMap[itemType] = append(itemsMap[itemType], key)
 				rowMap[key] = value
 			}
 		}
+		// append sorted items to headerRow
+		for _, itemType := range []string{"mj", "ree", "te", "rg", "ir", "is", "us", "em", "age"} {
+			items := itemsMap[itemType]
+			sort.SliceStable(items, func(i, j int) bool { return items[i] < items[j] })
+			headerRow = append(headerRow, items...)
+		}
 		// every row must have the same order (as defined by the header row), especially for the chemical items - so we lookup each column name in the map
-		row := make([]string, 0, len(rowMap))
-		for _, key := range rows[0] {
-			row = append(row, fmt.Sprintf("\"%s\"", rowMap[key]))
+		row := make([]string, 0, len(headerRow))
+		for _, key := range headerRow {
+			metaData, ok := rowMap[key]
+			if !ok {
+				fmt.Printf("No value for key %s in rowMap", key)
+			}
+			row = append(row, fmt.Sprintf("\"%s\"", metaData))
 		}
 		rows = append(rows, row)
 	}
+	rows = append([][]string{headerRow}, rows...)
 	return rows
 }
