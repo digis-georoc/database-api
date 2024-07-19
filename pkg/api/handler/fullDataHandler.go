@@ -266,7 +266,7 @@ func getTASData(results []*model.Result) (*model.DiagramData, error) {
 		}
 	}
 	values := [][]float64{}
-	if prioTASData != nil {
+	if prioTASData != nil && isTASDataComplete(*prioTASData) {
 		values = [][]float64{{*prioTASData.SIO2, *prioTASData.K2O + *prioTASData.NA2O}}
 	}
 	return &model.DiagramData{
