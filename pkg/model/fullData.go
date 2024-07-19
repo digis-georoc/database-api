@@ -24,9 +24,9 @@ type FullData struct {
 	RockClasses  []*FullDataTaxonomicClassifier `json:"rockClasses"`
 	RockTextures []*string                      `json:"rockTextures"`
 	// nullable
-	AgeMin *int `json:"ageMin"`
+	AgeMin *float64 `json:"ageMin"`
 	// nullable
-	AgeMax *int `json:"ageMax"`
+	AgeMax *float64 `json:"ageMax"`
 	// nullable
 	EruptionDate *string `json:"eruptionDate"`
 	// nullable
