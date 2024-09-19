@@ -3087,11 +3087,11 @@ const docTemplate = `{
             "properties": {
                 "ageMax": {
                     "description": "nullable",
-                    "type": "integer"
+                    "type": "number"
                 },
                 "ageMin": {
                     "description": "nullable",
-                    "type": "integer"
+                    "type": "number"
                 },
                 "alteration": {
                     "description": "nullable",
@@ -3965,7 +3965,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.6.0",
+	Version:          "0.6.1",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},
