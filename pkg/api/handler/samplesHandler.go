@@ -202,6 +202,9 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
+
+	fmt.Printf("%s", query.GetQueryString())
+
 	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
@@ -1182,7 +1185,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			if i > 0 {
 				mvIDList += ","
 			}
-			mvIDList += fmt.Sprintf("m%d.samplingfeatureid", i+1)
+			mvIDList += fmt.Sprintf("m%d.sampleid", i+1)
 		}
 		query.AddSQLBlock(fmt.Sprintf("%s%s%s", sql.GetSamplingfeatureIdsByFilterResultsStartPre, mvIDList, sql.GetSamplingfeatureIdsByFilterResultsStartPost))
 		// add ResultFilterExpression for each expression in the chemQry
@@ -1202,15 +1205,15 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 				junctor = sql.OpAnd
 			}
 			if expr.Element != "" {
-				query.AddFilter("mv.variablecode", expr.Element, sql.OpEq, junctor)
+				query.AddFilter("upper(n.variablecode)", expr.Element, sql.OpEq, junctor)
 				junctor = sql.OpAnd
 			}
 			if expr.MinValue != "" {
-				query.AddFilter("mv.datavalue", expr.MinValue, sql.OpGte, junctor)
+				query.AddFilter("n.datavalue", expr.MinValue, sql.OpGte, junctor)
 				junctor = sql.OpAnd
 			}
 			if expr.MaxValue != "" {
-				query.AddFilter("mv.datavalue", expr.MaxValue, sql.OpLte, junctor)
+				query.AddFilter("n.datavalue", expr.MaxValue, sql.OpLte, junctor)
 			}
 			if i == 0 {
 				query.AddSQLBlock(fmt.Sprintf(") m%d", i+1))
@@ -1218,7 +1221,6 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 				query.AddSQLBlock(fmt.Sprintf(") m%d on m%d.samplingfeatureid = m%d.samplingfeatureid", i+1, i+1, i))
 			}
 		}
-
 		// add closing block for results
 		query.AddSQLBlock(sql.GetSamplingfeatureIdsByFilterResultsEnd)
 	}
