@@ -203,8 +203,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	fmt.Printf("%s", query.GetQueryString())
-
 	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
