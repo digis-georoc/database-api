@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -76,6 +77,8 @@ const (
 	KEY_POLYGON                 = "key_polygon"
 	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
 	KEY_BOUNDARY_POLY           = "key_boundary_poly"
+
+	RESPONSE_BUFFER_SIZE = 10
 )
 
 // GetSampleByID godoc
@@ -418,6 +421,153 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	response.Clusters = geoJSONClusters
 	response.Points = geoJSONPoints
 	return c.JSON(http.StatusOK, response)
+}
+
+func (h *Handler) GetSamplesFilteredClusteredStreamed(c echo.Context) error {
+	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
+	if !ok {
+		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
+	}
+	coordData := map[string]interface{}{}
+	// get the bbox
+	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse bbox")
+	}
+	if bboxString == "" {
+		return c.String(http.StatusInternalServerError, "No bbox provided")
+	}
+	bbox, err := geometry.ParsePointArray(bboxString)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse bbox")
+	}
+	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
+	bbox = geometry.TruncateBBox(bbox)
+	width := bbox[1][0] - bbox[0][0]
+	kmeansMaxDistance := width / 12
+	// scale bbox
+	if !geometry.IsZoom0(bbox) {
+		// add frame around bbox to avoid reloading on small panning
+		bbox = geometry.ScaleBBox(bbox)
+	}
+	// truncate bbox after scaling so it contains at most one whole world
+	bbox = geometry.TruncateBBox(bbox)
+	// add first point again to make closed polygon shape
+	bbox = append(bbox, bbox[0])
+	boundary, translationFactor, err := geometry.CalcTranslation(bbox)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
+	}
+	coordData[KEY_BBOX] = bbox
+	coordData[KEY_TRANSLATION_FACTOR] = translationFactor
+	coordData[KEY_BOUNDARY] = boundary
+
+	// get polygon filter
+	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Can not parse polygon")
+	}
+	if polygonString != "" {
+		polygon, err := geometry.ParsePointArray(polygonString)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not parse polygon")
+		}
+		boundaryPoly, translationFactorPoly, err := geometry.CalcTranslation(polygon)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
+		}
+		coordData[KEY_POLYGON] = polygon
+		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
+		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
+	}
+
+	// build query string
+	query, err := buildSampleFilterQuery(c, coordData, nil)
+	if err != nil {
+		return c.String(http.StatusUnprocessableEntity, err.Error())
+	}
+	numClusters := c.QueryParam(QP_NUM_CLUSTERS)
+	if numClusters == "" {
+		numClusters = DEFAULT_NUM_CLUSTERS
+	}
+	maxDistance := c.QueryParam(QP_MAX_DISTANCE)
+	if maxDistance == "" {
+		// set relative to bbox size
+		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
+	}
+	if width < CLUSTER_THRESHOLD_BBOX {
+		params := map[string]interface{}{
+			"fakeID": CLUSTER_ID_NO_CLUSTERING,
+		}
+		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperNoClusteringPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
+	} else {
+		// wrap query in clustering postGIS-sql with parameters
+		params := map[string]interface{}{
+			"numClusters": numClusters,
+			"maxDistance": maxDistance,
+		}
+		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
+	}
+	limit, offset, err := handlePaginationParams(c)
+	if err != nil {
+		logger.Errorf("Invalid pagination params: %v", err)
+		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
+	}
+	query.AddLimit(limit)
+	query.AddOffset(offset)
+
+	// start the query and listen to the incoming result stream
+	resultChan := make(chan model.ClusteredSample, RESPONSE_BUFFER_SIZE)
+	errChan := make(chan error)
+	go repository.QueryStream[model.ClusteredSample](c.Request().Context(), resultChan, errChan, h.db, query.GetQueryString(), query.GetFilterValues()...)
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusOK)
+	enc := json.NewEncoder(c.Response())
+	// response object
+	response := model.ClusterResponse{}
+	// wrap bbox in []interface{} for geoJSON polygon
+	bboxIWrap := []interface{}{bbox}
+	response.Bbox = model.GeoJSONFeature{
+		Type: model.GEOJSONTYPE_FEATURE,
+		Geometry: model.Geometry{
+			Type:        model.GEOJSON_GEOMETRY_POLYGON,
+			Coordinates: bboxIWrap,
+		},
+	}
+	// flush initial data
+	if err := enc.Encode(response); err != nil {
+		logger.Errorf("Can not encode initial cluster data: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not encode cluster data")
+	}
+	c.Response().Flush()
+Listener:
+	for {
+		select {
+		case result, ok := <-resultChan:
+			if !ok {
+				break Listener
+			}
+			clusters, points, err := parseClusterToGeoJSON([]model.ClusteredSample{result})
+			if err != nil {
+				logger.Errorf("Can not parse cluster data: %v", err)
+				return c.String(http.StatusInternalServerError, "Can not parse cluster data")
+			}
+			response.Clusters = append(response.Clusters, clusters...)
+			response.Points = append(response.Points, points...)
+			if err := enc.Encode(response); err != nil {
+				logger.Errorf("Can not encode cluster data: %v", err)
+				return c.String(http.StatusInternalServerError, "Can not encode cluster data")
+			}
+			c.Response().Flush()
+		case err, ok := <-errChan:
+			if !ok {
+				break Listener
+			}
+			logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
+			return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+		}
+	}
+	return nil
 }
 
 // GetSpecimenTypes godoc
@@ -1379,6 +1529,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
+// Clusters with less than CLUSTERING_THRESHOLD points are not clustered and are parsed as points
 func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, []model.GeoJSONFeature, error) {
 	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
 	points := []model.GeoJSONFeature{}

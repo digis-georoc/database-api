@@ -161,6 +161,45 @@ func Query[T any](ctx context.Context, pC PostgresConnector, sql string, args ..
 	return pgx.CollectRows(rows, pgx.RowToStructByName[T])
 }
 
+// Query is the generic method to query the database
+// @param   ctx  a   context.Context   for    the    query  (use the request context to enable aborting the query if the client disconnects)
+// @param   pC   the PostgresConnector object to     access the database
+// @param   sql  the sql               query  to     be     executed
+// @param   args can be                a      number of     arguments to the query
+// @returns a slice of objects of type T containing the result rows, or any error occurring while executing the query
+//
+// Example:
+// sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
+// Return type T should be a slice of model.User structs
+// results, err := Query[model.User](ctx, database, sql, "Turing")
+func QueryStream[T any](ctx context.Context, resultChan chan T, errChan chan error, pC PostgresConnector, sql string, args ...interface{}) {
+	defer close(errChan)
+	defer close(resultChan)
+	// manually acquire and release connection to be able to send CancelRequest() on context canceled by client
+	c, err := pC.Connection().Acquire(ctx)
+	if err != nil {
+		errChan <- err
+		return
+	}
+	defer c.Release()
+	stopChan := make(chan bool)
+	go cancelQueryOnContextCanceled(ctx, c, stopChan)
+	rows, err := c.Query(ctx, sql, args...)
+	stopChan <- true
+	defer rows.Close()
+	if err != nil {
+		errChan <- fmt.Errorf("Can not query database: %w", err)
+		return
+	}
+	for rows.Next() {
+		result, _ := pgx.RowToStructByName[T](rows)
+		resultChan <- result
+	}
+	if rows.Err() != nil {
+		errChan <- fmt.Errorf("Can not read rows: %w", err)
+	}
+}
+
 // cancelQueryOnContextCanceled is an async context watcher to send a CancelRequest() if the context is canceled by client
 func cancelQueryOnContextCanceled(ctx context.Context, c *pgxpool.Conn, stopChan chan bool) {
 	// block until context is done or query returned
