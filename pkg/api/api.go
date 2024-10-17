@@ -141,5 +141,11 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	download.Use(middleware.GetAccessKeyMiddleware(secStore))
 	download.GET("/sampleid", h.GetDataDownloadByIDs)
 	download.GET("/filtered", h.GetDataDownloadByFilter)
+
+	// test
+	test := v1.Group("/test")
+	test.Use(middleware.GetAccessKeyMiddleware(secStore))
+	test.GET("/delay", h.CheckDelay)
+	test.GET("/delaystreamed", h.CheckDelayStreamed)
 	return e
 }

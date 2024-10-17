@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/api/middleware"
@@ -50,6 +51,41 @@ func (h *Handler) Ping(c echo.Context) error {
 		return c.JSON(http.StatusFailedDependency, err.Error())
 	}
 	return c.JSON(http.StatusOK, "Pong")
+}
+
+// Test endpoint for checking network behavior on long running requests
+func (h *Handler) CheckDelay(c echo.Context) error {
+	delay := c.QueryParam("delay")
+	if delay == "" {
+		delay = "0"
+	}
+	delayInt, err := strconv.Atoi(delay)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid delay value")
+	}
+	time.Sleep(time.Duration(delayInt) * time.Second)
+	return c.JSON(http.StatusOK, fmt.Sprintf("Response after %d seconds", delayInt))
+}
+
+// Test endpoint for checking network behavior on long running requests with regular streaming response data
+func (h *Handler) CheckDelayStreamed(c echo.Context) error {
+	delay := c.QueryParam("delay")
+	if delay == "" {
+		delay = "0"
+	}
+	delayInt, err := strconv.Atoi(delay)
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid delay value")
+	}
+	for i := delayInt; i > 0; i-- {
+		_, err := c.Response().Write([]byte(fmt.Sprintf("Response after %d seconds\n", delayInt-i+1)))
+		if err != nil {
+			return c.String(http.StatusBadRequest, fmt.Sprintf("Failed to write response after %d seconds", i))
+		}
+		c.Response().Flush()
+		time.Sleep(1 * time.Second)
+	}
+	return nil
 }
 
 // Alive godoc
