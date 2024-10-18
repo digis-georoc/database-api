@@ -231,17 +231,6 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	// query the full data for each given identifier
 	resultChan := make(chan model.FullData)
 	errChan := make(chan error)
-
-	// batchSize := 10
-	// for i := 0; i < len(identifierList); i += batchSize {
-	// 	// TODO: how to notify channels that all tasks completed?
-	// 	end := i + batchSize
-	// 	if end >= len(identifierList) {
-	// 		end = len(identifierList)
-	// 	}
-	// 	// TODO: cannot use same channel for multiple tasks because it will be closed by first
-	// 	go repository.QueryStream[model.FullData](c.Request().Context(), resultChan, errChan, h.db, sql.FullDataByMultiIdQuery, identifierList[i:end])
-	// }
 	go repository.QueryStream[model.FullData](c.Request().Context(), resultChan, errChan, h.db, sql.FullDataByMultiIdQuery, identifierList)
 	samples := make([]model.FullData, 0, len(identifierList))
 	returnCount := 0
@@ -273,7 +262,6 @@ Listener:
 	}
 
 	// write the formatted data to the download file and set the response headers
-	// TODO: write directly into response as the concurrent fullData comes in??
 	n, err := f.Write(data)
 	if err != nil {
 		logger.Errorf("Can not write data: stopped at %d with error %v", n, err)
