@@ -161,6 +161,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 // @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
+// @Response	102 			 {header}	model.SampleByFilterResponse Sends back Headers while progressing the request
 // @Success     200               {object} model.SampleByFilterResponse
 // @Failure     401               {object} string
 // @Failure     404               {object} string
@@ -205,16 +206,26 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
-	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
+
+	// prepare response and start the query
+	response := model.SampleByFilterResponse{}
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusProcessing)
+	enc := json.NewEncoder(c.Response())
+	// flush headers
+	c.Response().Flush()
+
+	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	// copy into model without totalCount on each sample
+	var totalCount int
 	responseData := []model.SampleByFiltersData{}
-	totalCount := 0
-	for _, sample := range result {
-		totalCount = sample.TotalCount
+	for _, sample := range results {
+		if totalCount == 0 {
+			totalCount = sample.TotalCount
+		}
 		data := model.SampleByFiltersData{
 			SampleID:             sample.SampleID,
 			SampleName:           sample.SampleName,
@@ -238,8 +249,16 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		}
 		responseData = append(responseData, data)
 	}
-	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: totalCount, Data: responseData}
-	return c.JSON(http.StatusOK, response)
+	response.NumItems = len(responseData)
+	response.TotalCount = totalCount
+	response.Data = responseData
+	if err := enc.Encode(response); err != nil {
+		logger.Errorf("Can not encode sample data: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not encode sample data")
+	}
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Flush()
+	return nil
 }
 
 // GetSamplesFilteredClustered godoc
@@ -292,6 +311,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       bbox             query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 // @Param       numClusters      query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance      query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Response	102 			 {header}	model.ClusterResponse Sends back Headers while progressing the request
 // @Success     200              {object} model.ClusterResponse
 // @Failure     401              {object} string
 // @Failure     404              {object} string
@@ -303,131 +323,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-
-	// response object
-	response := model.ClusterResponse{}
-
-	coordData := map[string]interface{}{}
-	// get the bbox
-	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not parse bbox")
-	}
-	if bboxString == "" {
-		return c.String(http.StatusInternalServerError, "No bbox provided")
-	}
-	bbox, err := geometry.ParsePointArray(bboxString)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not parse bbox")
-	}
-	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
-	bbox = geometry.TruncateBBox(bbox)
-	width := bbox[1][0] - bbox[0][0]
-	kmeansMaxDistance := width / 12
-	// scale bbox
-	if !geometry.IsZoom0(bbox) {
-		// add frame around bbox to avoid reloading on small panning
-		bbox = geometry.ScaleBBox(bbox)
-	}
-	// truncate bbox after scaling so it contains at most one whole world
-	bbox = geometry.TruncateBBox(bbox)
-	// add first point again to make closed polygon shape
-	bbox = append(bbox, bbox[0])
-	boundary, translationFactor, err := geometry.CalcTranslation(bbox)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not calculate bbox translation")
-	}
-	coordData[KEY_BBOX] = bbox
-	coordData[KEY_TRANSLATION_FACTOR] = translationFactor
-	coordData[KEY_BOUNDARY] = boundary
-
-	// get polygon filter
-	polygonString, _, err := parseParam(c.QueryParam(QP_POLY))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not parse polygon")
-	}
-	if polygonString != "" {
-		polygon, err := geometry.ParsePointArray(polygonString)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not parse polygon")
-		}
-		boundaryPoly, translationFactorPoly, err := geometry.CalcTranslation(polygon)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Can not calculate polygon translation - polygon too big")
-		}
-		coordData[KEY_POLYGON] = polygon
-		coordData[KEY_TRANSLATION_FACTOR_POLY] = translationFactorPoly
-		coordData[KEY_BOUNDARY_POLY] = boundaryPoly
-	}
-
-	// build query string
-	query, err := buildSampleFilterQuery(c, coordData, nil)
-	if err != nil {
-		return c.String(http.StatusUnprocessableEntity, err.Error())
-	}
-
-	numClusters := c.QueryParam(QP_NUM_CLUSTERS)
-	if numClusters == "" {
-		numClusters = DEFAULT_NUM_CLUSTERS
-	}
-	maxDistance := c.QueryParam(QP_MAX_DISTANCE)
-	if maxDistance == "" {
-		// set relative to bbox size
-		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
-	}
-
-	if width < CLUSTER_THRESHOLD_BBOX {
-		params := map[string]interface{}{
-			"fakeID": CLUSTER_ID_NO_CLUSTERING,
-		}
-		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperNoClusteringPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
-	} else {
-		// wrap query in clustering postGIS-sql with parameters
-		params := map[string]interface{}{
-			"numClusters": numClusters,
-			"maxDistance": maxDistance,
-		}
-		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
-	}
-
-	limit, offset, err := handlePaginationParams(c)
-	if err != nil {
-		logger.Errorf("Invalid pagination params: %v", err)
-		return c.String(http.StatusUnprocessableEntity, "Invalid pagination parameters")
-	}
-	query.AddLimit(limit)
-	query.AddOffset(offset)
-
-	clusterData, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
-	if err != nil {
-		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
-	}
-
-	// wrap bbox in []interface{} for geoJSON polygon
-	bboxIWrap := []interface{}{bbox}
-	response.Bbox = model.GeoJSONFeature{
-		Type: model.GEOJSONTYPE_FEATURE,
-		Geometry: model.Geometry{
-			Type:        model.GEOJSON_GEOMETRY_POLYGON,
-			Coordinates: bboxIWrap,
-		},
-	}
-	geoJSONClusters, geoJSONPoints, err := parseClusterToGeoJSON(clusterData)
-	if err != nil {
-		logger.Errorf("Can not parse cluster data: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
-	}
-	response.Clusters = geoJSONClusters
-	response.Points = geoJSONPoints
-	return c.JSON(http.StatusOK, response)
-}
-
-func (h *Handler) GetSamplesFilteredClusteredStreamed(c echo.Context) error {
-	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
-	if !ok {
-		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
-	}
 	coordData := map[string]interface{}{}
 	// get the bbox
 	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
@@ -516,12 +411,9 @@ func (h *Handler) GetSamplesFilteredClusteredStreamed(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	// start the query and listen to the incoming result stream
-	resultChan := make(chan model.ClusteredSample, RESPONSE_BUFFER_SIZE)
-	errChan := make(chan error)
-	go repository.QueryStream[model.ClusteredSample](c.Request().Context(), resultChan, errChan, h.db, query.GetQueryString(), query.GetFilterValues()...)
+	// prepare response and send back headers
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	c.Response().WriteHeader(http.StatusOK)
+	c.Response().WriteHeader(http.StatusProcessing)
 	enc := json.NewEncoder(c.Response())
 	// response object
 	response := model.ClusterResponse{}
@@ -534,39 +426,29 @@ func (h *Handler) GetSamplesFilteredClusteredStreamed(c echo.Context) error {
 			Coordinates: bboxIWrap,
 		},
 	}
-	// flush initial data
+	// flush headers
+	c.Response().Flush()
+
+	// start the query
+	results, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
+	if err != nil {
+		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	clusters, points, err := parseClusterToGeoJSON(results)
+	if err != nil {
+		logger.Errorf("Can not parse cluster data: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
+	}
+	response.Clusters = clusters
+	response.Points = points
+
 	if err := enc.Encode(response); err != nil {
-		logger.Errorf("Can not encode initial cluster data: %v", err)
+		logger.Errorf("Can not encode cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not encode cluster data")
 	}
+	c.Response().WriteHeader(http.StatusOK)
 	c.Response().Flush()
-Listener:
-	for {
-		select {
-		case result, ok := <-resultChan:
-			if !ok {
-				break Listener
-			}
-			clusters, points, err := parseClusterToGeoJSON([]model.ClusteredSample{result})
-			if err != nil {
-				logger.Errorf("Can not parse cluster data: %v", err)
-				return c.String(http.StatusInternalServerError, "Can not parse cluster data")
-			}
-			response.Clusters = append(response.Clusters, clusters...)
-			response.Points = append(response.Points, points...)
-			if err := enc.Encode(response); err != nil {
-				logger.Errorf("Can not encode cluster data: %v", err)
-				return c.String(http.StatusInternalServerError, "Can not encode cluster data")
-			}
-			c.Response().Flush()
-		case err, ok := <-errChan:
-			if !ok {
-				break Listener
-			}
-			logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
-			return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
-		}
-	}
 	return nil
 }
 

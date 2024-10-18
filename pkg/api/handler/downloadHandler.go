@@ -72,6 +72,11 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 	if len(identifierList) == 0 {
 		return c.File(fileName)
 	}
+	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	c.Response().Header().Set("Content-Type", "text/csv")
+	c.Response().WriteHeader(http.StatusProcessing)
+	// flush headers
+	c.Response().Flush()
 	// query the full data for each given identifier
 	samples, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
 	if err != nil {
@@ -92,8 +97,6 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to write data")
 	}
 	stats, _ := f.Stat()
-	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
-	c.Response().Header().Set("Content-Type", "text/csv")
 	c.Response().Header().Set("Content-Length", strconv.FormatInt(stats.Size(), 10))
 
 	return c.File(fileName)
@@ -191,6 +194,19 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
+
+	// prepare response and start the query
+	targetFormat := c.QueryParam(PARAM_FORMAT)
+	if targetFormat == "" {
+		targetFormat = download.CSV
+	}
+	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
+	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	c.Response().Header().Set("Content-Type", "text/csv")
+	c.Response().WriteHeader(http.StatusProcessing)
+	// flush headers
+	c.Response().Flush()
+
 	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetDataDownloadByFilter: %v", err)
@@ -201,11 +217,6 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 		identifierList = append(identifierList, sample.SampleID)
 	}
 	// create temp download file
-	targetFormat := c.QueryParam(PARAM_FORMAT)
-	if targetFormat == "" {
-		targetFormat = download.CSV
-	}
-	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
 	f, err := os.Create(fileName)
 	defer cleanupDownloadFile(f, logger)
 	if err != nil {
@@ -216,12 +227,43 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 		return c.File(fileName)
 	}
 	// query the full data for each given identifier
-	samples, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
-	if err != nil {
-		logger.Errorf("Can not retrieve FullDataById: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
-	}
+	resultChan := make(chan model.FullData)
+	errChan := make(chan error)
 
+	// batchSize := 10
+	// for i := 0; i < len(identifierList); i += batchSize {
+	// 	// TODO: how to notify channels that all tasks completed?
+	// 	end := i + batchSize
+	// 	if end >= len(identifierList) {
+	// 		end = len(identifierList)
+	// 	}
+	// 	// TODO: cannot use same channel for multiple tasks because it will be closed by first
+	// 	go repository.QueryStream[model.FullData](c.Request().Context(), resultChan, errChan, h.db, sql.FullDataByMultiIdQuery, identifierList[i:end])
+	// }
+	go repository.QueryStream[model.FullData](c.Request().Context(), resultChan, errChan, h.db, sql.FullDataByMultiIdQuery, identifierList)
+	samples := make([]model.FullData, 0, len(identifierList))
+	returnCount := 0
+Listener:
+	for {
+		select {
+		case result, ok := <-resultChan:
+			if !ok {
+				break Listener
+			}
+			returnCount++
+			samples = append(samples, result)
+		case err, ok := <-errChan:
+			if !ok {
+				break Listener
+			}
+			logger.Errorf("Can not retrieve FullDataById: %v", err)
+			return c.String(http.StatusInternalServerError, "Can not retrieve full data")
+		default:
+			if returnCount >= len(identifierList) {
+				break Listener
+			}
+		}
+	}
 	data, err := formatData(samples, targetFormat)
 	if err != nil {
 		logger.Errorf("Can not format given data as %s: %s", targetFormat, err.Error())
@@ -229,16 +271,14 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	}
 
 	// write the formatted data to the download file and set the response headers
+	// TODO: write directly into response as the concurrent fullData comes in??
 	n, err := f.Write(data)
 	if err != nil {
 		logger.Errorf("Can not write data: stopped at %d with error %v", n, err)
 		return c.String(http.StatusInternalServerError, "Failed to write data")
 	}
 	stats, _ := f.Stat()
-	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
-	c.Response().Header().Set("Content-Type", "text/csv")
 	c.Response().Header().Set("Content-Length", strconv.FormatInt(stats.Size(), 10))
-
 	return c.File(fileName)
 }
 
