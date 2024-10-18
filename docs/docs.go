@@ -265,6 +265,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -327,6 +333,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -568,6 +580,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -1606,6 +1624,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
