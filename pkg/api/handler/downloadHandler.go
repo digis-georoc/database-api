@@ -5,11 +5,13 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -24,7 +26,12 @@ import (
 const (
 	PARAM_FORMAT   = "format"
 	QP_SAMPLE_LIST = "sampleids"
+
+	CONCURRENT_TASKS = 10
+	BATCH_SIZE       = 100
 )
+
+var tasks []int
 
 // GetDataDownloadByIDs godoc
 // @Summary     Retrieve download data for the given sample IDs
@@ -228,12 +235,17 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	if len(identifierList) == 0 {
 		return c.File(fileName)
 	}
-	// query the full data for each given identifier
+	// query the full data for each given identifier concurrently
 	resultChan := make(chan model.FullData)
 	errChan := make(chan error)
-	go repository.QueryStream[model.FullData](c.Request().Context(), resultChan, errChan, h.db, sql.FullDataByMultiIdQuery, identifierList)
-	samples := make([]model.FullData, 0, len(identifierList))
+	tasks = make([]int, len(identifierList))
+	copy(tasks, identifierList)
 	returnCount := 0
+	readLock := sync.Mutex{}
+	for i := 0; i < CONCURRENT_TASKS; i++ {
+		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock, i)
+	}
+	samples := make([]model.FullData, 0, len(identifierList))
 Listener:
 	for {
 		select {
@@ -251,6 +263,8 @@ Listener:
 			return c.String(http.StatusInternalServerError, "Can not retrieve full data")
 		default:
 			if returnCount >= len(identifierList) {
+				close(resultChan)
+				close(errChan)
 				break Listener
 			}
 		}
@@ -270,6 +284,28 @@ Listener:
 	stats, _ := f.Stat()
 	c.Response().Header().Set("Content-Length", strconv.FormatInt(stats.Size(), 10))
 	return c.File(fileName)
+}
+
+func startWorker(context context.Context, errChan chan error, resultChan chan model.FullData, db repository.PostgresConnector, readLock *sync.Mutex) {
+	for len(tasks) > 0 {
+		// securely pop the first batch of items from the task list
+		readLock.Lock()
+		batch := BATCH_SIZE
+		if len(tasks) < BATCH_SIZE {
+			batch = len(tasks)
+		}
+		identifiers := tasks[:batch]
+		tasks = tasks[batch:]
+		readLock.Unlock()
+		results, err := repository.Query[model.FullData](context, db, sql.FullDataByMultiIdQuery, identifiers)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		for _, result := range results {
+			resultChan <- result
+		}
+	}
 }
 
 // formatData takes a list of full sample data
