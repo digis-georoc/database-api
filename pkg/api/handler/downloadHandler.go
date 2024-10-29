@@ -31,8 +31,6 @@ const (
 	BATCH_SIZE       = 100
 )
 
-var tasks []int
-
 // GetDataDownloadByIDs godoc
 // @Summary     Retrieve download data for the given sample IDs
 // @Description get the full data for a list of sample IDs as a csv or xlsx file
@@ -238,12 +236,12 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	// query the full data for each given identifier concurrently
 	resultChan := make(chan model.FullData)
 	errChan := make(chan error)
-	tasks = make([]int, len(identifierList))
+	tasks := make([]int, len(identifierList))
 	copy(tasks, identifierList)
 	returnCount := 0
 	readLock := sync.Mutex{}
 	for i := 0; i < CONCURRENT_TASKS; i++ {
-		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock)
+		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock, &tasks)
 	}
 	samples := make([]model.FullData, 0, len(identifierList))
 Listener:
@@ -286,16 +284,16 @@ Listener:
 	return c.File(fileName)
 }
 
-func startWorker(context context.Context, errChan chan error, resultChan chan model.FullData, db repository.PostgresConnector, readLock *sync.Mutex) {
-	for len(tasks) > 0 {
+func startWorker(context context.Context, errChan chan error, resultChan chan model.FullData, db repository.PostgresConnector, readLock *sync.Mutex, tasks *[]int) {
+	for tasks != nil && len(*tasks) > 0 {
 		// securely pop the first batch of items from the task list
 		readLock.Lock()
 		batch := BATCH_SIZE
-		if len(tasks) < BATCH_SIZE {
-			batch = len(tasks)
+		if len(*tasks) < BATCH_SIZE {
+			batch = len(*tasks)
 		}
-		identifiers := tasks[:batch]
-		tasks = tasks[batch:]
+		identifiers := (*tasks)[:batch]
+		*tasks = (*tasks)[batch:]
 		readLock.Unlock()
 		results, err := repository.Query[model.FullData](context, db, sql.FullDataByMultiIdQuery, identifiers)
 		if err != nil {
