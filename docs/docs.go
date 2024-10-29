@@ -265,6 +265,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -327,6 +333,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -568,6 +580,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -1606,6 +1624,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "102": {
+                        "description": "Processing",
+                        "schema": {
+                            "type": "header"
+                        }
+                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -3965,7 +3989,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.6.1",
+	Version:          "0.7.0",
 	Host:             "api-test.georoc.eu",
 	BasePath:         "/api/v1",
 	Schemes:          []string{"https", "http"},

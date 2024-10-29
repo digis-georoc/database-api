@@ -779,7 +779,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.6.1
+  version: 0.7.0
 paths:
   /alive:
     get:
@@ -960,6 +960,10 @@ paths:
       produces:
       - text/plain
       responses:
+        "102":
+          description: Processing
+          schema:
+            type: header
         "200":
           description: OK
           schema:
@@ -1000,6 +1004,10 @@ paths:
       produces:
       - text/plain
       responses:
+        "102":
+          description: Processing
+          schema:
+            type: header
         "200":
           description: OK
           schema:
@@ -1187,6 +1195,10 @@ paths:
       produces:
       - application/json
       responses:
+        "102":
+          description: Processing
+          schema:
+            type: header
         "200":
           description: OK
           schema:
@@ -1882,6 +1894,10 @@ paths:
       produces:
       - application/json
       responses:
+        "102":
+          description: Processing
+          schema:
+            type: header
         "200":
           description: OK
           schema:
