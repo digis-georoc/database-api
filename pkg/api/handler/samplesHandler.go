@@ -1230,7 +1230,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			}
 			query.AddSQLBlock(exprJunctor + sql.GetSamplingfeatureIdsByFilterResultsExpression)
 			if expr.Type != "" {
-				query.AddFilter("mv.variabletypecode", expr.Type, sql.OpEq, junctor)
+				query.AddFilter("n.variabletypecode", expr.Type, sql.OpEq, junctor)
 				junctor = sql.OpAnd
 			}
 			if expr.Element != "" {
