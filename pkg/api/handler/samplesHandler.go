@@ -207,9 +207,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-<<<<<<< HEAD
-	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
-=======
 	// prepare response and start the query
 	response := model.SampleByFilterResponse{}
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
@@ -219,7 +216,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	c.Response().Flush()
 
 	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
->>>>>>> main
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
