@@ -40,9 +40,9 @@ var tasks []int
 // @Tags        download
 // @Accept      json
 // @Produce     plain
-// @Param       sampleids query    string true "List of Sample identifiers"
-// @Param       format    query    string true "Desired output format: csv (default) or xlsx"
-// @Response    102                             {header} - Sends back Headers while progressing the request
+// @Param       sampleids query    string true  "List of Sample identifiers"
+// @Param       format    query    string true  "Desired output format: csv (default) or xlsx"
+// @Response    102       {header} -      Sends back Headers while progressing the request
 // @Success     200       {file}   file
 // @Failure     401       {object} string
 // @Failure     404       {object} string
@@ -159,7 +159,7 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 // @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 // @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
-// @Response    102                                      {header} - Sends back Headers while progressing the request
+// @Response    102               {header} -      Sends back Headers while progressing the request
 // @Success     200               {file}   file
 // @Failure     401               {object} string
 // @Failure     404               {object} string
@@ -243,7 +243,7 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	returnCount := 0
 	readLock := sync.Mutex{}
 	for i := 0; i < CONCURRENT_TASKS; i++ {
-		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock, i)
+		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock)
 	}
 	samples := make([]model.FullData, 0, len(identifierList))
 Listener:
