@@ -5,11 +5,13 @@
 package handler
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -24,7 +26,12 @@ import (
 const (
 	PARAM_FORMAT   = "format"
 	QP_SAMPLE_LIST = "sampleids"
+
+	CONCURRENT_TASKS = 10
+	BATCH_SIZE       = 100
 )
+
+var tasks []int
 
 // GetDataDownloadByIDs godoc
 // @Summary     Retrieve download data for the given sample IDs
@@ -33,8 +40,9 @@ const (
 // @Tags        download
 // @Accept      json
 // @Produce     plain
-// @Param       sampleids query    string true "List of Sample identifiers"
-// @Param       format    query    string true "Desired output format: csv (default) or xlsx"
+// @Param       sampleids query    string true  "List of Sample identifiers"
+// @Param       format    query    string true  "Desired output format: csv (default) or xlsx"
+// @Response    102       {header} -      Sends back Headers while progressing the request
 // @Success     200       {file}   file
 // @Failure     401       {object} string
 // @Failure     404       {object} string
@@ -72,6 +80,11 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 	if len(identifierList) == 0 {
 		return c.File(fileName)
 	}
+	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	c.Response().Header().Set("Content-Type", "text/csv")
+	c.Response().WriteHeader(http.StatusProcessing)
+	// flush headers
+	c.Response().Flush()
 	// query the full data for each given identifier
 	samples, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
 	if err != nil {
@@ -92,8 +105,6 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to write data")
 	}
 	stats, _ := f.Stat()
-	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
-	c.Response().Header().Set("Content-Type", "text/csv")
 	c.Response().Header().Set("Content-Length", strconv.FormatInt(stats.Size(), 10))
 
 	return c.File(fileName)
@@ -148,6 +159,7 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 // @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 // @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
+// @Response    102               {header} -      Sends back Headers while progressing the request
 // @Success     200               {file}   file
 // @Failure     401               {object} string
 // @Failure     404               {object} string
@@ -191,6 +203,19 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	}
 	query.AddLimit(limit)
 	query.AddOffset(offset)
+
+	// prepare response and start the query
+	targetFormat := c.QueryParam(PARAM_FORMAT)
+	if targetFormat == "" {
+		targetFormat = download.CSV
+	}
+	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
+	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
+	c.Response().Header().Set("Content-Type", "text/csv")
+	c.Response().WriteHeader(http.StatusProcessing)
+	// flush headers
+	c.Response().Flush()
+
 	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
 		logger.Errorf("Can not GetDataDownloadByFilter: %v", err)
@@ -201,11 +226,6 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 		identifierList = append(identifierList, sample.SampleID)
 	}
 	// create temp download file
-	targetFormat := c.QueryParam(PARAM_FORMAT)
-	if targetFormat == "" {
-		targetFormat = download.CSV
-	}
-	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
 	f, err := os.Create(fileName)
 	defer cleanupDownloadFile(f, logger)
 	if err != nil {
@@ -215,13 +235,40 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	if len(identifierList) == 0 {
 		return c.File(fileName)
 	}
-	// query the full data for each given identifier
-	samples, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
-	if err != nil {
-		logger.Errorf("Can not retrieve FullDataById: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve full data")
+	// query the full data for each given identifier concurrently
+	resultChan := make(chan model.FullData)
+	errChan := make(chan error)
+	tasks = make([]int, len(identifierList))
+	copy(tasks, identifierList)
+	returnCount := 0
+	readLock := sync.Mutex{}
+	for i := 0; i < CONCURRENT_TASKS; i++ {
+		go startWorker(c.Request().Context(), errChan, resultChan, h.db, &readLock)
 	}
-
+	samples := make([]model.FullData, 0, len(identifierList))
+Listener:
+	for {
+		select {
+		case result, ok := <-resultChan:
+			if !ok {
+				break Listener
+			}
+			returnCount++
+			samples = append(samples, result)
+		case err, ok := <-errChan:
+			if !ok {
+				break Listener
+			}
+			logger.Errorf("Can not retrieve FullDataById: %v", err)
+			return c.String(http.StatusInternalServerError, "Can not retrieve full data")
+		default:
+			if returnCount >= len(identifierList) {
+				close(resultChan)
+				close(errChan)
+				break Listener
+			}
+		}
+	}
 	data, err := formatData(samples, targetFormat)
 	if err != nil {
 		logger.Errorf("Can not format given data as %s: %s", targetFormat, err.Error())
@@ -235,11 +282,30 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Failed to write data")
 	}
 	stats, _ := f.Stat()
-	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
-	c.Response().Header().Set("Content-Type", "text/csv")
 	c.Response().Header().Set("Content-Length", strconv.FormatInt(stats.Size(), 10))
-
 	return c.File(fileName)
+}
+
+func startWorker(context context.Context, errChan chan error, resultChan chan model.FullData, db repository.PostgresConnector, readLock *sync.Mutex) {
+	for len(tasks) > 0 {
+		// securely pop the first batch of items from the task list
+		readLock.Lock()
+		batch := BATCH_SIZE
+		if len(tasks) < BATCH_SIZE {
+			batch = len(tasks)
+		}
+		identifiers := tasks[:batch]
+		tasks = tasks[batch:]
+		readLock.Unlock()
+		results, err := repository.Query[model.FullData](context, db, sql.FullDataByMultiIdQuery, identifiers)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		for _, result := range results {
+			resultChan <- result
+		}
+	}
 }
 
 // formatData takes a list of full sample data

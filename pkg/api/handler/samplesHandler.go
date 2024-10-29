@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -76,6 +77,8 @@ const (
 	KEY_POLYGON                 = "key_polygon"
 	KEY_TRANSLATION_FACTOR_POLY = "key_translation_factor_poly"
 	KEY_BOUNDARY_POLY           = "key_boundary_poly"
+
+	RESPONSE_BUFFER_SIZE = 10
 )
 
 // GetSampleByID godoc
@@ -158,6 +161,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 // @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 // @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 // @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
+// @Response    102               {header} -      Sends back Headers while progressing the request
 // @Success     200               {object} model.SampleByFilterResponse
 // @Failure     401               {object} string
 // @Failure     404               {object} string
@@ -203,16 +207,29 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
+<<<<<<< HEAD
 	result, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
+=======
+	// prepare response and start the query
+	response := model.SampleByFilterResponse{}
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusProcessing)
+	enc := json.NewEncoder(c.Response())
+	// flush headers
+	c.Response().Flush()
+
+	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
+>>>>>>> main
 	if err != nil {
 		logger.Errorf("Can not GetSamplesFiltered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	// copy into model without totalCount on each sample
+	var totalCount int
 	responseData := []model.SampleByFiltersData{}
-	totalCount := 0
-	for _, sample := range result {
-		totalCount = sample.TotalCount
+	for _, sample := range results {
+		if totalCount == 0 {
+			totalCount = sample.TotalCount
+		}
 		data := model.SampleByFiltersData{
 			SampleID:             sample.SampleID,
 			SampleName:           sample.SampleName,
@@ -236,8 +253,16 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 		}
 		responseData = append(responseData, data)
 	}
-	response := model.SampleByFilterResponse{NumItems: len(responseData), TotalCount: totalCount, Data: responseData}
-	return c.JSON(http.StatusOK, response)
+	response.NumItems = len(responseData)
+	response.TotalCount = totalCount
+	response.Data = responseData
+	if err := enc.Encode(response); err != nil {
+		logger.Errorf("Can not encode sample data: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not encode sample data")
+	}
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Flush()
+	return nil
 }
 
 // GetSamplesFilteredClustered godoc
@@ -290,6 +315,7 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 // @Param       bbox             query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 // @Param       numClusters      query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
 // @Param       maxDistance      query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+// @Response    102              {header} -      Sends back Headers while progressing the request
 // @Success     200              {object} model.ClusterResponse
 // @Failure     401              {object} string
 // @Failure     404              {object} string
@@ -301,10 +327,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if !ok {
 		panic(fmt.Sprintf("Can not get context.logger of type %T as type %T", c.Get(middleware.LOGGER_KEY), middleware.APILogger{}))
 	}
-
-	// response object
-	response := model.ClusterResponse{}
-
 	coordData := map[string]interface{}{}
 	// get the bbox
 	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
@@ -363,7 +385,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusUnprocessableEntity, err.Error())
 	}
-
 	numClusters := c.QueryParam(QP_NUM_CLUSTERS)
 	if numClusters == "" {
 		numClusters = DEFAULT_NUM_CLUSTERS
@@ -373,7 +394,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		// set relative to bbox size
 		maxDistance = fmt.Sprintf("%f", kmeansMaxDistance)
 	}
-
 	if width < CLUSTER_THRESHOLD_BBOX {
 		params := map[string]interface{}{
 			"fakeID": CLUSTER_ID_NO_CLUSTERING,
@@ -387,7 +407,6 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 		}
 		query.WrapInSQLParametrized(sql.GetSamplesClusteredWrapperPrefix, sql.GetSamplesClusteredWrapperPostfix, params)
 	}
-
 	limit, offset, err := handlePaginationParams(c)
 	if err != nil {
 		logger.Errorf("Invalid pagination params: %v", err)
@@ -396,12 +415,12 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	query.AddLimit(limit)
 	query.AddOffset(offset)
 
-	clusterData, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
-	if err != nil {
-		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
-	}
-
+	// prepare response and send back headers
+	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	c.Response().WriteHeader(http.StatusProcessing)
+	enc := json.NewEncoder(c.Response())
+	// response object
+	response := model.ClusterResponse{}
 	// wrap bbox in []interface{} for geoJSON polygon
 	bboxIWrap := []interface{}{bbox}
 	response.Bbox = model.GeoJSONFeature{
@@ -411,14 +430,30 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 			Coordinates: bboxIWrap,
 		},
 	}
-	geoJSONClusters, geoJSONPoints, err := parseClusterToGeoJSON(clusterData)
+	// flush headers
+	c.Response().Flush()
+
+	// start the query
+	results, err := repository.Query[model.ClusteredSample](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
+	if err != nil {
+		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
+	}
+	clusters, points, err := parseClusterToGeoJSON(results)
 	if err != nil {
 		logger.Errorf("Can not parse cluster data: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not parse cluster data")
 	}
-	response.Clusters = geoJSONClusters
-	response.Points = geoJSONPoints
-	return c.JSON(http.StatusOK, response)
+	response.Clusters = clusters
+	response.Points = points
+
+	if err := enc.Encode(response); err != nil {
+		logger.Errorf("Can not encode cluster data: %v", err)
+		return c.String(http.StatusInternalServerError, "Can not encode cluster data")
+	}
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Flush()
+	return nil
 }
 
 // GetSpecimenTypes godoc
@@ -1379,6 +1414,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 }
 
 // parseClusterToGeoJSON takes an array of model.ClusteredSample and parses it into GeoJSON
+// Clusters with less than CLUSTERING_THRESHOLD points are not clustered and are parsed as points
 func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSONCluster, []model.GeoJSONFeature, error) {
 	clusters := make([]model.GeoJSONCluster, 0, len(clusterData))
 	points := []model.GeoJSONFeature{}
