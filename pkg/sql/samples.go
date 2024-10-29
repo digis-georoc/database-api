@@ -176,25 +176,20 @@ const GetSamplingfeatureIdsByFilterAnnotationsEnd = `
 const GetSamplingfeatureIdsByFilterResultsStartPre = `
 join (
 	-- results
-	select (case when r.relatedfeatureid is not null then r.relatedfeatureid else res.samplingfeatureid end) as samplingfeatureid
-	from odm2.relatedfeatures r
-	right join
-	(
-		select distinct coalesce(
+	select distinct coalesce(
 `
 
 const GetSamplingfeatureIdsByFilterResultsStartPost = `
-) as samplingfeatureid
+) as sampleid
 `
 
 const GetSamplingfeatureIdsByFilterResultsExpression = `
-select distinct mv.samplingfeatureid
-from odm2.measuredvalues mv
+select distinct n.batchid as samplingfeatureid, n.sampleid
+from odm2.normalizedchemistry n
 `
 
 const GetSamplingfeatureIdsByFilterResultsEnd = `
-	) res on res.samplingfeatureid = r.samplingfeatureid 
-) results on results.samplingfeatureid = spec.sampleid
+) results on results.sampleid = spec.sampleid
 `
 
 // Filter query-module Citations
