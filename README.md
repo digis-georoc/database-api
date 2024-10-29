@@ -88,4 +88,17 @@ To update the api version, change the version number in the following places:
 - The start of this README
 - handler.go/version method
 - api.go swaggo comment
+- update documentation (see above)
 - push a new tag with the new version number to the repositories main branch (attention: triggers a staging (test) release!)
+
+### Deployment
+
+#### Dev
+
+Merge events to the `main` branch on gitlab trigger a pipeline to automatically build and push a new docker image to the image registry and deploy it on the dev-cluster.
+This process may take a few minutes to complete.
+
+#### Staging
+
+Pushing a new `tag` to the repository will trigger a pipeline to build and push a new docker image to the image registry and deploy it on the staging-cluster.
+This process may take a few minutes to complete.
