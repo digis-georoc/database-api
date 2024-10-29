@@ -779,7 +779,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.7.0
+  version: 0.7.1
 paths:
   /alive:
     get:
