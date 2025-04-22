@@ -4,7 +4,7 @@
 
 module gitlab.gwdg.de/fe/digis/database-api
 
-go 1.24.2
+go 1.24
 
 require (
 	github.com/Nerzal/gocloak/v12 v12.0.0
