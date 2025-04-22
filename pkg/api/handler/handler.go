@@ -36,6 +36,7 @@ func NewHandler(db repository.PostgresConnector, config *middleware.KeycloakConf
 }
 
 // Ping godoc
+//
 //	@Summary		Health request to check db connection
 //	@Description	Check connection to db
 //	@Tags			general
@@ -53,6 +54,7 @@ func (h *Handler) Ping(c echo.Context) error {
 }
 
 // Alive godoc
+//
 //	@Summary		Health request to check if api is responsive
 //	@Description	Check connection to api
 //	@Tags			general
@@ -66,6 +68,7 @@ func (h *Handler) Alive(c echo.Context) error {
 }
 
 // Version godoc
+//
 //	@Summary		Get api-version
 //	@Description	Check current version of the api
 //	@Tags			general
@@ -75,7 +78,7 @@ func (h *Handler) Alive(c echo.Context) error {
 //	@Failure		404	{object}	string
 //	@Router			/version [get]
 func (h *Handler) Version(c echo.Context) error {
-	return c.JSON(http.StatusOK, "0.7.2")
+	return c.JSON(http.StatusOK, "0.7.3")
 }
 
 // handlePaginationParams reads the pagination parameters from the request and returns them as integers

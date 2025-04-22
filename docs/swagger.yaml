@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 DIGIS Project Group
+#
+# SPDX-License-Identifier: CC0-1.0
+
 basePath: /api/v1
 definitions:
   model.Author:
@@ -800,7 +804,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.7.2
+  version: 0.7.3
 paths:
   /alive:
     get:

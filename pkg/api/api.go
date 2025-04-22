@@ -22,7 +22,7 @@ import (
 )
 
 //	@title			DIGIS Database API
-//	@version		0.7.2
+//	@version		0.7.3
 //	@description	This is the database api for the new GeoROC datamodel
 //	@description
 //	@description	Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
@@ -39,9 +39,9 @@ import (
 //	@name						DIGIS-API-ACCESSKEY
 //	@description				Accesskey based security scheme to secure api groups "/queries/*" and "/geodata/*"
 
-//	@host		api-test.georoc.eu
-//	@schemes	https http
-//	@BasePath	/api/v1
+// @host		api-test.georoc.eu
+// @schemes	https http
+// @BasePath	/api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
