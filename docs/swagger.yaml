@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 DIGIS Project Group
+# SPDX-FileCopyrightText: 2025 DIGIS Project Group
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -65,7 +65,8 @@ definitions:
         description: nullable
         type: string
       tasData:
-        $ref: '#/definitions/model.DiagramData'
+        allOf:
+        - $ref: '#/definitions/model.DiagramData'
         description: nullable
     type: object
   model.Citation:
@@ -369,7 +370,7 @@ definitions:
         additionalProperties: true
         type: object
       type:
-        type: string
+        $ref: '#/definitions/model.GeoJSONFeatureType'
     type: object
   model.GeoJSONFeatureCollection:
     properties:
@@ -382,8 +383,32 @@ definitions:
       numberReturned:
         type: integer
       type:
-        type: string
+        $ref: '#/definitions/model.GeoJSONFeatureType'
     type: object
+  model.GeoJSONFeatureType:
+    enum:
+    - FeatureCollection
+    - Feature
+    type: string
+    x-enum-varnames:
+    - GEOJSONTYPE_FEATURECOLLECTION
+    - GEOJSONTYPE_FEATURE
+  model.GeoJSONGeometryType:
+    enum:
+    - Point
+    - LineString
+    - Polygon
+    - MultiPoint
+    - MultiLineString
+    - MultiPolygon
+    type: string
+    x-enum-varnames:
+    - GEOJSON_GEOMETRY_POINT
+    - GEOJSON_GEOMETRY_LINESTRING
+    - GEOJSON_GEOMETRY_POLYGON
+    - GEOJSON_GEOMETRY_MULTIPOINT
+    - GEOJSON_GEOMETRY_MULTILINESTRING
+    - GEOJSON_GEOMETRY_MULTIPOLYGON
   model.GeologicalSetting:
     properties:
       setting:
@@ -404,7 +429,7 @@ definitions:
         items: {}
         type: array
       type:
-        type: string
+        $ref: '#/definitions/model.GeoJSONGeometryType'
     type: object
   model.InclusionType:
     properties:
@@ -779,7 +804,7 @@ info:
     name: Data retrieved is licensed under CC BY-SA 4.0
     url: https://creativecommons.org/licenses/by-sa/4.0/
   title: DIGIS Database API
-  version: 0.7.2
+  version: 0.7.3
 paths:
   /alive:
     get:

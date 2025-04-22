@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.7.2"
+        "version": "0.7.3"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -2926,7 +2926,11 @@
                 },
                 "tasData": {
                     "description": "nullable",
-                    "$ref": "#/definitions/model.DiagramData"
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.DiagramData"
+                        }
+                    ]
                 }
             }
         },
@@ -3371,7 +3375,7 @@
                     "additionalProperties": true
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.GeoJSONFeatureType"
                 }
             }
         },
@@ -3391,9 +3395,39 @@
                     "type": "integer"
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.GeoJSONFeatureType"
                 }
             }
+        },
+        "model.GeoJSONFeatureType": {
+            "type": "string",
+            "enum": [
+                "FeatureCollection",
+                "Feature"
+            ],
+            "x-enum-varnames": [
+                "GEOJSONTYPE_FEATURECOLLECTION",
+                "GEOJSONTYPE_FEATURE"
+            ]
+        },
+        "model.GeoJSONGeometryType": {
+            "type": "string",
+            "enum": [
+                "Point",
+                "LineString",
+                "Polygon",
+                "MultiPoint",
+                "MultiLineString",
+                "MultiPolygon"
+            ],
+            "x-enum-varnames": [
+                "GEOJSON_GEOMETRY_POINT",
+                "GEOJSON_GEOMETRY_LINESTRING",
+                "GEOJSON_GEOMETRY_POLYGON",
+                "GEOJSON_GEOMETRY_MULTIPOINT",
+                "GEOJSON_GEOMETRY_MULTILINESTRING",
+                "GEOJSON_GEOMETRY_MULTIPOLYGON"
+            ]
         },
         "model.GeologicalSetting": {
             "type": "object",
@@ -3425,7 +3459,7 @@
                     "items": {}
                 },
                 "type": {
-                    "type": "string"
+                    "$ref": "#/definitions/model.GeoJSONGeometryType"
                 }
             }
         },

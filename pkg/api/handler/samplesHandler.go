@@ -82,18 +82,18 @@ const (
 )
 
 // GetSampleByID godoc
-// @Summary     Retrieve sample by samplingfeatureid
-// @Description get sample by samplingfeatureid
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       samplingfeatureID path     string true "Sample ID"
-// @Success     200               {object} model.Sample
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     500               {object} string
-// @Router      /queries/samples/{samplingfeatureID} [get]
+//	@Summary		Retrieve sample by samplingfeatureid
+//	@Description	get sample by samplingfeatureid
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			samplingfeatureID	path		string	true	"Sample ID"
+//	@Success		200					{object}	model.Sample
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/queries/samples/{samplingfeatureID} [get]
 func (h *Handler) GetSampleByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -114,60 +114,60 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 }
 
 // GetSamplesFiltered godoc
-// @Summary     Retrieve all samplingfeatureIDs filtered by a variety of fields
-// @Description Get all samplingfeatureIDs matching the current filters
-// @Description Filter DSL syntax:
-// @Description FIELD=OPERATOR:VALUE
-// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
-// @Description and VALUE is an unquoted string, integer or decimal
-// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
-// @Description The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
-// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
-// @Description The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
-// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
-// @Description The filters are evaluated conjunctively.
-// @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit             query    int    false "limit"
-// @Param       offset            query    int    false "offset"
-// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
-// @Param       location1         query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
-// @Param       location2         query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
-// @Param       location3         query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
-// @Param       latitude          query    string false "latitude (supports Filter DSL)"
-// @Param       longitude         query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
-// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
-// @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
-// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
-// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
-// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
-// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
-// @Param       rimorcore         query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
-// @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
-// @Param       title             query    string false "title of publication (supports Filter DSL)"
-// @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
-// @Param       doi               query    string false "DOI (supports Filter DSL)"
-// @Param       firstname         query    string false "Author first name (supports Filter DSL)"
-// @Param       lastname          query    string false "Author last name (supports Filter DSL)"
-// @Param       agemin            query    string false "Specimen age min (supports Filter DSL)"
-// @Param       agemax            query    string false "Specimen age max (supports Filter DSL)"
-// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
-// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
-// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
-// @Response    102               {header} -      Sends back Headers while progressing the request
-// @Success     200               {object} model.SampleByFilterResponse
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     422               {object} string
-// @Failure     500               {object} string
-// @Router      /queries/samples [get]
+//	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields
+//	@Description	Get all samplingfeatureIDs matching the current filters
+//	@Description	Filter DSL syntax:
+//	@Description	FIELD=OPERATOR:VALUE
+//	@Description	where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
+//	@Description	and VALUE is an unquoted string, integer or decimal
+//	@Description	Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+//	@Description	The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
+//	@Description	The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
+//	@Description	The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
+//	@Description	If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
+//	@Description	The filters are evaluated conjunctively.
+//	@Description	Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit				query		int		false	"limit"
+//	@Param			offset				query		int		false	"offset"
+//	@Param			setting				query		string	false	"tectonic setting - see /queries/sites/settings (supports Filter DSL)"
+//	@Param			location1			query		string	false	"location level 1 - see /queries/locations/l1 (supports Filter DSL)"
+//	@Param			location2			query		string	false	"location level 2 - see /queries/locations/l2 (supports Filter DSL)"
+//	@Param			location3			query		string	false	"location level 3 - see /queries/locations/l3 (supports Filter DSL)"
+//	@Param			latitude			query		string	false	"latitude (supports Filter DSL)"
+//	@Param			longitude			query		string	false	"longitude (supports Filter DSL)"
+//	@Param			rocktype			query		string	false	"rock type - see /queries/samples/rocktypes (supports Filter DSL)"
+//	@Param			rockclassID			query		int		false	"taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
+//	@Param			mineral				query		string	false	"mineral - see /queries/samples/minerals (supports Filter DSL)"
+//	@Param			material			query		string	false	"material - see /queries/samples/materials (supports Filter DSL)"
+//	@Param			inclusiontype		query		string	false	"inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
+//	@Param			hostmaterial		query		string	false	"host material - see /queries/samples/hostmaterials (supports Filter DSL)"
+//	@Param			inclusionmaterial	query		string	false	"inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
+//	@Param			sampletech			query		string	false	"sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+//	@Param			rimorcore			query		string	false	"rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
+//	@Param			chemistry			query		string	false	"chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
+//	@Param			title				query		string	false	"title of publication (supports Filter DSL)"
+//	@Param			publicationyear		query		string	false	"publication year (supports Filter DSL)"
+//	@Param			doi					query		string	false	"DOI (supports Filter DSL)"
+//	@Param			firstname			query		string	false	"Author first name (supports Filter DSL)"
+//	@Param			lastname			query		string	false	"Author last name (supports Filter DSL)"
+//	@Param			agemin				query		string	false	"Specimen age min (supports Filter DSL)"
+//	@Param			agemax				query		string	false	"Specimen age max (supports Filter DSL)"
+//	@Param			geoage				query		string	false	"Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
+//	@Param			geoageprefix		query		string	false	"Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
+//	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
+//	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+//	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
+//	@Response		102					{header}	-		Sends	back	Headers	while	progressing	the	request
+//	@Success		200					{object}	model.SampleByFilterResponse
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		422					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/queries/samples [get]
 func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -262,62 +262,62 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 }
 
 // GetSamplesFilteredClustered godoc
-// @Summary     Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered
-// @Description Get all samplingfeatureIDs matching the current filters clustered
-// @Description Filter DSL syntax:
-// @Description FIELD=OPERATOR:VALUE
-// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
-// @Description and VALUE is an unquoted string, integer or decimal
-// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
-// @Description The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
-// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
-// @Description The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
-// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
-// @Description The filters are evaluated conjunctively.
-// @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
-// @Security    ApiKeyAuth
-// @Tags        geodata
-// @Accept      json
-// @Produce     json
-// @Param       limit            query    int    false "limit"
-// @Param       offset           query    int    false "offset"
-// @Param       setting          query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
-// @Param       location1        query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
-// @Param       location2        query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
-// @Param       location3        query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
-// @Param       latitude         query    string false "latitude (supports Filter DSL)"
-// @Param       longitude        query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype         query    string false "rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
-// @Param       rockclassID      query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
-// @Param       mineral          query    string false "mineral - see /queries/samples/minerals (supports 'eq', 'in')"
-// @Param       material         query    string false "material - see /queries/samples/materials (supports Filter DSL)"
-// @Param       inclusiontype    query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
-// @Param       hostmineral      query    string false "host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')"
-// @Param       inclusionmineral query    string false "inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')"
-// @Param       sampletech       query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
-// @Param       rimorcore        query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
-// @Param       chemistry        query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
-// @Param       title            query    string false "title of publication (supports Filter DSL)"
-// @Param       publicationyear  query    string false "publication year (supports Filter DSL)"
-// @Param       doi              query    string false "DOI (supports Filter DSL)"
-// @Param       firstname        query    string false "Author first name (supports 'eq', 'in')"
-// @Param       lastname         query    string false "Author last name (supports 'eq', 'in')"
-// @Param       agemin           query    string false "Specimen age min (supports Filter DSL)"
-// @Param       agemax           query    string false "Specimen age max (supports Filter DSL)"
-// @Param       geoage           query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
-// @Param       geoageprefix     query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
-// @Param       lab              query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-// @Param       polygon          query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       bbox             query    string true  "BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
-// @Param       numClusters      query    int    false "Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
-// @Param       maxDistance      query    int    false "Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
-// @Response    102              {header} -      Sends back Headers while progressing the request
-// @Success     200              {object} model.ClusterResponse
-// @Failure     401              {object} string
-// @Failure     404              {object} string
-// @Failure     422              {object} string
-// @Failure     500              {object} string
-// @Router      /geodata/samplesclustered [get]
+//	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered
+//	@Description	Get all samplingfeatureIDs matching the current filters clustered
+//	@Description	Filter DSL syntax:
+//	@Description	FIELD=OPERATOR:VALUE
+//	@Description	where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
+//	@Description	and VALUE is an unquoted string, integer or decimal
+//	@Description	Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+//	@Description	The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
+//	@Description	The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
+//	@Description	The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
+//	@Description	If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
+//	@Description	The filters are evaluated conjunctively.
+//	@Description	Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
+//	@Security		ApiKeyAuth
+//	@Tags			geodata
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit				query		int		false	"limit"
+//	@Param			offset				query		int		false	"offset"
+//	@Param			setting				query		string	false	"tectonic setting - see /queries/sites/settings (supports Filter DSL)"
+//	@Param			location1			query		string	false	"location level 1 - see /queries/locations/l1 (supports Filter DSL)"
+//	@Param			location2			query		string	false	"location level 2 - see /queries/locations/l2 (supports Filter DSL)"
+//	@Param			location3			query		string	false	"location level 3 - see /queries/locations/l3 (supports Filter DSL)"
+//	@Param			latitude			query		string	false	"latitude (supports Filter DSL)"
+//	@Param			longitude			query		string	false	"longitude (supports Filter DSL)"
+//	@Param			rocktype			query		string	false	"rock type - see /queries/samples/rocktypes (supports 'eq', 'in')"
+//	@Param			rockclassID			query		int		false	"taxonomic classifier ID - see /queries/samples/rockclasses value (supports 'eq', 'in')"
+//	@Param			mineral				query		string	false	"mineral - see /queries/samples/minerals (supports 'eq', 'in')"
+//	@Param			material			query		string	false	"material - see /queries/samples/materials (supports Filter DSL)"
+//	@Param			inclusiontype		query		string	false	"inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
+//	@Param			hostmineral			query		string	false	"host mineral - see /queries/samples/hostmaterials (supports 'eq', 'in')"
+//	@Param			inclusionmineral	query		string	false	"inclusion mineral - see /queries/samples/inclusionmaterials (supports 'eq', 'in')"
+//	@Param			sampletech			query		string	false	"sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+//	@Param			rimorcore			query		string	false	"rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
+//	@Param			chemistry			query		string	false	"chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
+//	@Param			title				query		string	false	"title of publication (supports Filter DSL)"
+//	@Param			publicationyear		query		string	false	"publication year (supports Filter DSL)"
+//	@Param			doi					query		string	false	"DOI (supports Filter DSL)"
+//	@Param			firstname			query		string	false	"Author first name (supports 'eq', 'in')"
+//	@Param			lastname			query		string	false	"Author last name (supports 'eq', 'in')"
+//	@Param			agemin				query		string	false	"Specimen age min (supports Filter DSL)"
+//	@Param			agemax				query		string	false	"Specimen age max (supports Filter DSL)"
+//	@Param			geoage				query		string	false	"Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
+//	@Param			geoageprefix		query		string	false	"Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
+//	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
+//	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+//	@Param			bbox				query		string	true	"BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
+//	@Param			numClusters			query		int		false	"Number of clusters for k-means clustering. Default is 7. Can be more depending on maxDistance"
+//	@Param			maxDistance			query		int		false	"Max size of cluster. Recommended values per zoom-level: Z0: 50, Z1: 50, Z2: 25, Z4: 12 -> Zi = 50/i"
+//	@Response		102					{header}	-		Sends	back	Headers	while	progressing	the	request
+//	@Success		200					{object}	model.ClusterResponse
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		422					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/geodata/samplesclustered [get]
 func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -453,20 +453,20 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 }
 
 // GetSpecimenTypes godoc
-// @Summary     Retrieve specimen types
-// @Description get specimen types
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.SpecimenTypeResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/specimentypes [get]
+//	@Summary		Retrieve specimen types
+//	@Description	get specimen types
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.SpecimenTypeResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/specimentypes [get]
 func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -494,28 +494,28 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 }
 
 // GetRockClasses godoc
-// @Summary     Retrieve rock classes
-// @Description get rock classes
-// @Description Filter DSL syntax:
-// @Description FIELD=OPERATOR:VALUE
-// @Description where FIELD is one of the accepted query params; OPERATOR is either "in" (IN) for rocktype; or "lk" (LIKE) for the search query q
-// @Description and VALUE is an unquoted string
-// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
-// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit    query    int    false "limit"
-// @Param       offset   query    int    false "offset"
-// @Param       rocktype query    string false "One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use "in" as the operator"
-// @Param       q        query    string false "Search string for rockclass values. Use "lk:" as the operator"
-// @Success     200      {object} model.TaxonomicClassifierResponse
-// @Failure     401      {object} string
-// @Failure     404      {object} string
-// @Failure     422      {object} string
-// @Failure     500      {object} string
-// @Router      /queries/samples/rockclasses [get]
+//	@Summary		Retrieve rock classes
+//	@Description	get rock classes
+//	@Description	Filter DSL syntax:
+//	@Description	FIELD=OPERATOR:VALUE
+//	@Description	where FIELD is one of the accepted query params; OPERATOR is either "in" (IN) for rocktype; or "lk" (LIKE) for the search query q
+//	@Description	and VALUE is an unquoted string
+//	@Description	Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+//	@Description	The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit		query		int		false	"limit"
+//	@Param			offset		query		int		false	"offset"
+//	@Param			rocktype	query		string	false	"One or more Rocktypes to filter corresponding Rockclasses as a comma-separated list. Use "in" as the operator"
+//	@Param			q			query		string	false	"Search string for rockclass values. Use "lk:" as the operator"
+//	@Success		200			{object}	model.TaxonomicClassifierResponse
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		422			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/queries/samples/rockclasses [get]
 func (h *Handler) GetRockClasses(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -562,20 +562,20 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 }
 
 // GetRockTypes godoc
-// @Summary     Retrieve rock types
-// @Description get rock types
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.TaxonomicClassifierResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/rocktypes [get]
+//	@Summary		Retrieve rock types
+//	@Description	get rock types
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.TaxonomicClassifierResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/rocktypes [get]
 func (h *Handler) GetRockTypes(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -603,20 +603,20 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 }
 
 // GetMinerals godoc
-// @Summary     Retrieve minerals
-// @Description get minerals
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.TaxonomicClassifierResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/minerals [get]
+//	@Summary		Retrieve minerals
+//	@Description	get minerals
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.TaxonomicClassifierResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/minerals [get]
 func (h *Handler) GetMinerals(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -644,20 +644,20 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 }
 
 // GetMaterials godoc
-// @Summary     Retrieve materials
-// @Description get materials
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.MaterialResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/materials [get]
+//	@Summary		Retrieve materials
+//	@Description	get materials
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.MaterialResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/materials [get]
 func (h *Handler) GetMaterials(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -685,20 +685,20 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 }
 
 // GetHostMaterials godoc
-// @Summary     Retrieve host materials
-// @Description get host materials
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.TaxonomicClassifierResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/hostmaterials [get]
+//	@Summary		Retrieve host materials
+//	@Description	get host materials
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.TaxonomicClassifierResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/hostmaterials [get]
 func (h *Handler) GetHostMaterials(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -726,20 +726,20 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 }
 
 // GetInclusionMaterials godoc
-// @Summary     Retrieve inclusion materials
-// @Description get inclusion materials
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.TaxonomicClassifierResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/inclusionmaterials [get]
+//	@Summary		Retrieve inclusion materials
+//	@Description	get inclusion materials
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.TaxonomicClassifierResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/inclusionmaterials [get]
 func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -767,20 +767,20 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 }
 
 // GetInclusionTypes godoc
-// @Summary     Retrieve inclusion types
-// @Description get inclusion types
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.InclusionTypeResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/inclusiontypes [get]
+//	@Summary		Retrieve inclusion types
+//	@Description	get inclusion types
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.InclusionTypeResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/inclusiontypes [get]
 func (h *Handler) GetInclusionTypes(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -808,20 +808,20 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 }
 
 // GetSamplingTechniques godoc
-// @Summary     Retrieve sampling techniques
-// @Description get sampling techniques
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.SamplingTechniqueResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/samplingtechniques [get]
+//	@Summary		Retrieve sampling techniques
+//	@Description	get sampling techniques
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.SamplingTechniqueResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/samplingtechniques [get]
 func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -849,19 +849,19 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 }
 
 // GetRandomSamples godoc
-// @Summary     Retrieve a random set of specimen
-// @Description get random specimen
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit query    int false "limit"
-// @Success     200   {object} model.SpecimenResponse
-// @Failure     401   {object} string
-// @Failure     404   {object} string
-// @Failure     422   {object} string
-// @Failure     500   {object} string
-// @Router      /queries/samples/random [get]
+//	@Summary		Retrieve a random set of specimen
+//	@Description	get random specimen
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Success		200		{object}	model.SpecimenResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/random [get]
 func (h *Handler) GetRandomSamples(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -883,20 +883,20 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 }
 
 // GetGeoAges godoc
-// @Summary     Retrieve geological ages
-// @Description get geological ages
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.GeoAgeResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/geoages [get]
+//	@Summary		Retrieve geological ages
+//	@Description	get geological ages
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.GeoAgeResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/geoages [get]
 func (h *Handler) GetGeoAges(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -924,20 +924,20 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 }
 
 // GetGeoAgePrefixes godoc
-// @Summary     Retrieve geological age prefixes
-// @Description get geological age prefixes
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.GeoAgePrefixResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/geoageprefixes [get]
+//	@Summary		Retrieve geological age prefixes
+//	@Description	get geological age prefixes
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.GeoAgePrefixResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/geoageprefixes [get]
 func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -965,20 +965,20 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 }
 
 // GetOrganizationNames godoc
-// @Summary     Retrieve organization names
-// @Description get organization names
-// @Security    ApiKeyAuth
-// @Tags        samples
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.OrganizationResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/samples/organizationnames [get]
+//	@Summary		Retrieve organization names
+//	@Description	get organization names
+//	@Security		ApiKeyAuth
+//	@Tags			samples
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.OrganizationResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/samples/organizationnames [get]
 func (h *Handler) GetOrganizationNames(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

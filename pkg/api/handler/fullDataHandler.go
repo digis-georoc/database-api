@@ -33,18 +33,18 @@ const (
 )
 
 // GetFullDataByID godoc
-// @Summary     Retrieve full dataset by samplingfeatureid
-// @Description get full dataset by samplingfeatureid
-// @Security    ApiKeyAuth
-// @Tags        fulldata
-// @Accept      json
-// @Produce     json
-// @Param       samplingfeatureids path     string true "Samplingfeature identifier"
-// @Success     200                {object} model.FullData
-// @Failure     401                {object} string
-// @Failure     404                {object} string
-// @Failure     500                {object} string
-// @Router      /queries/fulldata/{samplingfeatureid} [get]
+//	@Summary		Retrieve full dataset by samplingfeatureid
+//	@Description	get full dataset by samplingfeatureid
+//	@Security		ApiKeyAuth
+//	@Tags			fulldata
+//	@Accept			json
+//	@Produce		json
+//	@Param			samplingfeatureids	path		string	true	"Samplingfeature identifier"
+//	@Success		200					{object}	model.FullData
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/queries/fulldata/{samplingfeatureid} [get]
 func (h *Handler) GetFullDataByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -80,18 +80,18 @@ func (h *Handler) GetFullDataByID(c echo.Context) error {
 }
 
 // GetFullData godoc
-// @Summary     Retrieve full datasets by a list of samplingfeatureids
-// @Description get full datasets by a list of samplingfeatureids
-// @Security    ApiKeyAuth
-// @Tags        fulldata
-// @Accept      json
-// @Produce     json
-// @Param       samplingfeatureids query    string true "List of Samplingfeature identifiers"
-// @Success     200                {object} model.FullDataResponse
-// @Failure     401                {object} string
-// @Failure     404                {object} string
-// @Failure     500                {object} string
-// @Router      /queries/fulldata [get]
+//	@Summary		Retrieve full datasets by a list of samplingfeatureids
+//	@Description	get full datasets by a list of samplingfeatureids
+//	@Security		ApiKeyAuth
+//	@Tags			fulldata
+//	@Accept			json
+//	@Produce		json
+//	@Param			samplingfeatureids	query		string	true	"List of Samplingfeature identifiers"
+//	@Success		200					{object}	model.FullDataResponse
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/queries/fulldata [get]
 func (h *Handler) GetFullData(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

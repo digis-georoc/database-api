@@ -134,11 +134,11 @@ func (pC *postgresConnector) Ping() error {
 }
 
 // Query is the generic method to query the database
-// @param   ctx  a   context.Context   for    the    query  (use the request context to enable aborting the query if the client disconnects)
-// @param   pC   the PostgresConnector object to     access the database
-// @param   sql  the sql               query  to     be     executed
-// @param   args can be                a      number of     arguments to the query
-// @returns a slice of objects of type T containing the result rows, or any error occurring while executing the query
+//	@param		ctx		a	context.Context		for		the		query	(use the request context to enable aborting the query if the client disconnects)
+//	@param		pC		the	PostgresConnector	object	to		access	the	database
+//	@param		sql		the	sql					query	to		be		executed
+//	@param		args	can	be					a		number	of		arguments	to	the	query
+//	@returns	a slice of objects of type T containing the result rows, or any error occurring while executing the query
 //
 // Example:
 // sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql
@@ -162,11 +162,11 @@ func Query[T any](ctx context.Context, pC PostgresConnector, sql string, args ..
 }
 
 // Query is the generic method to query the database
-// @param   ctx  a   context.Context   for    the    query  (use the request context to enable aborting the query if the client disconnects)
-// @param   pC   the PostgresConnector object to     access the database
-// @param   sql  the sql               query  to     be     executed
-// @param   args can be                a      number of     arguments to the query
-// @returns a slice of objects of type T containing the result rows, or any error occurring while executing the query
+//	@param		ctx		a	context.Context		for		the		query	(use the request context to enable aborting the query if the client disconnects)
+//	@param		pC		the	PostgresConnector	object	to		access	the	database
+//	@param		sql		the	sql					query	to		be		executed
+//	@param		args	can	be					a		number	of		arguments	to	the	query
+//	@returns	a slice of objects of type T containing the result rows, or any error occurring while executing the query
 //
 // Example:
 // sql := "SELECT phonenumber, name FROM phonebook WHERE name = '$1'" // use $i to fill the ith arg in the sql

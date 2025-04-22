@@ -21,27 +21,27 @@ import (
 	_ "gitlab.gwdg.de/fe/digis/database-api/docs"
 )
 
-// @title       DIGIS Database API
-// @version     0.7.2
-// @description This is the database api for the new GeoROC datamodel
-// @description
-// @description Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
+//	@title			DIGIS Database API
+//	@version		0.7.3
+//	@description	This is the database api for the new GeoROC datamodel
+//	@description
+//	@description	Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
 
-// @contact.name  DIGIS Project
-// @contact.url   https://www.uni-goettingen.de/de/643369.html
-// @contact.email digis-info@uni-goettingen.de
+//	@contact.name	DIGIS Project
+//	@contact.url	https://www.uni-goettingen.de/de/643369.html
+//	@contact.email	digis-info@uni-goettingen.de
 
-// @license.name Data retrieved is licensed under CC BY-SA 4.0
-// @license.url  https://creativecommons.org/licenses/by-sa/4.0/
+//	@license.name	Data retrieved is licensed under CC BY-SA 4.0
+//	@license.url	https://creativecommons.org/licenses/by-sa/4.0/
 
-// @securityDefinitions.apikey ApiKeyAuth
-// @in                         header
-// @name                       DIGIS-API-ACCESSKEY
-// @description                Accesskey based security scheme to secure api groups "/queries/*" and "/geodata/*"
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						DIGIS-API-ACCESSKEY
+//	@description				Accesskey based security scheme to secure api groups "/queries/*" and "/geodata/*"
 
-// @host     api-test.georoc.eu
-// @schemes  https http
-// @BasePath /api/v1
+// @host		api-test.georoc.eu
+// @schemes	https http
+// @BasePath	/api/v1
 func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true

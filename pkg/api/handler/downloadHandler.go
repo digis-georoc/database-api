@@ -32,20 +32,20 @@ const (
 )
 
 // GetDataDownloadByIDs godoc
-// @Summary     Retrieve download data for the given sample IDs
-// @Description get the full data for a list of sample IDs as a csv or xlsx file
-// @Security    ApiKeyAuth
-// @Tags        download
-// @Accept      json
-// @Produce     plain
-// @Param       sampleids query    string true  "List of Sample identifiers"
-// @Param       format    query    string true  "Desired output format: csv (default) or xlsx"
-// @Response    102       {header} -      Sends back Headers while progressing the request
-// @Success     200       {file}   file
-// @Failure     401       {object} string
-// @Failure     404       {object} string
-// @Failure     500       {object} string
-// @Router      /download/sampleid [get]
+//	@Summary		Retrieve download data for the given sample IDs
+//	@Description	get the full data for a list of sample IDs as a csv or xlsx file
+//	@Security		ApiKeyAuth
+//	@Tags			download
+//	@Accept			json
+//	@Produce		plain
+//	@Param			sampleids	query		string	true	"List of Sample identifiers"
+//	@Param			format		query		string	true	"Desired output format: csv (default) or xlsx"
+//	@Response		102			{header}	-		Sends	back	Headers	while	progressing	the	request
+//	@Success		200			{file}		file
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/download/sampleid [get]
 func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -109,60 +109,60 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 }
 
 // GetDataDownloadByFilter godoc
-// @Summary     Retrieve download data for the given filters
-// @Description get the full data for the given filters as a csv or xlsx file
-// @Description Filter DSL syntax:
-// @Description FIELD=OPERATOR:VALUE
-// @Description where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
-// @Description and VALUE is an unquoted string, integer or decimal
-// @Description Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
-// @Description The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
-// @Description The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
-// @Description The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
-// @Description If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
-// @Description The filters are evaluated conjunctively.
-// @Description Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
-// @Security    ApiKeyAuth
-// @Tags        download
-// @Accept      json
-// @Produce     plain
-// @Param       format            query    string true  "Desired output format: csv (default) or xlsx"
-// @Param       limit             query    int    false "limit"
-// @Param       offset            query    int    false "offset"
-// @Param       setting           query    string false "tectonic setting - see /queries/sites/settings (supports Filter DSL)"
-// @Param       location1         query    string false "location level 1 - see /queries/locations/l1 (supports Filter DSL)"
-// @Param       location2         query    string false "location level 2 - see /queries/locations/l2 (supports Filter DSL)"
-// @Param       location3         query    string false "location level 3 - see /queries/locations/l3 (supports Filter DSL)"
-// @Param       latitude          query    string false "latitude (supports Filter DSL)"
-// @Param       longitude         query    string false "longitude (supports Filter DSL)"
-// @Param       rocktype          query    string false "rock type - see /queries/samples/rocktypes (supports Filter DSL)"
-// @Param       rockclassID       query    int    false "taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
-// @Param       mineral           query    string false "mineral - see /queries/samples/minerals (supports Filter DSL)"
-// @Param       material          query    string false "material - see /queries/samples/materials (supports Filter DSL)"
-// @Param       inclusiontype     query    string false "inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
-// @Param       hostmaterial      query    string false "host material - see /queries/samples/hostmaterials (supports Filter DSL)"
-// @Param       inclusionmaterial query    string false "inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
-// @Param       sampletech        query    string false "sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
-// @Param       rimorcore         query    string false "rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
-// @Param       chemistry         query    string false "chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
-// @Param       title             query    string false "title of publication (supports Filter DSL)"
-// @Param       publicationyear   query    string false "publication year (supports Filter DSL)"
-// @Param       doi               query    string false "DOI (supports Filter DSL)"
-// @Param       firstname         query    string false "Author first name (supports Filter DSL)"
-// @Param       lastname          query    string false "Author last name (supports Filter DSL)"
-// @Param       agemin            query    string false "Specimen age min (supports Filter DSL)"
-// @Param       agemax            query    string false "Specimen age max (supports Filter DSL)"
-// @Param       geoage            query    string false "Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
-// @Param       geoageprefix      query    string false "Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
-// @Param       lab               query    string false "Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-// @Param       polygon           query    string false "Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
-// @Param       addcoordinates    query    bool   false "Add coordinates to each sample"
-// @Response    102               {header} -      Sends back Headers while progressing the request
-// @Success     200               {file}   file
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     500               {object} string
-// @Router      /download/filtered [get]
+//	@Summary		Retrieve download data for the given filters
+//	@Description	get the full data for the given filters as a csv or xlsx file
+//	@Description	Filter DSL syntax:
+//	@Description	FIELD=OPERATOR:VALUE
+//	@Description	where FIELD is one of the accepted query params; OPERATOR is one of "lt" (<), "gt" (>), "eq" (=), "in" (IN), "lk" (LIKE), "btw" (BETWEEN)
+//	@Description	and VALUE is an unquoted string, integer or decimal
+//	@Description	Multiple VALUEs for an "in"-filter must be comma-separated and will be interpreted as a discunctive filter.
+//	@Description	The OPERATORs "lt", "gt" and "btw" are only applicable to numerical values.
+//	@Description	The OPERATOR "lk" is only applicable to string values and supports wildcards `*`(0 or more chars) and `?`(one char).
+//	@Description	The OPERATOR "btw" accepts two comma-separated values as the inclusive lower and upper bound. Missing values are assumed as 0 and 9999999 respectively.
+//	@Description	If no OPERATOR is specified, "eq" is assumed as the default OPERATOR.
+//	@Description	The filters are evaluated conjunctively.
+//	@Description	Note that applying more filters can slow down the query as more tables have to be considered in the evaluation.
+//	@Security		ApiKeyAuth
+//	@Tags			download
+//	@Accept			json
+//	@Produce		plain
+//	@Param			format				query		string	true	"Desired output format: csv (default) or xlsx"
+//	@Param			limit				query		int		false	"limit"
+//	@Param			offset				query		int		false	"offset"
+//	@Param			setting				query		string	false	"tectonic setting - see /queries/sites/settings (supports Filter DSL)"
+//	@Param			location1			query		string	false	"location level 1 - see /queries/locations/l1 (supports Filter DSL)"
+//	@Param			location2			query		string	false	"location level 2 - see /queries/locations/l2 (supports Filter DSL)"
+//	@Param			location3			query		string	false	"location level 3 - see /queries/locations/l3 (supports Filter DSL)"
+//	@Param			latitude			query		string	false	"latitude (supports Filter DSL)"
+//	@Param			longitude			query		string	false	"longitude (supports Filter DSL)"
+//	@Param			rocktype			query		string	false	"rock type - see /queries/samples/rocktypes (supports Filter DSL)"
+//	@Param			rockclassID			query		int		false	"taxonomic classifier ID - see /queries/samples/rockclasses value (supports Filter DSL)"
+//	@Param			mineral				query		string	false	"mineral - see /queries/samples/minerals (supports Filter DSL)"
+//	@Param			material			query		string	false	"material - see /queries/samples/materials (supports Filter DSL)"
+//	@Param			inclusiontype		query		string	false	"inclusion type - see /queries/samples/inclusiontypes (supports Filter DSL)"
+//	@Param			hostmaterial		query		string	false	"host material - see /queries/samples/hostmaterials (supports Filter DSL)"
+//	@Param			inclusionmaterial	query		string	false	"inclusion material - see /queries/samples/inclusionmaterials (supports Filter DSL)"
+//	@Param			sampletech			query		string	false	"sampling technique - see /queries/samples/samplingtechniques (supports Filter DSL)"
+//	@Param			rimorcore			query		string	false	"rim or core - R = Rim, C = Core, I = Intermediate (supports Filter DSL)"
+//	@Param			chemistry			query		string	false	"chemical filter using the form `(TYPE,ELEMENT,MIN,MAX),...` where the filter tuples are evaluated conjunctively"
+//	@Param			title				query		string	false	"title of publication (supports Filter DSL)"
+//	@Param			publicationyear		query		string	false	"publication year (supports Filter DSL)"
+//	@Param			doi					query		string	false	"DOI (supports Filter DSL)"
+//	@Param			firstname			query		string	false	"Author first name (supports Filter DSL)"
+//	@Param			lastname			query		string	false	"Author last name (supports Filter DSL)"
+//	@Param			agemin				query		string	false	"Specimen age min (supports Filter DSL)"
+//	@Param			agemax				query		string	false	"Specimen age max (supports Filter DSL)"
+//	@Param			geoage				query		string	false	"Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
+//	@Param			geoageprefix		query		string	false	"Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
+//	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
+//	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+//	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
+//	@Response		102					{header}	-		Sends	back	Headers	while	progressing	the	request
+//	@Success		200					{file}		file
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/download/filtered [get]
 func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
