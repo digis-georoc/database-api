@@ -4,7 +4,7 @@
 
 # syntax=docker/dockerfile:1
 # BUILD-STAGE
-FROM golang:1.19-alpine as build
+FROM golang:1.24-alpine AS build
 
 WORKDIR /go/app
 
@@ -18,7 +18,7 @@ RUN CGO_ENABLED=0 go build -o /go/bin/app ./cmd
 
 # RUN STAGE
 # Use distroless image to reduce image size
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/static-debian12
 
 COPY --from=build /go/bin/app .
 
