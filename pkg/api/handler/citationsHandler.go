@@ -20,20 +20,20 @@ const (
 )
 
 // GetCitations godoc
-// @Summary     Retrieve citations
-// @Description get citations
-// @Security    ApiKeyAuth
-// @Tags        citations
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.CitationResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/citations [get]
+//	@Summary		Retrieve citations
+//	@Description	get citations
+//	@Security		ApiKeyAuth
+//	@Tags			citations
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.CitationResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/citations [get]
 func (h *Handler) GetCitations(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -61,18 +61,18 @@ func (h *Handler) GetCitations(c echo.Context) error {
 }
 
 // GetCitationByID godoc
-// @Summary     Retrieve citations by citationID
-// @Description get citations by citationID
-// @Security    ApiKeyAuth
-// @Tags        citations
-// @Accept      json
-// @Produce     json
-// @Param       citationID path     string true "Citation ID"
-// @Success     200        {object} model.Citation
-// @Failure     401        {object} string
-// @Failure     404        {object} string
-// @Failure     500        {object} string
-// @Router      /queries/citations/{citationID} [get]
+//	@Summary		Retrieve citations by citationID
+//	@Description	get citations by citationID
+//	@Security		ApiKeyAuth
+//	@Tags			citations
+//	@Accept			json
+//	@Produce		json
+//	@Param			citationID	path		string	true	"Citation ID"
+//	@Success		200			{object}	model.Citation
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/queries/citations/{citationID} [get]
 func (h *Handler) GetCitationByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

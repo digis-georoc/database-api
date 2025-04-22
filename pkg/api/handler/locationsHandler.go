@@ -21,20 +21,20 @@ const (
 )
 
 // GetLocationsL1 godoc
-// @Summary     Retrieve locations of first level
-// @Description get top level locations
-// @Security    ApiKeyAuth
-// @Tags        locations
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.LocationResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/locations/l1 [get]
+//	@Summary		Retrieve locations of first level
+//	@Description	get top level locations
+//	@Security		ApiKeyAuth
+//	@Tags			locations
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.LocationResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/locations/l1 [get]
 func (h *Handler) GetLocationsL1(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -62,21 +62,21 @@ func (h *Handler) GetLocationsL1(c echo.Context) error {
 }
 
 // GetLocationsL2 godoc
-// @Summary     Retrieve locations of second level
-// @Description get second level locations
-// @Security    ApiKeyAuth
-// @Tags        locations
-// @Accept      json
-// @Produce     json
-// @Param       limit      query    int    false "limit"
-// @Param       offset     query    int    false "offset"
-// @Param       locationl1 query    string true  "Locationname Level 1"
-// @Success     200        {object} model.LocationResponse
-// @Failure     401        {object} string
-// @Failure     404        {object} string
-// @Failure     422        {object} string
-// @Failure     500        {object} string
-// @Router      /queries/locations/l2 [get]
+//	@Summary		Retrieve locations of second level
+//	@Description	get second level locations
+//	@Security		ApiKeyAuth
+//	@Tags			locations
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit		query		int		false	"limit"
+//	@Param			offset		query		int		false	"offset"
+//	@Param			locationl1	query		string	true	"Locationname Level 1"
+//	@Success		200			{object}	model.LocationResponse
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		422			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/queries/locations/l2 [get]
 func (h *Handler) GetLocationsL2(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -105,22 +105,22 @@ func (h *Handler) GetLocationsL2(c echo.Context) error {
 }
 
 // GetLocationsL3 godoc
-// @Summary     Retrieve locations of third level
-// @Description get third level locations
-// @Security    ApiKeyAuth
-// @Tags        locations
-// @Accept      json
-// @Produce     json
-// @Param       limit      query    int    false "limit"
-// @Param       offset     query    int    false "offset"
-// @Param       locationl1 query    string true  "Locationname Level 1"
-// @Param       locationl2 query    string true  "Locationname Level 2"
-// @Success     200        {object} model.LocationResponse
-// @Failure     401        {object} string
-// @Failure     404        {object} string
-// @Failure     422        {object} string
-// @Failure     500        {object} string
-// @Router      /queries/locations/l3 [get]
+//	@Summary		Retrieve locations of third level
+//	@Description	get third level locations
+//	@Security		ApiKeyAuth
+//	@Tags			locations
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit		query		int		false	"limit"
+//	@Param			offset		query		int		false	"offset"
+//	@Param			locationl1	query		string	true	"Locationname Level 1"
+//	@Param			locationl2	query		string	true	"Locationname Level 2"
+//	@Success		200			{object}	model.LocationResponse
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		422			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/queries/locations/l3 [get]
 func (h *Handler) GetLocationsL3(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

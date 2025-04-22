@@ -36,14 +36,14 @@ func NewHandler(db repository.PostgresConnector, config *middleware.KeycloakConf
 }
 
 // Ping godoc
-// @Summary     Health request to check db connection
-// @Description Check connection to db
-// @Tags        general
-// @Accept      json
-// @Produce     json
-// @Success     200 {object} string
-// @Failure     424 {object} string
-// @Router      /ping [get]
+//	@Summary		Health request to check db connection
+//	@Description	Check connection to db
+//	@Tags			general
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	string
+//	@Failure		424	{object}	string
+//	@Router			/ping [get]
 func (h *Handler) Ping(c echo.Context) error {
 	err := h.db.Ping()
 	if err != nil {
@@ -53,27 +53,27 @@ func (h *Handler) Ping(c echo.Context) error {
 }
 
 // Alive godoc
-// @Summary     Health request to check if api is responsive
-// @Description Check connection to api
-// @Tags        general
-// @Accept      json
-// @Produce     json
-// @Success     200 {object} string
-// @Failure     404 {object} string
-// @Router      /alive [get]
+//	@Summary		Health request to check if api is responsive
+//	@Description	Check connection to api
+//	@Tags			general
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	string
+//	@Failure		404	{object}	string
+//	@Router			/alive [get]
 func (h *Handler) Alive(c echo.Context) error {
 	return c.JSON(http.StatusOK, "I'm still alive...")
 }
 
 // Version godoc
-// @Summary     Get api-version
-// @Description Check current version of the api
-// @Tags        general
-// @Accept      json
-// @Produce     json
-// @Success     200 {object} string
-// @Failure     404 {object} string
-// @Router      /version [get]
+//	@Summary		Get api-version
+//	@Description	Check current version of the api
+//	@Tags			general
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	string
+//	@Failure		404	{object}	string
+//	@Router			/version [get]
 func (h *Handler) Version(c echo.Context) error {
 	return c.JSON(http.StatusOK, "0.7.2")
 }

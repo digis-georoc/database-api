@@ -20,20 +20,20 @@ const (
 )
 
 // GetSites godoc
-// @Summary     Retrieve all sites
-// @Description Get all sites
-// @Security    ApiKeyAuth
-// @Tags        sites
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.SiteResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/sites [get]
+//	@Summary		Retrieve all sites
+//	@Description	Get all sites
+//	@Security		ApiKeyAuth
+//	@Tags			sites
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.SiteResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/sites [get]
 func (h *Handler) GetSites(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -61,18 +61,18 @@ func (h *Handler) GetSites(c echo.Context) error {
 }
 
 // GetSiteByID godoc
-// @Summary     Retrieve sites by samplingfeatureID
-// @Description Get sites by samplingfeatureID
-// @Security    ApiKeyAuth
-// @Tags        sites
-// @Accept      json
-// @Produce     json
-// @Param       samplingfeatureID path     string true "samplingfeatureID"
-// @Success     200               {object} model.Site
-// @Failure     401               {object} string
-// @Failure     404               {object} string
-// @Failure     500               {object} string
-// @Router      /queries/sites/{samplingfeatureID} [get]
+//	@Summary		Retrieve sites by samplingfeatureID
+//	@Description	Get sites by samplingfeatureID
+//	@Security		ApiKeyAuth
+//	@Tags			sites
+//	@Accept			json
+//	@Produce		json
+//	@Param			samplingfeatureID	path		string	true	"samplingfeatureID"
+//	@Success		200					{object}	model.Site
+//	@Failure		401					{object}	string
+//	@Failure		404					{object}	string
+//	@Failure		500					{object}	string
+//	@Router			/queries/sites/{samplingfeatureID} [get]
 func (h *Handler) GetSiteByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -91,19 +91,19 @@ func (h *Handler) GetSiteByID(c echo.Context) error {
 }
 
 // GetGeoSettings godoc
-// @Summary     Retrieve all geological settings
-// @Description Get all geological settings
-// @Security    ApiKeyAuth
-// @Tags        sites
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.GeologicalSettingResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/sites/settings [get]
+//	@Summary		Retrieve all geological settings
+//	@Description	Get all geological settings
+//	@Security		ApiKeyAuth
+//	@Tags			sites
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.GeologicalSettingResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/sites/settings [get]
 func (h *Handler) GetGeoSettings(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

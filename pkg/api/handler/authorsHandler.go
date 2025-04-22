@@ -20,20 +20,20 @@ const (
 )
 
 // GetAuthors godoc
-// @Summary     Retrieve authors
-// @Description get authors
-// @Security    ApiKeyAuth
-// @Tags        people
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.PeopleResponse
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /queries/authors [get]
+//	@Summary		Retrieve authors
+//	@Description	get authors
+//	@Security		ApiKeyAuth
+//	@Tags			people
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.PeopleResponse
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/queries/authors [get]
 func (h *Handler) GetAuthors(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
@@ -61,18 +61,18 @@ func (h *Handler) GetAuthors(c echo.Context) error {
 }
 
 // GetAuthorsByID godoc
-// @Summary     Retrieve authors by personID
-// @Description get authors by personID
-// @Security    ApiKeyAuth
-// @Tags        people
-// @Accept      json
-// @Produce     json
-// @Param       personID path     string true "Person ID"
-// @Success     200      {object} model.Person
-// @Failure     401      {object} string
-// @Failure     404      {object} string
-// @Failure     500      {object} string
-// @Router      /queries/authors/{personID} [get]
+//	@Summary		Retrieve authors by personID
+//	@Description	get authors by personID
+//	@Security		ApiKeyAuth
+//	@Tags			people
+//	@Accept			json
+//	@Produce		json
+//	@Param			personID	path		string	true	"Person ID"
+//	@Success		200			{object}	model.Person
+//	@Failure		401			{object}	string
+//	@Failure		404			{object}	string
+//	@Failure		500			{object}	string
+//	@Router			/queries/authors/{personID} [get]
 func (h *Handler) GetAuthorByID(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

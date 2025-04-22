@@ -16,20 +16,20 @@ import (
 )
 
 // GetGeoJSONSites godoc
-// @Summary     Retrieve site data as GeoJSON
-// @Description get site data in GeoJSON format
-// @Security    ApiKeyAuth
-// @Tags        geodata
-// @Accept      json
-// @Produce     json
-// @Param       limit  query    int false "limit"
-// @Param       offset query    int false "offset"
-// @Success     200    {object} model.GeoJSONFeatureCollection
-// @Failure     401    {object} string
-// @Failure     404    {object} string
-// @Failure     422    {object} string
-// @Failure     500    {object} string
-// @Router      /geodata/sites [get]
+//	@Summary		Retrieve site data as GeoJSON
+//	@Description	get site data in GeoJSON format
+//	@Security		ApiKeyAuth
+//	@Tags			geodata
+//	@Accept			json
+//	@Produce		json
+//	@Param			limit	query		int	false	"limit"
+//	@Param			offset	query		int	false	"offset"
+//	@Success		200		{object}	model.GeoJSONFeatureCollection
+//	@Failure		401		{object}	string
+//	@Failure		404		{object}	string
+//	@Failure		422		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/geodata/sites [get]
 func (h *Handler) GetGeoJSONSites(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {

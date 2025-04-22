@@ -16,18 +16,18 @@ import (
 )
 
 // GetCitations godoc
-// @Summary     Retrieve data statistics
-// @Description get statistics
-// @Security    ApiKeyAuth
-// @Tags        stats
-// @Accept      json
-// @Produce     json
-// @Success     200 {object} model.Statistics
-// @Failure     401 {object} string
-// @Failure     404 {object} string
-// @Failure     422 {object} string
-// @Failure     500 {object} string
-// @Router      /queries/statistics [get]
+//	@Summary		Retrieve data statistics
+//	@Description	get statistics
+//	@Security		ApiKeyAuth
+//	@Tags			stats
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	model.Statistics
+//	@Failure		401	{object}	string
+//	@Failure		404	{object}	string
+//	@Failure		422	{object}	string
+//	@Failure		500	{object}	string
+//	@Router			/queries/statistics [get]
 func (h *Handler) GetStatistics(c echo.Context) error {
 	logger, ok := c.Get(middleware.LOGGER_KEY).(middleware.APILogger)
 	if !ok {
