@@ -16,7 +16,7 @@
             "name": "Data retrieved is licensed under CC BY-SA 4.0",
             "url": "https://creativecommons.org/licenses/by-sa/4.0/"
         },
-        "version": "0.7.3"
+        "version": "0.8.0"
     },
     "host": "api-test.georoc.eu",
     "basePath": "/api/v1",
@@ -258,12 +258,6 @@
                     }
                 ],
                 "responses": {
-                    "102": {
-                        "description": "Processing",
-                        "schema": {
-                            "type": "header"
-                        }
-                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -326,12 +320,6 @@
                     }
                 ],
                 "responses": {
-                    "102": {
-                        "description": "Processing",
-                        "schema": {
-                            "type": "header"
-                        }
-                    },
                     "200": {
                         "description": "OK",
                         "schema": {
@@ -1617,12 +1605,6 @@
                     }
                 ],
                 "responses": {
-                    "102": {
-                        "description": "Processing",
-                        "schema": {
-                            "type": "header"
-                        }
-                    },
                     "200": {
                         "description": "OK",
                         "schema": {

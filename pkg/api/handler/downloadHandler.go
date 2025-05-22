@@ -32,6 +32,7 @@ const (
 )
 
 // GetDataDownloadByIDs godoc
+//
 //	@Summary		Retrieve download data for the given sample IDs
 //	@Description	get the full data for a list of sample IDs as a csv or xlsx file
 //	@Security		ApiKeyAuth
@@ -40,7 +41,6 @@ const (
 //	@Produce		plain
 //	@Param			sampleids	query		string	true	"List of Sample identifiers"
 //	@Param			format		query		string	true	"Desired output format: csv (default) or xlsx"
-//	@Response		102			{header}	-		Sends	back	Headers	while	progressing	the	request
 //	@Success		200			{file}		file
 //	@Failure		401			{object}	string
 //	@Failure		404			{object}	string
@@ -80,9 +80,6 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 	}
 	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
 	c.Response().Header().Set("Content-Type", "text/csv")
-	c.Response().WriteHeader(http.StatusProcessing)
-	// flush headers
-	c.Response().Flush()
 	// query the full data for each given identifier
 	samples, err := repository.Query[model.FullData](c.Request().Context(), h.db, sql.FullDataByMultiIdQuery, identifierList)
 	if err != nil {
@@ -109,6 +106,7 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 }
 
 // GetDataDownloadByFilter godoc
+//
 //	@Summary		Retrieve download data for the given filters
 //	@Description	get the full data for the given filters as a csv or xlsx file
 //	@Description	Filter DSL syntax:
@@ -157,7 +155,6 @@ func (h *Handler) GetDataDownloadByIDs(c echo.Context) error {
 //	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 //	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 //	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
-//	@Response		102					{header}	-		Sends	back	Headers	while	progressing	the	request
 //	@Success		200					{file}		file
 //	@Failure		401					{object}	string
 //	@Failure		404					{object}	string
@@ -210,9 +207,6 @@ func (h *Handler) GetDataDownloadByFilter(c echo.Context) error {
 	fileName := fmt.Sprintf("GEOROC_data_download_%s_%s.%s", c.Request().Header.Get("requestID"), time.Now().Format("20060102"), targetFormat)
 	c.Response().Header().Set("Content-Disposition", "attachment; filename="+fileName)
 	c.Response().Header().Set("Content-Type", "text/csv")
-	c.Response().WriteHeader(http.StatusProcessing)
-	// flush headers
-	c.Response().Flush()
 
 	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {

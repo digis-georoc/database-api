@@ -82,6 +82,7 @@ const (
 )
 
 // GetSampleByID godoc
+//
 //	@Summary		Retrieve sample by samplingfeatureid
 //	@Description	get sample by samplingfeatureid
 //	@Security		ApiKeyAuth
@@ -114,6 +115,7 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 }
 
 // GetSamplesFiltered godoc
+//
 //	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields
 //	@Description	Get all samplingfeatureIDs matching the current filters
 //	@Description	Filter DSL syntax:
@@ -161,7 +163,6 @@ func (h *Handler) GetSampleByID(c echo.Context) error {
 //	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 //	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 //	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
-//	@Response		102					{header}	-		Sends	back	Headers	while	progressing	the	request
 //	@Success		200					{object}	model.SampleByFilterResponse
 //	@Failure		401					{object}	string
 //	@Failure		404					{object}	string
@@ -210,10 +211,6 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	// prepare response and start the query
 	response := model.SampleByFilterResponse{}
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	c.Response().WriteHeader(http.StatusProcessing)
-	enc := json.NewEncoder(c.Response())
-	// flush headers
-	c.Response().Flush()
 
 	results, err := repository.Query[model.SampleByFilters](c.Request().Context(), h.db, query.GetQueryString(), query.GetFilterValues()...)
 	if err != nil {
@@ -252,16 +249,12 @@ func (h *Handler) GetSamplesFiltered(c echo.Context) error {
 	response.NumItems = len(responseData)
 	response.TotalCount = totalCount
 	response.Data = responseData
-	if err := enc.Encode(response); err != nil {
-		logger.Errorf("Can not encode sample data: %v", err)
-		return c.String(http.StatusInternalServerError, "Can not encode sample data")
-	}
-	c.Response().WriteHeader(http.StatusOK)
-	c.Response().Flush()
-	return nil
+
+	return c.JSON(http.StatusOK, response)
 }
 
 // GetSamplesFilteredClustered godoc
+//
 //	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered
 //	@Description	Get all samplingfeatureIDs matching the current filters clustered
 //	@Description	Filter DSL syntax:
@@ -453,6 +446,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 }
 
 // GetSpecimenTypes godoc
+//
 //	@Summary		Retrieve specimen types
 //	@Description	get specimen types
 //	@Security		ApiKeyAuth
@@ -494,6 +488,7 @@ func (h *Handler) GetSpecimenTypes(c echo.Context) error {
 }
 
 // GetRockClasses godoc
+//
 //	@Summary		Retrieve rock classes
 //	@Description	get rock classes
 //	@Description	Filter DSL syntax:
@@ -562,6 +557,7 @@ func (h *Handler) GetRockClasses(c echo.Context) error {
 }
 
 // GetRockTypes godoc
+//
 //	@Summary		Retrieve rock types
 //	@Description	get rock types
 //	@Security		ApiKeyAuth
@@ -603,6 +599,7 @@ func (h *Handler) GetRockTypes(c echo.Context) error {
 }
 
 // GetMinerals godoc
+//
 //	@Summary		Retrieve minerals
 //	@Description	get minerals
 //	@Security		ApiKeyAuth
@@ -644,6 +641,7 @@ func (h *Handler) GetMinerals(c echo.Context) error {
 }
 
 // GetMaterials godoc
+//
 //	@Summary		Retrieve materials
 //	@Description	get materials
 //	@Security		ApiKeyAuth
@@ -685,6 +683,7 @@ func (h *Handler) GetMaterials(c echo.Context) error {
 }
 
 // GetHostMaterials godoc
+//
 //	@Summary		Retrieve host materials
 //	@Description	get host materials
 //	@Security		ApiKeyAuth
@@ -726,6 +725,7 @@ func (h *Handler) GetHostMaterials(c echo.Context) error {
 }
 
 // GetInclusionMaterials godoc
+//
 //	@Summary		Retrieve inclusion materials
 //	@Description	get inclusion materials
 //	@Security		ApiKeyAuth
@@ -767,6 +767,7 @@ func (h *Handler) GetInclusionMaterials(c echo.Context) error {
 }
 
 // GetInclusionTypes godoc
+//
 //	@Summary		Retrieve inclusion types
 //	@Description	get inclusion types
 //	@Security		ApiKeyAuth
@@ -808,6 +809,7 @@ func (h *Handler) GetInclusionTypes(c echo.Context) error {
 }
 
 // GetSamplingTechniques godoc
+//
 //	@Summary		Retrieve sampling techniques
 //	@Description	get sampling techniques
 //	@Security		ApiKeyAuth
@@ -849,6 +851,7 @@ func (h *Handler) GetSamplingTechniques(c echo.Context) error {
 }
 
 // GetRandomSamples godoc
+//
 //	@Summary		Retrieve a random set of specimen
 //	@Description	get random specimen
 //	@Security		ApiKeyAuth
@@ -883,6 +886,7 @@ func (h *Handler) GetRandomSamples(c echo.Context) error {
 }
 
 // GetGeoAges godoc
+//
 //	@Summary		Retrieve geological ages
 //	@Description	get geological ages
 //	@Security		ApiKeyAuth
@@ -924,6 +928,7 @@ func (h *Handler) GetGeoAges(c echo.Context) error {
 }
 
 // GetGeoAgePrefixes godoc
+//
 //	@Summary		Retrieve geological age prefixes
 //	@Description	get geological age prefixes
 //	@Security		ApiKeyAuth
@@ -965,6 +970,7 @@ func (h *Handler) GetGeoAgePrefixes(c echo.Context) error {
 }
 
 // GetOrganizationNames godoc
+//
 //	@Summary		Retrieve organization names
 //	@Description	get organization names
 //	@Security		ApiKeyAuth

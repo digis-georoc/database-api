@@ -22,7 +22,7 @@ import (
 )
 
 //	@title			DIGIS Database API
-//	@version		0.7.3
+//	@version		0.8.0
 //	@description	This is the database api for the new GeoROC datamodel
 //	@description
 //	@description	Note: Semicolon (;) in queries are not allowed and need to be url-encoded as per this issue: golang.org/issue/25192
