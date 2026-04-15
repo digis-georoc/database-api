@@ -143,7 +143,7 @@ from
 			mv.datavalue as value,
 			mv.unitgeoroc as unit,
 			mv.methodcode as method,
-			coalesce(array_agg(jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
+			coalesce(array_agg(distinct jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
 			from (
 				select distinct sr.batch
 				from odm2.samplerelations sr
@@ -212,7 +212,7 @@ left join (
 		mv.datavalue as value,
 		mv.unitgeoroc as unit,
 		mv.methodcode as method,
-		coalesce(array_agg(jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
+		coalesce(array_agg(distinct jsonb_build_object('standardname', std.standardname, 'standardvalue', std.standardvalue, 'standardvariable', std.standardvariable, 'standardunit', u.unitgeoroc)) filter (where std.standardid is not null), '{}') as standards 
 		from (
 			select distinct sr.batch
 			from odm2.samplerelations sr
