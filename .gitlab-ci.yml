@@ -37,6 +37,7 @@ variables:
     # add docker credentials
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"harbor.gwdg.de\":{\"auth\":\"$(printf "%s:%s" "${DIGIS_HARBOR_USER}" "${DIGIS_HARBOR_ROBOT_TOKEN}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - cat ${DIGIS_HARBOR_USER} && cat ${DIGIS_HARBOR_ROBOT_TOKEN}
   script:
     - /kaniko/executor
       --context "${CI_PROJECT_DIR}" 
