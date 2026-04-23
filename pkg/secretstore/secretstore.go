@@ -7,7 +7,7 @@ package secretstore
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 )
 
@@ -45,17 +45,17 @@ func (s *secretStore) LoadSecretsFromFile(path string) error {
 	fullPath := s.workdir + path
 	f, err := os.Open(fullPath)
 	if err != nil {
-		return fmt.Errorf("Can not open path %s: %v", fullPath, err)
+		return fmt.Errorf("can not open path %s: %v", fullPath, err)
 	}
 	defer f.Close()
 
-	secretBytes, err := ioutil.ReadAll(f)
+	secretBytes, err := io.ReadAll(f)
 	if err != nil {
-		return fmt.Errorf("Can not read file: %v", err)
+		return fmt.Errorf("can not read file: %v", err)
 	}
 	err = json.Unmarshal(secretBytes, &secretMap)
 	if err != nil {
-		return fmt.Errorf("Can not unmarshal data: %v", err)
+		return fmt.Errorf("can not unmarshal data: %v", err)
 	}
 
 	s.secretMap = secretMap
@@ -65,13 +65,13 @@ func (s *secretStore) LoadSecretsFromFile(path string) error {
 func (s *secretStore) GetSecret(key string) (string, error) {
 	secret, ok := s.secretMap[key]
 	if !ok {
-		return "", fmt.Errorf("No secret with key '%s'", key)
+		return "", fmt.Errorf("no secret with key '%s'", key)
 	}
 	return secret, nil
 }
 
 func (s *secretStore) GetMap() (map[string]string, error) {
-	if s.secretMap == nil || len(s.secretMap) == 0 {
+	if len(s.secretMap) == 0 {
 		return map[string]string{}, fmt.Errorf("No secretMap found or empty: %+v", s.secretMap)
 	}
 	return s.secretMap, nil

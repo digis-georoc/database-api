@@ -140,5 +140,16 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	download.Use(middleware.GetAccessKeyMiddleware(secStore))
 	download.GET("/sampleid", h.GetDataDownloadByIDs)
 	download.GET("/filtered", h.GetDataDownloadByFilter)
+
+	// v2 api
+	v2 := e.Group("/api/v2")
+	// Accesskey queries
+	v2_queries := v2.Group("/queries")
+	v2_queries.Use(middleware.GetAccessKeyMiddleware(secStore))
+	// Sample filtering
+	v2_queries.GET("/samples", h.GetSampleIDStreamed_v2)
+	// Clustering
+	v2_geoData := v2.Group("/geodata")
+	v2_geoData.GET("/samplesclustered", h.GetSamplesClustered_v2)
 	return e
 }

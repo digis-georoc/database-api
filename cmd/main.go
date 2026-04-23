@@ -53,9 +53,15 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Errorf("Can not reach database: %w", err))
 	}
-	log.Infof("Connected to database: %s/%s", params.DBHost, params.DBName)
+	log.Infof("Connected to database: %s/%s", params.Host, params.DBName)
 
-	handler := handler.NewHandler(db, nil)
+	// init search index
+	searchIndex, err := repository.NewOSClient(secStore)
+	if err != nil {
+		log.Fatal(fmt.Errorf("can not connect to search index: %w", err))
+	}
+
+	handler := handler.NewHandler(db, *searchIndex, nil)
 	echoAPI := api.InitializeAPI(handler, secStore)
 
 	// start api server
@@ -74,7 +80,7 @@ func buildConnectionString(secStore secretstore.SecretStore) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", params.DBUser, params.DBPassword, params.DBHost, params.DBPort, params.DBName), nil
+	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", params.Username, params.Password, params.Host, params.Port, params.DBName), nil
 }
 
 // getConnectionParams retrieves the database connection parameters from vault- and env-vars
@@ -109,5 +115,5 @@ func getConnectionParams(secStore secretstore.SecretStore) (*repository.Connecti
 		}
 	}
 
-	return &repository.ConnectionParams{DBHost: host, DBPort: port, DBUser: username, DBPassword: password, DBName: database, SSHHost: sshHost, SSHPort: sshPort, SSHUser: sshUser, SSHPassword: sshPassword}, nil
+	return &repository.ConnectionParams{Host: host, Port: port, Username: username, Password: password, DBName: database, SSHHost: sshHost, SSHPort: sshPort, SSHUser: sshUser, SSHPassword: sshPassword}, nil
 }
