@@ -40,19 +40,6 @@ type postgresConnector struct {
 	connection *pgxpool.Pool
 }
 
-// ConnectionParams holds the parameters for a postgresql database connection
-type ConnectionParams struct {
-	DBHost      string
-	DBPort      int
-	DBUser      string
-	DBPassword  string
-	DBName      string
-	SSHHost     string
-	SSHPort     int
-	SSHUser     string
-	SSHPassword string
-}
-
 // NewPostgresConnector returns a pointer to a new PostgresConnector instance
 func NewPostgresConnector() PostgresConnector {
 	return &postgresConnector{}

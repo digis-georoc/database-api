@@ -62,6 +62,7 @@ const (
 
 	QP_BBOX = "bbox"
 
+	QP_ZOOMLEVEL         = "zoomlevel"
 	QP_NUM_CLUSTERS      = "numClusters"
 	QP_MAX_DISTANCE      = "maxDistance"
 	DEFAULT_NUM_CLUSTERS = "1"  // 1 produces any number of clusters that satisfy the max_distance but prevents error where fewer samples that NUM_CLUSTERS exist
@@ -1499,8 +1500,10 @@ func parseChemQuery(query string) (model.ChemQuery, error) {
 	return chemQuery, nil
 }
 
-var geomTypeRegexp = regexp.MustCompile(`([A-z]+)`)
-var coordRegexp = regexp.MustCompile(`((-?\d+(\.\d+)?) (-?\d+(\.\d+)?))`)
+var (
+	geomTypeRegexp = regexp.MustCompile(`([A-z]+)`)
+	coordRegexp    = regexp.MustCompile(`((-?\d+(\.\d+)?) (-?\d+(\.\d+)?))`)
+)
 
 func parseGeometryString(geomString string) (*model.Geometry, error) {
 	geometry := model.Geometry{}
