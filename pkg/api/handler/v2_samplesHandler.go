@@ -144,7 +144,7 @@ func handleBBox(bboxStr []string) (string, error) {
 		return "", err
 	}
 	// scale bbox
-	if false && !geometry.IsZoom0(bbox) {
+	if !geometry.IsZoom0(bbox) {
 		// add frame around bbox to avoid reloading on small panning
 		bbox = geometry.ScaleBBox(bbox)
 	}

@@ -330,14 +330,14 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 func dslToFilterQuery(field string, v string) osquery.Mappable {
 	var fq osquery.Mappable
 	switch {
-	case strings.HasPrefix(v, PREFIX_IN):
+	case strings.HasPrefix(strings.ToLower(v), PREFIX_IN):
 		raw, _ := strings.CutPrefix(v, PREFIX_IN)
 		generified := []any{}
 		for s := range strings.SplitSeq(raw, DELIM) {
 			generified = append(generified, s)
 		}
 		fq = osquery.Terms(field, generified...)
-	case strings.HasPrefix(v, PREFIX_EQ):
+	case strings.HasPrefix(strings.ToLower(v), PREFIX_EQ):
 		raw, _ := strings.CutPrefix(v, PREFIX_EQ)
 		fq = osquery.Term(field, raw)
 	default:
