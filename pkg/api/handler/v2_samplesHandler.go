@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"slices"
 	"strconv"
@@ -226,7 +227,15 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 	// get zoomLevel
 	zoomLevelS := c.QueryParam(QP_ZOOMLEVEL)
 	if zoomLevelS == "" {
-		zoomLevelS = "1"
+		// calculate zoomLevel from bbox
+		bboxS := c.QueryParam(QP_BBOX)
+		bbox, err := geometry.ParsePointArray(bboxS)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Can not parse bbox")
+		}
+		width := math.Abs(bbox[0].X - bbox[2].X)
+		level := math.Ceil(1 / (width / 360))
+		zoomLevelS = strconv.FormatFloat(level, 'f', 0, 64)
 	}
 	// parse zoomLevel to int
 	zoomLevel, err := strconv.Atoi(zoomLevelS)
