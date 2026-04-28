@@ -332,7 +332,7 @@ func (h *Handler) GetSamplesFilteredClustered(c echo.Context) error {
 	}
 	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
 	bbox = geometry.TruncateBBox(bbox)
-	width := bbox[1][0] - bbox[0][0]
+	width := bbox[1].X - bbox[0].X
 	kmeansMaxDistance := width / 12
 	// scale bbox
 	if !geometry.IsZoom0(bbox) {
@@ -1377,7 +1377,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	if polygon != nil || bbox != nil {
 		// add query module geometry
 		if bbox != nil {
-			bboxSlice := bbox.([][]float64)
+			bboxSlice := bbox.([]model.SimplePoint)
 			// format bbox string for postGIS/SQL syntax
 			bboxFormatted, err := geometry.FormatPolygonArray(bboxSlice)
 			if err != nil {
@@ -1396,7 +1396,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 			query.AddSQLBlock(sql.GestSamplingfeatureIdsByFilterGeometryStart)
 		}
 		if polygon != nil {
-			polygonSlice := polygon.([][]float64)
+			polygonSlice := polygon.([]model.SimplePoint)
 			// format polygon for postGIS/SQL syntax
 			polygonFormatted, err := geometry.FormatPolygonArray(polygonSlice)
 			if err != nil {

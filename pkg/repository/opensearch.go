@@ -203,6 +203,7 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 // buildQuery constructs a osquery.BoolQuery from given filters
 func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 	osFilters := []osquery.Mappable{}
+	var should []osquery.Mappable
 	for k, v := range filters {
 		k = translateKey(k)
 		nestedPath := getNested(k)
@@ -247,24 +248,73 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 				if err != nil {
 					return nil, err
 				}
-				points := []model.GeoPoint{}
-				for _, coords := range polygon {
-					points = append(points, model.GeoPoint{Lat: coords[1], Lon: coords[0]})
+				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
+				partial1, partial2, err := geometry.WrapPolygonLon(polygon)
+				if err != nil {
+					return nil, err
+				}
+				points1 := []model.GeoPoint{}
+				for _, coords := range partial1 {
+					points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
 				}
 				// do a geopolygon filter
-				f = append(f, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points}}}))
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points1}}}))
+				points2 := []model.GeoPoint{}
+				for _, coords := range partial2 {
+					points2 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
+				}
+				// do a geopolygon filter
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points2}}}))
 			case FILTER_BBOX:
 				bbox, err := geometry.ParsePointArray(v)
 				if err != nil {
 					return nil, err
 				}
-				points := []model.GeoPoint{}
-				for _, coords := range bbox {
-					points = append(points, model.GeoPoint{Lat: coords[1], Lon: coords[0]})
+				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
+				partial1, partial2, err := geometry.WrapPolygonLon(bbox)
+				if err != nil {
+					return nil, err
 				}
-				// TODO: need to scale or translate??
-				// do a geo_bounding_box filter
-				f = append(f, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": points[2], "bottom_left": points[0]}}}))
+				// visualize polygons in geojson.io/next
+				// bboxPoly := model.ParsePolygon(bbox)
+				// bboxPoly.Properties = map[string]any{
+				// 	"stroke":         "#555555",
+				// 	"stroke-width":   2,
+				// 	"stroke-opacity": 1,
+				// 	"fill":           "#ff2929",
+				// 	"fill-opacity":   0.5,
+				// }
+				// b0, _ := json.Marshal(bboxPoly)
+				// fmt.Printf("Polygon:\n%+v\n", string(b0))
+				// poly1 := model.ParsePolygon(partial1)
+				// poly1.Properties = map[string]any{
+				// 	"stroke":         "#555555",
+				// 	"stroke-width":   2,
+				// 	"stroke-opacity": 1,
+				// 	"fill":           "#2929ff",
+				// 	"fill-opacity":   0.5,
+				// }
+				// poly2 := model.ParsePolygon(partial2)
+				// poly2.Properties = map[string]any{
+				// 	"stroke":         "#555555",
+				// 	"stroke-width":   2,
+				// 	"stroke-opacity": 1,
+				// 	"fill":           "#29ff29",
+				// 	"fill-opacity":   0.5,
+				// }
+				// b1, _ := json.Marshal(poly1)
+				// b2, _ := json.Marshal(poly2)
+				// fmt.Printf("Wrapped polygons:\n%+v\n%+v\n", string(b1), string(b2))
+				points1 := []model.GeoPoint{}
+				for _, coords := range partial1 {
+					points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
+				}
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": points1[2], "bottom_left": points1[0]}}}))
+				points2 := []model.GeoPoint{}
+				for _, coords := range partial2 {
+					points2 = append(points2, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
+				}
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": points2[2], "bottom_left": points2[0]}}}))
 			default:
 				// do a normal term filter
 				f = append(f, dslToFilterQuery(k, v))
@@ -272,7 +322,7 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 		}
 		osFilters = append(osFilters, f...)
 	}
-	query := osquery.Bool().Filter(osFilters...)
+	query := osquery.Bool().Filter(osFilters...).Should(should...).MinimumShouldMatch(1)
 	return query, nil
 }
 
@@ -393,7 +443,7 @@ func parseIndexPage(hits opensearchapi.SearchHits, aggregations json.RawMessage)
 func parseClusterResponse(resp *opensearchapi.SearchResp) (model.ClusterResponse, error) {
 	clusterResp := model.ClusterResponse{}
 	if len(resp.Aggregations) == 0 {
-		return clusterResp, fmt.Errorf("no clusters returned")
+		return clusterResp, nil
 	}
 	aggs := model.ClusterAggregations{}
 	err := json.Unmarshal(resp.Aggregations, &aggs)

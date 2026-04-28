@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"slices"
 	"strconv"
@@ -120,10 +121,45 @@ func parseFilters(c echo.Context) (map[string]string, error) {
 		if slices.Contains(skip, k) {
 			continue
 		}
-		filters[k] = strings.Join(v, ",")
+		if k == QP_BBOX {
+			bboxStr, err := handleBBox(v)
+			if err != nil {
+				return nil, err
+			}
+			filters[k] = bboxStr
+		} else {
+			filters[k] = strings.Join(v, ",")
+		}
 		fmt.Printf("%s:%s\n", k, filters[k])
 	}
 	return filters, nil
+}
+
+func handleBBox(bboxStr []string) (string, error) {
+	if len(bboxStr) == 0 {
+		return "", fmt.Errorf("empty bbox")
+	}
+	bbox, err := geometry.ParsePointArray(bboxStr[0])
+	if err != nil {
+		return "", err
+	}
+	// scale bbox
+	if false && !geometry.IsZoom0(bbox) {
+		// add frame around bbox to avoid reloading on small panning
+		bbox = geometry.ScaleBBox(bbox)
+	}
+	// truncate bbox after scaling so it contains at most one whole world
+	bbox = geometry.TruncateBBox(bbox)
+	// parse it back to an array of arrays for compatibility with later function calls
+	bboxArray := [][]float64{}
+	for _, p := range bbox {
+		bboxArray = append(bboxArray, []float64{p.X, p.Y})
+	}
+	bboxBytes, err := json.Marshal(bboxArray)
+	if err != nil {
+		return "", err
+	}
+	return string(bboxBytes), err
 }
 
 // GetSamplesClustered_v2 godoc
@@ -191,37 +227,21 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 	// get zoomLevel
 	zoomLevelS := c.QueryParam(QP_ZOOMLEVEL)
 	if zoomLevelS == "" {
-		zoomLevelS = "1"
+		// calculate zoomLevel from bbox
+		bboxS := c.QueryParam(QP_BBOX)
+		bbox, err := geometry.ParsePointArray(bboxS)
+		if err != nil {
+			return c.String(http.StatusBadRequest, "Can not parse bbox")
+		}
+		width := math.Abs(bbox[0].X - bbox[2].X)
+		level := math.Ceil(1 / (width / 360))
+		zoomLevelS = strconv.FormatFloat(level, 'f', 0, 64)
 	}
 	// parse zoomLevel to int
 	zoomLevel, err := strconv.Atoi(zoomLevelS)
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid zoom level - must be an integer")
 	}
-
-	// get the bbox
-	bboxString, _, err := parseParam(c.QueryParam(QP_BBOX))
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not parse bbox")
-	}
-	if bboxString == "" {
-		return c.String(http.StatusInternalServerError, "No bbox provided")
-	}
-	bbox, err := geometry.ParsePointArray(bboxString)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "Can not parse bbox")
-	}
-	// calc clustering param relative to original (visible) bbox size (max 1 world truncated)
-	bbox = geometry.TruncateBBox(bbox)
-	// scale bbox
-	if !geometry.IsZoom0(bbox) {
-		// add frame around bbox to avoid reloading on small panning
-		bbox = geometry.ScaleBBox(bbox)
-	}
-	// truncate bbox after scaling so it contains at most one whole world
-	bbox = geometry.TruncateBBox(bbox)
-	// add first point again to make closed polygon shape
-	bbox = append(bbox, bbox[0])
 
 	filters, err := parseFilters(c)
 	if err != nil {
@@ -235,14 +255,24 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 		logger.Errorf("Can not GetSamplesFilteredClustered: %v", err)
 		return c.String(http.StatusInternalServerError, "Can not retrieve sample data")
 	}
-	// wrap bbox in []interface{} for geoJSON polygon
-	bboxIWrap := []interface{}{bbox}
-	response.Bbox = model.GeoJSONFeature{
-		Type: model.GEOJSONTYPE_FEATURE,
-		Geometry: model.Geometry{
-			Type:        model.GEOJSON_GEOMETRY_POLYGON,
-			Coordinates: bboxIWrap,
-		},
+
+	// add handled bbox to response
+	bboxStr, ok := filters[QP_BBOX]
+	if ok {
+		bbox, err := geometry.ParsePointArray(bboxStr)
+		if err != nil {
+			logger.Warnf("Can not parse bbox string '%s': %s", bboxStr, err.Error())
+		} else {
+			// wrap bbox in []interface{} for geoJSON polygon
+			bboxIWrap := []interface{}{bbox}
+			response.Bbox = model.GeoJSONFeature{
+				Type: model.GEOJSONTYPE_FEATURE,
+				Geometry: model.Geometry{
+					Type:        model.GEOJSON_GEOMETRY_POLYGON,
+					Coordinates: bboxIWrap,
+				},
+			}
+		}
 	}
 	return c.JSON(http.StatusOK, response)
 }

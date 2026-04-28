@@ -6,8 +6,10 @@ package model
 
 // Models for GeoJSON representation. See https://geojson.org/
 
-type GeoJSONFeatureType = string
-type GeoJSONGeometryType = string
+type (
+	GeoJSONFeatureType  = string
+	GeoJSONGeometryType = string
+)
 
 const (
 	GEOJSONTYPE_FEATURECOLLECTION    GeoJSONFeatureType  = "FeatureCollection"
@@ -72,4 +74,40 @@ type GeoJSONSite struct {
 	Loc3 *string `json:"loc3"`
 	// nullable
 	LandOrSea *string `json:"landOrSea"`
+}
+
+type SimplePoint struct {
+	X float64 // West - East axis in geocoordinates
+	Y float64 // South - North axis in geocoordinates
+}
+
+func (p SimplePoint) ToGeoJSON() GeoJSONFeature {
+	return GeoJSONFeature{
+		Type: GEOJSONTYPE_FEATURE,
+		Geometry: Geometry{
+			Type: GEOJSON_GEOMETRY_POINT,
+			Coordinates: []any{
+				p.X,
+				p.Y,
+			},
+		},
+	}
+}
+
+func ParsePolygon(polygon []SimplePoint) GeoJSONFeature {
+	coordinates := []any{}
+	for _, p := range polygon {
+		coordinates = append(coordinates, []any{p.X, p.Y})
+	}
+	// close polygon if it not already is
+	if !(polygon[0].X == polygon[len(polygon)-1].X && polygon[0].Y == polygon[len(polygon)-1].Y) {
+		coordinates = append(coordinates, []any{polygon[0].X, polygon[0].Y})
+	}
+	return GeoJSONFeature{
+		Type: GEOJSONTYPE_FEATURE,
+		Geometry: Geometry{
+			Type:        GEOJSON_GEOMETRY_POLYGON,
+			Coordinates: []any{coordinates},
+		},
+	}
 }
