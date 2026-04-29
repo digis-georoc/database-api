@@ -16,6 +16,10 @@ import (
 	"gitlab.gwdg.de/fe/digis/database-api/pkg/repository"
 )
 
+const (
+	ZOOM_OFFSET = 2 // increase zoom level for more fine-grained clustering
+)
+
 // GetSampleIDStreamed_v2 godoc
 //
 //	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields, streamed as pages of results
@@ -120,55 +124,6 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 	return nil
 }
 
-// parseFilters parses filter values from the incoming request
-var skip []string = []string{"zoomlevel", "limit", "offset"}
-
-func parseFilters(c echo.Context) (map[string]string, error) {
-	filters := map[string]string{}
-	for k, v := range c.QueryParams() {
-		if slices.Contains(skip, k) {
-			continue
-		}
-		if k == QP_BBOX {
-			bboxStr, err := handleBBox(v)
-			if err != nil {
-				return nil, err
-			}
-			filters[k] = bboxStr
-		} else {
-			filters[k] = strings.Join(v, ",")
-		}
-	}
-	return filters, nil
-}
-
-func handleBBox(bboxStr []string) (string, error) {
-	if len(bboxStr) == 0 {
-		return "", fmt.Errorf("empty bbox")
-	}
-	bbox, err := geometry.ParsePointArray(bboxStr[0])
-	if err != nil {
-		return "", err
-	}
-	// scale bbox
-	if !geometry.IsZoom0(bbox) {
-		// add frame around bbox to avoid reloading on small panning
-		bbox = geometry.ScaleBBox(bbox)
-	}
-	// truncate bbox after scaling so it contains at most one whole world
-	bbox = geometry.TruncateBBox(bbox)
-	// parse it back to an array of arrays for compatibility with later function calls
-	bboxArray := [][]float64{}
-	for _, p := range bbox {
-		bboxArray = append(bboxArray, []float64{p.X, p.Y})
-	}
-	bboxBytes, err := json.Marshal(bboxArray)
-	if err != nil {
-		return "", err
-	}
-	return string(bboxBytes), err
-}
-
 // GetSamplesClustered_v2 godoc
 //
 //	@Summary		Retrieve all samplingfeatureIDs filtered by a variety of fields and clustered
@@ -241,7 +196,7 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 			return c.String(http.StatusBadRequest, "Can not parse bbox")
 		}
 		width := math.Abs(bbox[0].X - bbox[2].X)
-		level := math.Ceil(1 / (width / 360))
+		level := ZOOM_OFFSET + math.Ceil(1/(width/360))
 		zoomLevelS = strconv.FormatFloat(level, 'f', 0, 64)
 	}
 	// parse zoomLevel to int
@@ -282,4 +237,53 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 		}
 	}
 	return c.JSON(http.StatusOK, response)
+}
+
+// parseFilters parses filter values from the incoming request
+var skip []string = []string{"zoomlevel", "limit", "offset"}
+
+func parseFilters(c echo.Context) (map[string]string, error) {
+	filters := map[string]string{}
+	for k, v := range c.QueryParams() {
+		if slices.Contains(skip, k) {
+			continue
+		}
+		if k == QP_BBOX {
+			bboxStr, err := handleBBox(v)
+			if err != nil {
+				return nil, err
+			}
+			filters[k] = bboxStr
+		} else {
+			filters[k] = strings.Join(v, ",")
+		}
+	}
+	return filters, nil
+}
+
+func handleBBox(bboxStr []string) (string, error) {
+	if len(bboxStr) == 0 {
+		return "", fmt.Errorf("empty bbox")
+	}
+	bbox, err := geometry.ParsePointArray(bboxStr[0])
+	if err != nil {
+		return "", err
+	}
+	// scale bbox
+	if !geometry.IsZoom0(bbox) {
+		// add frame around bbox to avoid reloading on small panning
+		bbox = geometry.ScaleBBox(bbox)
+	}
+	// truncate bbox after scaling so it contains at most one whole world
+	bbox = geometry.TruncateBBox(bbox)
+	// parse it back to an array of arrays for compatibility with later function calls
+	bboxArray := [][]float64{}
+	for _, p := range bbox {
+		bboxArray = append(bboxArray, []float64{p.X, p.Y})
+	}
+	bboxBytes, err := json.Marshal(bboxArray)
+	if err != nil {
+		return "", err
+	}
+	return string(bboxBytes), err
 }
