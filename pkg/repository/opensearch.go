@@ -205,8 +205,8 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 	osFilters := []osquery.Mappable{}
 	var should []osquery.Mappable
 	for k, v := range filters {
-		k = translateKey(k)
 		nestedPath := getNested(k)
+		k = translateKey(k)
 		var f []osquery.Mappable
 		if len(nestedPath) > 0 {
 			// construct fieldName from original key and nestedPath
@@ -333,6 +333,8 @@ func dslToFilterQuery(field string, v string) osquery.Mappable {
 	if !found {
 		// if no operator is specified, "EQ" is assumed as default
 		operator = PREFIX_EQ
+		// retain original value
+		value = v
 	}
 	operator = strings.ToUpper(operator)
 	switch operator {
@@ -343,6 +345,7 @@ func dslToFilterQuery(field string, v string) osquery.Mappable {
 		}
 		fq = osquery.Terms(field, generified...)
 	case PREFIX_EQ:
+		fq = osquery.Term(field, value)
 	default:
 		fq = osquery.Term(field, value)
 	}
@@ -356,6 +359,14 @@ func translateKey(k string) string {
 		return "externalIdentifier"
 	case "setting":
 		return "tectonicSetting"
+	case "geoage":
+		return "geologicalAge"
+	case "geoageprefix":
+		return "geologicalAgePrefix"
+	case "mineral", "inclusionmaterial", "hostmaterial", "rocktype", "rockclass":
+		return "value"
+	case "standards":
+		return "standardName"
 	}
 	return k
 }
@@ -363,10 +374,22 @@ func translateKey(k string) string {
 // getNested returns for a given key in the filters map, the nested field in the documents it belongs to; or empty string if the key is top level
 func getNested(key string) string {
 	switch key {
-	case "batchName", "batchID", "crystal", "hostMinerals", "inclusionMinerals", "inclusionTypes", "material", "minerals", "rimOrCoreInclusion", "rimOrCoreMineral", "specimenMedium":
+	case "batchName", "batchID", "crystal", "inclusionTypes", "material", "rimOrCoreInclusion", "rimOrCoreMineral", "specimenMedium":
 		return "batchData"
-	case "itemName", "itemGroup", "medium", "method", "standards", "unit", "value", "valueCount", FILTER_CHEMISTRY:
+	case "mineral":
+		return "batchData.minerals"
+	case "inclusionmaterial":
+		return "batchData.inclusionMinerals"
+	case "hostmaterial":
+		return "batchData.hostMinerals"
+	case "itemName", "itemGroup", "medium", "method", "unit", "value", "valueCount", FILTER_CHEMISTRY:
 		return "batchData.results"
+	case "standards":
+		return "batchData.results.standards"
+	case "rocktype":
+		return "rockTypes"
+	case "rockclass":
+		return "rockClasses"
 	case "citationID", "title", "publisher", "publicationYear", "citationLink", "journal", "volume", "issue", "firstPage", "lastPage", "bookTitle", "editors", "externalIdentifier":
 		return "references"
 	case "personID", "firstName", "lastName", "order":
@@ -464,7 +487,7 @@ func parseClusterResponse(resp *opensearchapi.SearchResp) (model.ClusterResponse
 					Coordinates: []any{b.Centroid.Location.Lon, b.Centroid.Location.Lat},
 				},
 				Properties: map[string]any{
-					"clusterID":   b.Key,
+					// "clusterID":   b.Key,
 					"clusterSize": b.DocCount,
 				},
 			},
