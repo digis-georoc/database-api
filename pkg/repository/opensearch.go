@@ -331,14 +331,14 @@ func dslToFilterQuery(field string, v string) osquery.Mappable {
 	var fq osquery.Mappable
 	switch {
 	case strings.HasPrefix(strings.ToLower(v), PREFIX_IN):
-		raw, _ := strings.CutPrefix(v, PREFIX_IN)
+		raw, _ := strings.CutPrefix(strings.ToLower(v), PREFIX_IN)
 		generified := []any{}
 		for s := range strings.SplitSeq(raw, DELIM) {
 			generified = append(generified, s)
 		}
 		fq = osquery.Terms(field, generified...)
 	case strings.HasPrefix(strings.ToLower(v), PREFIX_EQ):
-		raw, _ := strings.CutPrefix(v, PREFIX_EQ)
+		raw, _ := strings.CutPrefix(strings.ToLower(v), PREFIX_EQ)
 		fq = osquery.Term(field, raw)
 	default:
 		fq = osquery.Term(field, v)
@@ -465,6 +465,15 @@ func parseClusterResponse(resp *opensearchapi.SearchResp) (model.ClusterResponse
 					"clusterSize": b.DocCount,
 				},
 			},
+			// add dummy geometry
+			ConvexHull: model.GeoJSONFeature{
+				Type: model.GEOJSONTYPE_FEATURE,
+				ID:   b.Key,
+				Geometry: model.Geometry{
+					Type:        model.GEOJSON_GEOMETRY_POINT,
+					Coordinates: []any{b.Centroid.Location.Lon, b.Centroid.Location.Lat},
+				},
+			},
 		})
 	}
 	return clusterResp, nil
@@ -501,11 +510,6 @@ func runQuery(client *opensearch.Client, searchQuery osquery.SearchRequest, inde
 	if err != nil {
 		return nil, fmt.Errorf("can not query for documents: %w", err)
 	}
-	firstID, lastID := "0", "0"
-	if len(searchResponse.Hits.Hits) > 0 {
-		firstID = searchResponse.Hits.Hits[0].ID
-		lastID = searchResponse.Hits.Hits[len(searchResponse.Hits.Hits)-1].ID
-	}
-	fmt.Printf("%s - %s | Matched %d of %d results in %s (%dms search).\n", firstID, lastID, len(searchResponse.Hits.Hits), searchResponse.Hits.Total.Value, took, searchResponse.Took)
+	fmt.Printf("Matched %d of %d results in %s (%dms search).\n", len(searchResponse.Hits.Hits), searchResponse.Hits.Total.Value, took, searchResponse.Took)
 	return searchResponse, nil
 }
