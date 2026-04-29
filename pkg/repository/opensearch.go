@@ -36,10 +36,10 @@ const (
 	FIELD_ITEMGROUP = "itemGroup"
 	FIELD_ITEMNAME  = "itemName"
 
-	PREFIX_IN = "in:"
-	PREFIX_EQ = "eq:"
-	PREFIX_LT = "lt:"
-	PREFIXGT  = "gt:"
+	PREFIX_IN = "IN"
+	PREFIX_EQ = "EQ"
+	PREFIX_LT = "LT"
+	PREFIXGT  = "GT"
 
 	DELIM = ","
 )
@@ -329,19 +329,22 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 // dslToFilterQuery takes a field name and a value string and parses the custom query dsl to return search index queries as osquery.Mappable objects
 func dslToFilterQuery(field string, v string) osquery.Mappable {
 	var fq osquery.Mappable
-	switch {
-	case strings.HasPrefix(strings.ToLower(v), PREFIX_IN):
-		raw, _ := strings.CutPrefix(strings.ToLower(v), PREFIX_IN)
+	operator, value, found := strings.Cut(v, ":")
+	if !found {
+		// if no operator is specified, "EQ" is assumed as default
+		operator = PREFIX_EQ
+	}
+	operator = strings.ToUpper(operator)
+	switch operator {
+	case PREFIX_IN:
 		generified := []any{}
-		for s := range strings.SplitSeq(raw, DELIM) {
+		for s := range strings.SplitSeq(value, DELIM) {
 			generified = append(generified, s)
 		}
 		fq = osquery.Terms(field, generified...)
-	case strings.HasPrefix(strings.ToLower(v), PREFIX_EQ):
-		raw, _ := strings.CutPrefix(strings.ToLower(v), PREFIX_EQ)
-		fq = osquery.Term(field, raw)
+	case PREFIX_EQ:
 	default:
-		fq = osquery.Term(field, v)
+		fq = osquery.Term(field, value)
 	}
 	return fq
 }
