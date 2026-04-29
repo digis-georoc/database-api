@@ -94,6 +94,36 @@ func WrapPolygonLon(polygon []model.SimplePoint) ([]model.SimplePoint, []model.S
 	partial1 := cutPolygon(polygon)
 	translated := translatePolygonLon(polygon, boundary)
 	partial2 := cutPolygon(translated)
+	// visualize polygons in geojson.io/next
+	// bboxPoly := model.ParsePolygon(bbox)
+	// bboxPoly.Properties = map[string]any{
+	// 	"stroke":         "#555555",
+	// 	"stroke-width":   2,
+	// 	"stroke-opacity": 1,
+	// 	"fill":           "#ff2929",
+	// 	"fill-opacity":   0.5,
+	// }
+	// b0, _ := json.Marshal(bboxPoly)
+	// fmt.Printf("Polygon:\n%+v\n", string(b0))
+	// poly1 := model.ParsePolygon(partial1)
+	// poly1.Properties = map[string]any{
+	// 	"stroke":         "#555555",
+	// 	"stroke-width":   2,
+	// 	"stroke-opacity": 1,
+	// 	"fill":           "#2929ff",
+	// 	"fill-opacity":   0.5,
+	// }
+	// poly2 := model.ParsePolygon(partial2)
+	// poly2.Properties = map[string]any{
+	// 	"stroke":         "#555555",
+	// 	"stroke-width":   2,
+	// 	"stroke-opacity": 1,
+	// 	"fill":           "#29ff29",
+	// 	"fill-opacity":   0.5,
+	// }
+	// b1, _ := json.Marshal(poly1)
+	// b2, _ := json.Marshal(poly2)
+	// fmt.Printf("Wrapped polygons:\n%+v\n%+v\n", string(b1), string(b2))
 	return partial1, partial2, nil
 }
 

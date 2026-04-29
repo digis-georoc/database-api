@@ -203,7 +203,6 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 // buildQuery constructs a osquery.BoolQuery from given filters
 func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 	osFilters := []osquery.Mappable{}
-	var should []osquery.Mappable
 	for k, v := range filters {
 		nestedPath := getNested(k)
 		k = translateKey(k)
@@ -248,6 +247,7 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 				if err != nil {
 					return nil, err
 				}
+				should := []osquery.Mappable{}
 				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
 				partial1, partial2, err := geometry.WrapPolygonLon(polygon)
 				if err != nil {
@@ -265,56 +265,21 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 				}
 				// do a geopolygon filter
 				should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points2}}}))
+				f = append(f, osquery.Bool().MinimumShouldMatch(1).Should(should...))
 			case FILTER_BBOX:
 				bbox, err := geometry.ParsePointArray(v)
 				if err != nil {
 					return nil, err
 				}
+				should := []osquery.Mappable{}
 				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
 				partial1, partial2, err := geometry.WrapPolygonLon(bbox)
 				if err != nil {
 					return nil, err
 				}
-				// visualize polygons in geojson.io/next
-				// bboxPoly := model.ParsePolygon(bbox)
-				// bboxPoly.Properties = map[string]any{
-				// 	"stroke":         "#555555",
-				// 	"stroke-width":   2,
-				// 	"stroke-opacity": 1,
-				// 	"fill":           "#ff2929",
-				// 	"fill-opacity":   0.5,
-				// }
-				// b0, _ := json.Marshal(bboxPoly)
-				// fmt.Printf("Polygon:\n%+v\n", string(b0))
-				// poly1 := model.ParsePolygon(partial1)
-				// poly1.Properties = map[string]any{
-				// 	"stroke":         "#555555",
-				// 	"stroke-width":   2,
-				// 	"stroke-opacity": 1,
-				// 	"fill":           "#2929ff",
-				// 	"fill-opacity":   0.5,
-				// }
-				// poly2 := model.ParsePolygon(partial2)
-				// poly2.Properties = map[string]any{
-				// 	"stroke":         "#555555",
-				// 	"stroke-width":   2,
-				// 	"stroke-opacity": 1,
-				// 	"fill":           "#29ff29",
-				// 	"fill-opacity":   0.5,
-				// }
-				// b1, _ := json.Marshal(poly1)
-				// b2, _ := json.Marshal(poly2)
-				// fmt.Printf("Wrapped polygons:\n%+v\n%+v\n", string(b1), string(b2))
-				points1 := []model.GeoPoint{}
-				for _, coords := range partial1 {
-					points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-				}
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": points1[2], "bottom_left": points1[0]}}}))
-				points2 := []model.GeoPoint{}
-				for _, coords := range partial2 {
-					points2 = append(points2, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-				}
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": points2[2], "bottom_left": points2[0]}}}))
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial1[2].X, "lat": partial1[2].Y}, "bottom_left": map[string]any{"lon": partial1[0].X, "lat": partial1[0].Y}}}}))
+				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial2[2].X, "lat": partial2[2].Y}, "bottom_left": map[string]any{"lon": partial2[0].X, "lat": partial2[0].Y}}}}))
+				f = append(f, osquery.Bool().MinimumShouldMatch(1).Should(should...))
 			default:
 				// do a normal term filter
 				f = append(f, dslToFilterQuery(k, v))
@@ -322,7 +287,7 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 		}
 		osFilters = append(osFilters, f...)
 	}
-	query := osquery.Bool().Filter(osFilters...).Should(should...).MinimumShouldMatch(1)
+	query := osquery.Bool().Filter(osFilters...)
 	return query, nil
 }
 
