@@ -487,7 +487,7 @@ func parseClusterResponse(resp *opensearchapi.SearchResp) (model.ClusterResponse
 					Coordinates: []any{b.Centroid.Location.Lon, b.Centroid.Location.Lat},
 				},
 				Properties: map[string]any{
-					// "clusterID":   b.Key,
+					"clusterID":   i,
 					"clusterSize": b.DocCount,
 				},
 			},
@@ -502,6 +502,8 @@ func parseClusterResponse(resp *opensearchapi.SearchResp) (model.ClusterResponse
 			},
 		})
 	}
+	// set to non-null
+	clusterResp.Points = []model.GeoJSONFeature{}
 	return clusterResp, nil
 }
 
