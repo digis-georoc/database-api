@@ -4,6 +4,11 @@
 
 package model
 
+import (
+	"fmt"
+	"regexp"
+)
+
 const (
 	CQ_JUNCTOR_NONE = "%"
 	CQ_JUNCTOR_AND  = "^"
@@ -48,6 +53,36 @@ type CQExpression struct {
 
 type ChemQuery struct {
 	Expressions []CQExpression
+}
+
+// ParseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure
+func ParseChemQuery(query string) (ChemQuery, error) {
+	chemQuery := ChemQuery{}
+	expressionRegex := regexp.MustCompile(`\(([\w]+)?,([\w\d]+)?,([\d\.]+)?,([\d\.]+)?\)`)
+	matches := expressionRegex.FindAllStringSubmatch(query, -1)
+	if len(matches) == 0 {
+		return chemQuery, fmt.Errorf("can not parse chemical query")
+	}
+	for i, match := range matches {
+		junctor := CQ_JUNCTOR_AND
+		if i == 0 {
+			// first expression gets no junctor
+			junctor = CQ_JUNCTOR_NONE
+		}
+		expr := CQExpression{
+			Junctor:  junctor,
+			Type:     match[1],
+			Element:  match[2],
+			MinValue: match[3],
+			MaxValue: match[4],
+		}
+		// omit expressions without type or element as they make no sense
+		if expr.Type == "" && expr.Element == "" {
+			continue
+		}
+		chemQuery.Expressions = append(chemQuery.Expressions, expr)
+	}
+	return chemQuery, nil
 }
 
 type Result struct {

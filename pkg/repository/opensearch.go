@@ -135,7 +135,7 @@ func (os *OSClient) QueryClustered(includeFields []string, filters map[string]st
 	return clusterResp, nil
 }
 
-func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeFields []string, filters map[string]string, resultChan chan model.SearchIndexPage) {
+func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeFields []string, filters map[string]string, size int, resultChan chan model.SearchIndexPage) {
 	defer close(resultChan)
 	// TODO: use PIT or not? If yes, need to remove index name from url as it will be taken from PIT
 	query, err := buildQuery(filters)
@@ -150,7 +150,10 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 		// DocvalueFields: includeFields,
 	}
 
-	baseQuery := osquery.Search().Size(uint64(MAX_OS_PAGESIZE)).Query(query).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
+	if size <= 0 || size > MAX_OS_PAGESIZE {
+		size = MAX_OS_PAGESIZE
+	}
+	baseQuery := osquery.Search().Size(uint64(size)).Query(query).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
 	q, _ := baseQuery.MarshalJSON()
 	fmt.Println(string(q))
 	searchResponse, err := runQuery(os.client.Client, *baseQuery, INDEX_NAME, params)
@@ -183,7 +186,7 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 			return
 		}
 		lastSortVal := searchResponse.Hits.Hits[numReturned-1].Sort
-		pageQuery := osquery.Search().Size(uint64(MAX_OS_PAGESIZE)).Query(query).SearchAfter(lastSortVal...).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
+		pageQuery := osquery.Search().Size(uint64(size)).Query(query).SearchAfter(lastSortVal...).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
 		searchResponse, err = runQuery(os.client.Client, *pageQuery, INDEX_NAME, params)
 		if err != nil {
 			log.Errorf("can not run subsequent query: %s", err.Error())
@@ -212,27 +215,35 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 			fieldName := fmt.Sprintf("%s.%s", nestedPath, k)
 			// parse custom chemistry query DSL
 			if k == FILTER_CHEMISTRY {
-				chemFilters, err := parseChemistryFilter(v)
+				chemFilters, err := model.ParseChemQuery(v)
 				if err != nil {
 					return nil, err
 				}
 				// add a filter conjunction for each analyte
-				for _, chemFilter := range chemFilters {
-					rng := osquery.Range(fmt.Sprintf("%s.%s", nestedPath, FIELD_VALUE))
-					if !math.IsNaN(chemFilter.MinValue) {
-						rng = rng.Gte(chemFilter.MinValue)
+				for _, chemFilter := range chemFilters.Expressions {
+					minValue, err := strconv.ParseFloat(chemFilter.MinValue, 64)
+					if err != nil {
+						return nil, err
 					}
-					if !math.IsNaN(chemFilter.MaxValue) {
-						rng = rng.Lte(chemFilter.MaxValue)
+					maxValue, err := strconv.ParseFloat(chemFilter.MaxValue, 64)
+					if err != nil {
+						return nil, err
+					}
+					rng := osquery.Range(fmt.Sprintf("%s.%s", nestedPath, FIELD_VALUE))
+					if !math.IsNaN(minValue) {
+						rng = rng.Gte(minValue)
+					}
+					if !math.IsNaN(maxValue) {
+						rng = rng.Lte(maxValue)
 					}
 					filters := []osquery.Mappable{
 						rng,
 					}
-					if chemFilter.Group != "" {
-						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMGROUP), chemFilter.Group))
+					if chemFilter.Type != "" {
+						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMGROUP), chemFilter.Type))
 					}
-					if chemFilter.Analyte != "" {
-						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMNAME), chemFilter.Analyte))
+					if chemFilter.Element != "" {
+						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMNAME), chemFilter.Element))
 					}
 					q := osquery.Bool().Filter(filters...)
 					f = append(f, osquery.Nested(nestedPath, q))
@@ -361,49 +372,6 @@ func getNested(key string) string {
 		return "references.authors"
 	}
 	return ""
-}
-
-type ChemFilter struct {
-	Group    string
-	Analyte  string
-	MinValue float64
-	MaxValue float64
-}
-
-// parseChemistryFilter takes a custom chemistry query param of the form "(type, analyte, min, max),..." and parses it as a struct
-func parseChemistryFilter(raw string) ([]ChemFilter, error) {
-	chemFilters := []ChemFilter{}
-	rawFilters := strings.Split(raw, ";")
-	for _, f := range rawFilters {
-		f = strings.Trim(f, "()")
-		parts := strings.Split(f, ",")
-		if len(parts) < 4 {
-			return chemFilters, fmt.Errorf("invalid chemistry filter, expected 4 parts separated by ','")
-		}
-		// parse min and max values as float64
-		minVal := math.NaN()
-		var err error
-		if parts[2] != "" {
-			minVal, err = strconv.ParseFloat(parts[2], 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-		maxVal := math.NaN()
-		if parts[3] != "" {
-			maxVal, err = strconv.ParseFloat(parts[3], 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-		chemFilters = append(chemFilters, ChemFilter{
-			Group:    parts[0],
-			Analyte:  parts[1],
-			MinValue: minVal,
-			MaxValue: maxVal,
-		})
-	}
-	return chemFilters, nil
 }
 
 func parseIndexPage(hits opensearchapi.SearchHits, aggregations json.RawMessage) (model.SearchIndexPage, error) {

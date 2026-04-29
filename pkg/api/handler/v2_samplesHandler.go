@@ -84,10 +84,18 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 		return c.String(http.StatusUnprocessableEntity, "Invalid filters")
 	}
 
+	limitS := c.QueryParam(QP_LIMIT)
+	limit, err := strconv.Atoi(limitS)
+	// if limit is not specified, fail silently, otherwise log parsing error and continue with default
+	if limitS != "" && err != nil {
+		logger.Warnf("Can not parse limit %s - setting default", limitS)
+		limit = 0
+	}
+
 	// prepare result channel and start the query concurrently
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	resultChan := make(chan model.SearchIndexPage, 2)
-	go h.searchIndex.QuerySortSearchAfterStream(c.Request().Context(), repository.MINIMALFIELDS, filters, resultChan)
+	go h.searchIndex.QuerySortSearchAfterStream(c.Request().Context(), repository.SEARCH_FIELDS, filters, limit, resultChan)
 
 	// stream response
 	c.Response().WriteHeader(http.StatusOK)
@@ -113,7 +121,7 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 }
 
 // parseFilters parses filter values from the incoming request
-var skip []string = []string{"zoomlevel"}
+var skip []string = []string{"zoomlevel", "limit", "offset"}
 
 func parseFilters(c echo.Context) (map[string]string, error) {
 	filters := map[string]string{}
