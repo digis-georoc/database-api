@@ -130,7 +130,6 @@ func parseFilters(c echo.Context) (map[string]string, error) {
 		} else {
 			filters[k] = strings.Join(v, ",")
 		}
-		fmt.Printf("%s:%s\n", k, filters[k])
 	}
 	return filters, nil
 }
