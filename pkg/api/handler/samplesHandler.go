@@ -1211,7 +1211,7 @@ func buildSampleFilterQuery(c echo.Context, coordData map[string]interface{}, kw
 	junctor = sql.OpWhere // reset junctor for new subquery
 	qryString := c.QueryParam(QP_CHEMISTRY)
 	if qryString != "" {
-		chemQry, err := parseChemQuery(qryString)
+		chemQry, err := model.ParseChemQuery(qryString)
 		if err != nil {
 			return nil, err
 		}
@@ -1468,36 +1468,6 @@ func parseClusterToGeoJSON(clusterData []model.ClusteredSample) ([]model.GeoJSON
 		clusters = append(clusters, geoJSONCluster)
 	}
 	return clusters, points, nil
-}
-
-// parseChemQuery takes a chemistry query DSL string and parses it into a ChemQuery structure
-func parseChemQuery(query string) (model.ChemQuery, error) {
-	chemQuery := model.ChemQuery{}
-	expressionRegex := regexp.MustCompile(`\(([\w]+)?,([\w\d]+)?,([\d\.]+)?,([\d\.]+)?\)`)
-	matches := expressionRegex.FindAllStringSubmatch(query, -1)
-	if len(matches) == 0 {
-		return chemQuery, fmt.Errorf("Can not parse chemical query")
-	}
-	for i, match := range matches {
-		junctor := model.CQ_JUNCTOR_AND
-		if i == 0 {
-			// first expression gets no junctor
-			junctor = model.CQ_JUNCTOR_NONE
-		}
-		expr := model.CQExpression{
-			Junctor:  junctor,
-			Type:     match[1],
-			Element:  match[2],
-			MinValue: match[3],
-			MaxValue: match[4],
-		}
-		// omit expressions without type or element as they make no sense
-		if expr.Type == "" && expr.Element == "" {
-			continue
-		}
-		chemQuery.Expressions = append(chemQuery.Expressions, expr)
-	}
-	return chemQuery, nil
 }
 
 var (
