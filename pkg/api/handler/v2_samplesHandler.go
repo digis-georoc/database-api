@@ -69,7 +69,7 @@ const (
 //	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
 //	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
 //	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
-//	@Success		206					{object}	model.SearchIndexPage
+//	@Success		206					{object}	model.SampleByFilterResponse
 //	@Success		200					{object}	JSON
 //	@Failure		401					{object}	string
 //	@Failure		404					{object}	string
@@ -96,32 +96,34 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 		limit = 0
 	}
 
-	// prepare result channel and start the query concurrently
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	resultChan := make(chan model.SearchIndexPage, 2)
-	go h.searchIndex.QuerySortSearchAfterStream(c.Request().Context(), repository.SEARCH_FIELDS, filters, limit, resultChan)
-
-	// stream response
-	c.Response().WriteHeader(http.StatusOK)
-	enc := json.NewEncoder(c.Response())
-	totalCount := 0
-	for {
-		page, open := <-resultChan
-		if !open {
-			// channel closed because of error or finished fetching data
-			break
-		}
-		totalCount += len(page.Documents)
-		err := enc.Encode(page)
-		if err != nil {
-			return err
-		}
-		err = http.NewResponseController(c.Response()).Flush()
-		if err != nil {
-			return err
-		}
+	// TODO: handle offset
+	offsetS := c.QueryParam(QP_OFFSET)
+	if offsetS != "" {
+		return c.String(http.StatusNotImplemented, "Can not paginate with offset yet")
 	}
-	return nil
+	after := "0"
+	page, err := h.searchIndex.QuerySortSearchAfterPaginated(c.Request().Context(), repository.SEARCH_FIELDS, filters, limit, after)
+	if err != nil {
+		logger.Errorf("Can not query documents: %s", err.Error())
+		return c.String(http.StatusInternalServerError, "Error querying database")
+	}
+
+	// parse to old response model
+	results := make([]model.SampleByFiltersData, 0, len(page.Documents))
+	for _, d := range page.Documents {
+		doc, err := model.ParseToSampleByFiltersData(d)
+		if err != nil {
+			logger.Errorf("Can not parse doc to sample: %s", err.Error())
+			return c.String(http.StatusInternalServerError, "Error parsing document")
+		}
+		results = append(results, *doc)
+	}
+	response := model.SampleByFilterResponse{
+		NumItems:   len(page.Documents),
+		TotalCount: page.TotalHits,
+		Data:       results,
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 // GetSamplesClustered_v2 godoc
