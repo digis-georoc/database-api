@@ -46,7 +46,7 @@ const (
 
 var (
 	MINIMALFIELDS = []string{"sampleID", "latitude", "longitude"}
-	SEARCH_FIELDS = []string{"sampleID", "sampleName", "latitude", "longitude", "batchData.batchID", "references.publicationYear", "references.externalIdentifier", "references.authors", "batchData.minerals", "batchData.hostMinerals", "batchData.inclusionMinerals", "rockClasses", "rockTypes", "batchData.inclusionTypes", "geologicalSettings", "geologicalAge", "ageMin", "ageMax"}
+	SEARCH_FIELDS = []string{"sampleID", "sampleName", "latitude", "longitude", "batchData.batchID", "references.publicationYear", "references.externalIdentifier", "references.authors", "batchData.minerals", "batchData.hostMinerals", "batchData.inclusionMinerals", "rockClasses", "rockTypes", "batchData.inclusionTypes", "tectonicSetting", "geologicalAge", "ageMin", "ageMax"}
 )
 
 type OSClient struct {
@@ -135,7 +135,7 @@ func (os *OSClient) QueryClustered(includeFields []string, filters map[string]st
 	return clusterResp, nil
 }
 
-func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeFields []string, filters map[string]string, resultChan chan model.SearchIndexPage) {
+func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeFields []string, filters map[string]string, size int, resultChan chan model.SearchIndexPage) {
 	defer close(resultChan)
 	// TODO: use PIT or not? If yes, need to remove index name from url as it will be taken from PIT
 	query, err := buildQuery(filters)
@@ -150,7 +150,10 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 		// DocvalueFields: includeFields,
 	}
 
-	baseQuery := osquery.Search().Size(uint64(MAX_OS_PAGESIZE)).Query(query).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
+	if size <= 0 || size > MAX_OS_PAGESIZE {
+		size = MAX_OS_PAGESIZE
+	}
+	baseQuery := osquery.Search().Size(uint64(size)).Query(query).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
 	q, _ := baseQuery.MarshalJSON()
 	fmt.Println(string(q))
 	searchResponse, err := runQuery(os.client.Client, *baseQuery, INDEX_NAME, params)
@@ -183,7 +186,7 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 			return
 		}
 		lastSortVal := searchResponse.Hits.Hits[numReturned-1].Sort
-		pageQuery := osquery.Search().Size(uint64(MAX_OS_PAGESIZE)).Query(query).SearchAfter(lastSortVal...).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
+		pageQuery := osquery.Search().Size(uint64(size)).Query(query).SearchAfter(lastSortVal...).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
 		searchResponse, err = runQuery(os.client.Client, *pageQuery, INDEX_NAME, params)
 		if err != nil {
 			log.Errorf("can not run subsequent query: %s", err.Error())
@@ -200,6 +203,37 @@ func (os *OSClient) QuerySortSearchAfterStream(ctx context.Context, includeField
 	}
 }
 
+func (os *OSClient) QuerySortSearchAfterPaginated(ctx context.Context, includeFields []string, filters map[string]string, size int, after string) (model.SearchIndexPage, error) {
+	var page model.SearchIndexPage
+	// TODO: use PIT or not? If yes, need to remove index name from url as it will be taken from PIT
+	query, err := buildQuery(filters)
+	if err != nil {
+		return page, fmt.Errorf("can not build query from filters: %w", err)
+	}
+	params := &opensearchapi.SearchParams{
+		TrackTotalHits: true,
+		Source:         true,
+		SourceIncludes: includeFields,
+	}
+
+	if size <= 0 || size > MAX_OS_PAGESIZE {
+		size = MAX_OS_PAGESIZE
+	}
+	pageQuery := osquery.Search().Size(uint64(size)).Query(query).SearchAfter(after).Sort(osquery.FieldSort("sampleID").Order(osquery.OrderAsc))
+	searchResponse, err := runQuery(os.client.Client, *pageQuery, INDEX_NAME, params)
+	if err != nil {
+		return page, fmt.Errorf("can not run subsequent query: %w", err)
+	}
+	q, _ := pageQuery.MarshalJSON()
+	fmt.Println(string(q))
+
+	page, err = parseIndexPage(searchResponse.Hits, searchResponse.Aggregations)
+	if err != nil {
+		return page, fmt.Errorf("can not parse subsequent results: %w", err)
+	}
+	return page, nil
+}
+
 // buildQuery constructs a osquery.BoolQuery from given filters
 func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 	osFilters := []osquery.Mappable{}
@@ -212,74 +246,29 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 			fieldName := fmt.Sprintf("%s.%s", nestedPath, k)
 			// parse custom chemistry query DSL
 			if k == FILTER_CHEMISTRY {
-				chemFilters, err := parseChemistryFilter(v)
+				chemQ, err := getChemistryQuery(nestedPath, v)
 				if err != nil {
 					return nil, err
 				}
-				// add a filter conjunction for each analyte
-				for _, chemFilter := range chemFilters {
-					rng := osquery.Range(fmt.Sprintf("%s.%s", nestedPath, FIELD_VALUE))
-					if !math.IsNaN(chemFilter.MinValue) {
-						rng = rng.Gte(chemFilter.MinValue)
-					}
-					if !math.IsNaN(chemFilter.MaxValue) {
-						rng = rng.Lte(chemFilter.MaxValue)
-					}
-					filters := []osquery.Mappable{
-						rng,
-					}
-					if chemFilter.Group != "" {
-						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMGROUP), chemFilter.Group))
-					}
-					if chemFilter.Analyte != "" {
-						filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMNAME), chemFilter.Analyte))
-					}
-					q := osquery.Bool().Filter(filters...)
-					f = append(f, osquery.Nested(nestedPath, q))
-				}
+				f = append(f, chemQ...)
 			} else {
+				// add a nested query for the parameter
 				f = append(f, osquery.Nested(nestedPath, dslToFilterQuery(fieldName, v)))
 			}
 		} else {
 			switch k {
 			case FILTER_POLYGON:
-				polygon, err := geometry.ParsePointArray(v)
+				polygonQ, err := getPolygonQuery(v)
 				if err != nil {
 					return nil, err
 				}
-				should := []osquery.Mappable{}
-				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
-				partial1, partial2, err := geometry.WrapPolygonLon(polygon)
-				if err != nil {
-					return nil, err
-				}
-				points1 := []model.GeoPoint{}
-				for _, coords := range partial1 {
-					points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-				}
-				// do a geopolygon filter
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points1}}}))
-				points2 := []model.GeoPoint{}
-				for _, coords := range partial2 {
-					points2 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-				}
-				// do a geopolygon filter
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points2}}}))
-				f = append(f, osquery.Bool().MinimumShouldMatch(1).Should(should...))
+				f = append(f, polygonQ)
 			case FILTER_BBOX:
-				bbox, err := geometry.ParsePointArray(v)
+				bboxQ, err := getBBOXQuery(v)
 				if err != nil {
 					return nil, err
 				}
-				should := []osquery.Mappable{}
-				// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
-				partial1, partial2, err := geometry.WrapPolygonLon(bbox)
-				if err != nil {
-					return nil, err
-				}
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial1[2].X, "lat": partial1[2].Y}, "bottom_left": map[string]any{"lon": partial1[0].X, "lat": partial1[0].Y}}}}))
-				should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial2[2].X, "lat": partial2[2].Y}, "bottom_left": map[string]any{"lon": partial2[0].X, "lat": partial2[0].Y}}}}))
-				f = append(f, osquery.Bool().MinimumShouldMatch(1).Should(should...))
+				f = append(f, bboxQ)
 			default:
 				// do a normal term filter
 				f = append(f, dslToFilterQuery(k, v))
@@ -289,6 +278,95 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 	}
 	query := osquery.Bool().Filter(osFilters...)
 	return query, nil
+}
+
+// getPolygonQuery returns a osquery.Mappable for the polygon to add to the opensearch query
+func getPolygonQuery(v string) (osquery.Mappable, error) {
+	polygon, err := geometry.ParsePointArray(v)
+	if err != nil {
+		return nil, err
+	}
+	should := []osquery.Mappable{}
+	// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
+	partial1, partial2, err := geometry.WrapPolygonLon(polygon)
+	if err != nil {
+		return nil, err
+	}
+	points1 := []model.GeoPoint{}
+	for _, coords := range partial1 {
+		points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
+	}
+	// do a geopolygon filter
+	should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points1}}}))
+	points2 := []model.GeoPoint{}
+	for _, coords := range partial2 {
+		points2 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
+	}
+	// do a geopolygon filter
+	should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points2}}}))
+	return osquery.Bool().MinimumShouldMatch(1).Should(should...), nil
+}
+
+// getBBOXQuery returns a osquery.Mappable for the bbox to add to the opensearch query
+func getBBOXQuery(v string) (osquery.Mappable, error) {
+	bbox, err := geometry.ParsePointArray(v)
+	if err != nil {
+		return nil, err
+	}
+	should := []osquery.Mappable{}
+	// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
+	partial1, partial2, err := geometry.WrapPolygonLon(bbox)
+	if err != nil {
+		return nil, err
+	}
+	should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial1[2].X, "lat": partial1[2].Y}, "bottom_left": map[string]any{"lon": partial1[0].X, "lat": partial1[0].Y}}}}))
+	should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial2[2].X, "lat": partial2[2].Y}, "bottom_left": map[string]any{"lon": partial2[0].X, "lat": partial2[0].Y}}}}))
+	return osquery.Bool().MinimumShouldMatch(1).Should(should...), nil
+}
+
+// getChemistryQuery returns a list of osquery.Mappables for each chemistry filter to add to the opensearch query
+func getChemistryQuery(nestedPath string, v string) ([]osquery.Mappable, error) {
+	f := []osquery.Mappable{}
+	chemFilters, err := model.ParseChemQuery(v)
+	if err != nil {
+		return nil, err
+	}
+	// add a filter conjunction for each analyte
+	for _, chemFilter := range chemFilters.Expressions {
+		filters := []osquery.Mappable{}
+		rng := osquery.Range(fmt.Sprintf("%s.%s", nestedPath, FIELD_VALUE))
+		if chemFilter.MinValue != "" {
+			minValue, err := strconv.ParseFloat(chemFilter.MinValue, 64)
+			if err != nil {
+				return nil, err
+			}
+			if !math.IsNaN(minValue) {
+				rng = rng.Gte(minValue)
+			}
+		}
+		if chemFilter.MaxValue != "" {
+			maxValue, err := strconv.ParseFloat(chemFilter.MaxValue, 64)
+			if err != nil {
+				return nil, err
+			}
+			if !math.IsNaN(maxValue) {
+				rng = rng.Lte(maxValue)
+			}
+		}
+		if chemFilter.MinValue != "" || chemFilter.MaxValue != "" {
+			// at least one value is set
+			filters = append(filters, rng)
+		}
+		if chemFilter.Type != "" {
+			filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMGROUP), chemFilter.Type))
+		}
+		if chemFilter.Element != "" {
+			filters = append(filters, osquery.Term(fmt.Sprintf("%s.%s", nestedPath, FIELD_ITEMNAME), chemFilter.Element))
+		}
+		q := osquery.Bool().Filter(filters...)
+		f = append(f, osquery.Nested(nestedPath, q))
+	}
+	return f, nil
 }
 
 // dslToFilterQuery takes a field name and a value string and parses the custom query dsl to return search index queries as osquery.Mappable objects
@@ -332,6 +410,8 @@ func translateKey(k string) string {
 		return "value"
 	case "standards":
 		return "standardName"
+	case "inclusiontype":
+		return "inclusionTypes"
 	}
 	return k
 }
@@ -339,7 +419,7 @@ func translateKey(k string) string {
 // getNested returns for a given key in the filters map, the nested field in the documents it belongs to; or empty string if the key is top level
 func getNested(key string) string {
 	switch key {
-	case "batchName", "batchID", "crystal", "inclusionTypes", "material", "rimOrCoreInclusion", "rimOrCoreMineral", "specimenMedium":
+	case "batchName", "batchID", "crystal", "inclusiontype", "material", "rimOrCoreInclusion", "rimOrCoreMineral", "specimenMedium":
 		return "batchData"
 	case "mineral":
 		return "batchData.minerals"
@@ -361,49 +441,6 @@ func getNested(key string) string {
 		return "references.authors"
 	}
 	return ""
-}
-
-type ChemFilter struct {
-	Group    string
-	Analyte  string
-	MinValue float64
-	MaxValue float64
-}
-
-// parseChemistryFilter takes a custom chemistry query param of the form "(type, analyte, min, max),..." and parses it as a struct
-func parseChemistryFilter(raw string) ([]ChemFilter, error) {
-	chemFilters := []ChemFilter{}
-	rawFilters := strings.Split(raw, ";")
-	for _, f := range rawFilters {
-		f = strings.Trim(f, "()")
-		parts := strings.Split(f, ",")
-		if len(parts) < 4 {
-			return chemFilters, fmt.Errorf("invalid chemistry filter, expected 4 parts separated by ','")
-		}
-		// parse min and max values as float64
-		minVal := math.NaN()
-		var err error
-		if parts[2] != "" {
-			minVal, err = strconv.ParseFloat(parts[2], 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-		maxVal := math.NaN()
-		if parts[3] != "" {
-			maxVal, err = strconv.ParseFloat(parts[3], 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-		chemFilters = append(chemFilters, ChemFilter{
-			Group:    parts[0],
-			Analyte:  parts[1],
-			MinValue: minVal,
-			MaxValue: maxVal,
-		})
-	}
-	return chemFilters, nil
 }
 
 func parseIndexPage(hits opensearchapi.SearchHits, aggregations json.RawMessage) (model.SearchIndexPage, error) {

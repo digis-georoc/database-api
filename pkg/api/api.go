@@ -109,7 +109,7 @@ func InitializeAPI(h *handler.Handler, secStore secretstore.SecretStore) *echo.E
 	queries.GET("/fulldata/:identifier", h.GetFullDataByID)
 	queries.GET("/fulldata", h.GetFullData)
 	// samples
-	queries.GET("/samples", h.GetSamplesFiltered)
+	queries.GET("/samples", h.GetSampleIDStreamed_v2)
 	queries.GET("/samples/:samplingfeatureID", h.GetSampleByID)
 	queries.GET("/samples/random", h.GetRandomSamples)
 	queries.GET("/samples/specimentypes", h.GetSpecimenTypes)
