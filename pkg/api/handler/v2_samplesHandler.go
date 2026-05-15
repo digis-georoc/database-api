@@ -18,6 +18,8 @@ import (
 
 const (
 	ZOOM_OFFSET = 2 // increase zoom level for more fine-grained clustering
+
+	QP_POLYGON_GEOJSON = "polygon_geojson"
 )
 
 // GetSampleIDStreamed_v2 godoc
@@ -39,8 +41,8 @@ const (
 //	@Tags			samples
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit				query		int		false	"limit"
-//	@Param			offset				query		int		false	"offset"
+//	@Param			limit				query		int		false	"DEPRECATED limit"
+//	@Param			offset				query		int		false	"DEPRECATED offset"
 //	@Param			setting				query		string	false	"tectonic setting - see /queries/sites/settings (supports Filter DSL)"
 //	@Param			location1			query		string	false	"location level 1 - see /queries/locations/l1 (supports Filter DSL)"
 //	@Param			location2			query		string	false	"location level 2 - see /queries/locations/l2 (supports Filter DSL)"
@@ -67,7 +69,8 @@ const (
 //	@Param			geoage				query		string	false	"Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
 //	@Param			geoageprefix		query		string	false	"Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
 //	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-//	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+//	@Param			polygon				query		string	false	"DEPRECATED: USE GEOJSON INSTEAD | Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param polygon_geojson query string false "GeoJSON representation of the polygon to search in"
 //	@Param			addcoordinates		query		bool	false	"Add coordinates to each sample"
 //	@Success		206					{object}	model.SampleByFilterResponse
 //	@Success		200					{object}	JSON
@@ -99,7 +102,7 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 	// TODO: handle offset
 	offsetS := c.QueryParam(QP_OFFSET)
 	if offsetS != "" {
-		return c.String(http.StatusNotImplemented, "Can not paginate with offset yet")
+		logger.Warn("Offset is deprecated - use searchAfter instead")
 	}
 	after := "0"
 	page, err := h.searchIndex.QuerySortSearchAfterPaginated(c.Request().Context(), repository.SEARCH_FIELDS, filters, limit, after)
@@ -145,8 +148,6 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 //	@Tags			geodata
 //	@Accept			json
 //	@Produce		json
-//	@Param			limit				query		int		false	"limit"
-//	@Param			offset				query		int		false	"offset"
 //	@Param			setting				query		string	false	"tectonic setting - see /queries/sites/settings (supports Filter DSL)"
 //	@Param			location1			query		string	false	"location level 1 - see /queries/locations/l1 (supports Filter DSL)"
 //	@Param			location2			query		string	false	"location level 2 - see /queries/locations/l2 (supports Filter DSL)"
@@ -173,7 +174,8 @@ func (h *Handler) GetSampleIDStreamed_v2(c echo.Context) error {
 //	@Param			geoage				query		string	false	"Specimen geological age - see /queries/samples/geoages (supports Filter DSL)"
 //	@Param			geoageprefix		query		string	false	"Specimen geological age prefix - see /queries/samples/geoageprefixes (supports Filter DSL)"
 //	@Param			lab					query		string	false	"Laboratory name - see /queries/samples/organizationnames (supports Filter DSL)"
-//	@Param			polygon				query		string	false	"Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+//	@Param			polygon				query		string	false	"DEPRECATED: USE GEOJSON INSTEAD | Coordinate-Polygon formatted as 2-dimensional json array: [[LONG,LAT],[2.4,6.3]]"
+// @Param polygon_geojson query string false "GeoJSON representation of the polygon to search in"
 //	@Param			bbox				query		string	true	"BoundingBox formatted as 2-dimensional json array: [[SW_Long,SW_Lat],[SE_Long,SE_Lat],[NE_Long,NE_Lat],[NW_Long,NW_Lat]]"
 //	@Param			zoomlevel			query		int		false	"Zoom level of the map. Must be at least 1"
 //	@Success		200					{object}	model.ClusterResponse
@@ -227,8 +229,12 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 		if err != nil {
 			logger.Warnf("Can not parse bbox string '%s': %s", bboxStr, err.Error())
 		} else {
-			// wrap bbox in []interface{} for geoJSON polygon
-			bboxIWrap := []interface{}{bbox}
+			// wrap bbox points in []any for geoJSON polygon
+			coords := [][]float64{}
+			for _, point := range bbox {
+				coords = append(coords, []float64{point.X, point.Y})
+			}
+			bboxIWrap := []any{coords}
 			response.Bbox = model.GeoJSONFeature{
 				Type: model.GEOJSONTYPE_FEATURE,
 				Geometry: model.Geometry{
@@ -242,9 +248,8 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 }
 
 // parseFilters parses filter values from the incoming request
-var skip []string = []string{"zoomlevel", "limit", "offset"}
-
 func parseFilters(c echo.Context) (map[string]string, error) {
+	skip := []string{"zoomlevel", "limit", "offset"}
 	filters := map[string]string{}
 	for k, v := range c.QueryParams() {
 		if slices.Contains(skip, k) {
@@ -263,6 +268,8 @@ func parseFilters(c echo.Context) (map[string]string, error) {
 	return filters, nil
 }
 
+// handleBBox handles scaling and truncating the bounding box to ensure that
+// it is at most 360*180 degrees big and provides some results outside the visible area to avoid small-panning reloads
 func handleBBox(bboxStr []string) (string, error) {
 	if len(bboxStr) == 0 {
 		return "", fmt.Errorf("empty bbox")
