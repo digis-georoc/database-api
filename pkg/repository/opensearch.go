@@ -27,9 +27,10 @@ const (
 	KEY_CLUSTERING = "clustering"
 	KEY_CENTROID   = "centroid"
 
-	FILTER_CHEMISTRY = "chemistry"
-	FILTER_POLYGON   = "polygon"
-	FILTER_BBOX      = "bbox"
+	FILTER_CHEMISTRY       = "chemistry"
+	FILTER_POLYGON         = "polygon"
+	FILTER_POLYGON_GEOJSON = "polygon_geojson"
+	FILTER_BBOX            = "bbox"
 
 	FIELD_GEOPOINT  = "geo_point"
 	FIELD_VALUE     = "value"
@@ -257,18 +258,12 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 			}
 		} else {
 			switch k {
-			case FILTER_POLYGON:
+			case FILTER_POLYGON, FILTER_POLYGON_GEOJSON, FILTER_BBOX:
 				polygonQ, err := getPolygonQuery(v)
 				if err != nil {
 					return nil, err
 				}
 				f = append(f, polygonQ)
-			case FILTER_BBOX:
-				bboxQ, err := getBBOXQuery(v)
-				if err != nil {
-					return nil, err
-				}
-				f = append(f, bboxQ)
 			default:
 				// do a normal term filter
 				f = append(f, dslToFilterQuery(k, v))
@@ -282,45 +277,25 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 
 // getPolygonQuery returns a osquery.Mappable for the polygon to add to the opensearch query
 func getPolygonQuery(v string) (osquery.Mappable, error) {
-	polygon, err := geometry.ParsePointArray(v)
-	if err != nil {
-		return nil, err
-	}
 	should := []osquery.Mappable{}
-	// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
-	partial1, partial2, err := geometry.WrapPolygonLon(polygon)
+	// try to parse polygon as geoJSON first
+	polygonGeoJSON := model.GeoJSONFeature{}
+	err := json.Unmarshal([]byte(v), &polygonGeoJSON)
+	if err != nil {
+		// fallback: parse as point array
+		polygon, err := geometry.ParsePointArray(v)
+		if err != nil {
+			return nil, err
+		}
+		// parse to GeoJSON
+		polygonGeoJSON = geometry.ParsePolygon(polygon)
+	}
+	// imitate a wrap around +/-180 meridian by cutting the original polygon on the crossed boundary and translating the other half into the boundaries
+	wrappedPoly, err := geometry.WrapPolygonLon(polygonGeoJSON)
 	if err != nil {
 		return nil, err
 	}
-	points1 := []model.GeoPoint{}
-	for _, coords := range partial1 {
-		points1 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-	}
-	// do a geopolygon filter
-	should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points1}}}))
-	points2 := []model.GeoPoint{}
-	for _, coords := range partial2 {
-		points2 = append(points1, model.GeoPoint{Lat: coords.Y, Lon: coords.X})
-	}
-	// do a geopolygon filter
-	should = append(should, osquery.CustomQuery(map[string]any{"geo_polygon": map[string]any{FIELD_GEOPOINT: map[string]any{"points": points2}}}))
-	return osquery.Bool().MinimumShouldMatch(1).Should(should...), nil
-}
-
-// getBBOXQuery returns a osquery.Mappable for the bbox to add to the opensearch query
-func getBBOXQuery(v string) (osquery.Mappable, error) {
-	bbox, err := geometry.ParsePointArray(v)
-	if err != nil {
-		return nil, err
-	}
-	should := []osquery.Mappable{}
-	// imitate a wrap around +/-180 meridian by using the original polygon and a copy moved by +/-180 depending on the crossed boundary
-	partial1, partial2, err := geometry.WrapPolygonLon(bbox)
-	if err != nil {
-		return nil, err
-	}
-	should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial1[2].X, "lat": partial1[2].Y}, "bottom_left": map[string]any{"lon": partial1[0].X, "lat": partial1[0].Y}}}}))
-	should = append(should, osquery.CustomQuery(map[string]any{"geo_bounding_box": map[string]any{FIELD_GEOPOINT: map[string]any{"top_right": map[string]any{"lon": partial2[2].X, "lat": partial2[2].Y}, "bottom_left": map[string]any{"lon": partial2[0].X, "lat": partial2[0].Y}}}}))
+	should = append(should, osquery.CustomQuery(map[string]any{"geo_shape": map[string]any{FIELD_GEOPOINT: map[string]any{"shape": wrappedPoly.Geometry, "relation": "INTERSECTS"}}}))
 	return osquery.Bool().MinimumShouldMatch(1).Should(should...), nil
 }
 

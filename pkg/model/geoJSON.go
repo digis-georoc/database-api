@@ -93,21 +93,3 @@ func (p SimplePoint) ToGeoJSON() GeoJSONFeature {
 		},
 	}
 }
-
-func ParsePolygon(polygon []SimplePoint) GeoJSONFeature {
-	coordinates := []any{}
-	for _, p := range polygon {
-		coordinates = append(coordinates, []any{p.X, p.Y})
-	}
-	// close polygon if it not already is
-	if !(polygon[0].X == polygon[len(polygon)-1].X && polygon[0].Y == polygon[len(polygon)-1].Y) {
-		coordinates = append(coordinates, []any{polygon[0].X, polygon[0].Y})
-	}
-	return GeoJSONFeature{
-		Type: GEOJSONTYPE_FEATURE,
-		Geometry: Geometry{
-			Type:        GEOJSON_GEOMETRY_POLYGON,
-			Coordinates: []any{coordinates},
-		},
-	}
-}
