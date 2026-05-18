@@ -102,16 +102,20 @@ func WrapPolygonLon(polygon model.GeoJSONFeature) (*model.GeoJSONFeature, error)
 				// coordinates are directly on the first level
 				lon, ok := position.(float64)
 				if !ok {
-					return nil, fmt.Errorf("invalid GeoJSON coordinate type: %t", position)
+					return nil, fmt.Errorf("invalid GeoJSON Point coordinate type: %T", position)
 				}
 				polygon.Geometry.Coordinates[i] = TranslateLon(lon)
 			case model.GEOJSON_GEOMETRY_MULTIPOINT:
 				// coordinates are nested
-				coords, ok := position.([]float64)
+				coords, ok := position.([]any)
 				if !ok {
-					return nil, fmt.Errorf("invalid GeoJSON %s: %+v", polygon.Geometry.Type, polygon)
+					return nil, fmt.Errorf("invalid GeoJSON MultiPoint position type: %T", polygon.Geometry.Coordinates[i])
 				}
-				coords[0] = TranslateLon(coords[0])
+				lon, ok := coords[0].(float64)
+				if !ok {
+					return nil, fmt.Errorf("invalid GeoJSON MultiPoint x-coordinate type: %T", coords[0])
+				}
+				coords[0] = TranslateLon(lon)
 				polygon.Geometry.Coordinates[i] = coords
 			}
 		}
@@ -160,11 +164,11 @@ func ParseMultiPolygon(featureType model.GeoJSONGeometryType, parts [][]model.Si
 		polygons := []any{}
 		for _, part := range parts {
 			// polygons can contain multiple shapes
-			shapes := [][][2]float64{}
+			shapes := []any{}
 			// a shape is a set of coordinate-tuples
-			shape := [][2]float64{}
+			shape := []any{}
 			for _, point := range part {
-				shape = append(shape, [2]float64{point.X, point.Y})
+				shape = append(shape, []any{point.X, point.Y})
 			}
 			shapes = append(shapes, shape)
 			// add polygon to multipolygon
@@ -181,9 +185,9 @@ func ParseMultiPolygon(featureType model.GeoJSONGeometryType, parts [][]model.Si
 	if featureType == model.GEOJSON_GEOMETRY_LINESTRING || featureType == model.GEOJSON_GEOMETRY_MULTILINESTRING {
 		lines := []any{}
 		for _, part := range parts {
-			line := [][2]float64{}
+			line := []any{}
 			for _, point := range part {
-				line = append(line, [2]float64{point.X, point.Y})
+				line = append(line, []any{point.X, point.Y})
 			}
 			lines = append(lines, line)
 		}
@@ -202,11 +206,11 @@ func ParseMultiPolygon(featureType model.GeoJSONGeometryType, parts [][]model.Si
 func ParsePolygon(polygon []model.SimplePoint) model.GeoJSONFeature {
 	coordinates := []any{}
 	for _, p := range polygon {
-		coordinates = append(coordinates, []float64{p.X, p.Y})
+		coordinates = append(coordinates, []any{p.X, p.Y})
 	}
 	// close polygon if it not already is
 	if !(polygon[0].X == polygon[len(polygon)-1].X && polygon[0].Y == polygon[len(polygon)-1].Y) {
-		coordinates = append(coordinates, []float64{polygon[0].X, polygon[0].Y})
+		coordinates = append(coordinates, []any{polygon[0].X, polygon[0].Y})
 	}
 	return model.GeoJSONFeature{
 		Type: model.GEOJSONTYPE_FEATURE,
@@ -218,6 +222,7 @@ func ParsePolygon(polygon []model.SimplePoint) model.GeoJSONFeature {
 }
 
 // GetSimplePointShapes gather coordinates as collection of model.SimplePoint arrays - this can be a line, polygon or multi-feature
+// Note: Polygons consisting of multiple shapes that are semantically subtracted are not supported yet
 func GetSimplePointShapes(geom *model.Geometry) ([][]model.SimplePoint, error) {
 	shapes := [][]model.SimplePoint{}
 	if len(geom.Coordinates) == 0 {
@@ -225,37 +230,86 @@ func GetSimplePointShapes(geom *model.Geometry) ([][]model.SimplePoint, error) {
 	}
 	if geom.Type == model.GEOJSON_GEOMETRY_LINESTRING {
 		shape := []model.SimplePoint{}
-		// coordinates are nested in coordinates
-		for _, point := range geom.Coordinates {
-			coords, ok := point.([]float64)
+		// coordinates are nested in points
+		for i, p := range geom.Coordinates {
+			point, ok := p.([]any)
 			if !ok {
-				return nil, fmt.Errorf("invalid GeoJSON %s: %+v", geom.Type, geom)
+				return nil, fmt.Errorf("invalid GeoJSON LineString point type: %T", geom.Coordinates[i])
 			}
-			shape = append(shape, model.SimplePoint{X: coords[0], Y: coords[1]})
+			x, ok := point[0].(float64)
+			if !ok {
+				return nil, fmt.Errorf("invalid GeoJSON LineString x-coordinate type: %T", point[0])
+			}
+			y, ok := point[1].(float64)
+			if !ok {
+				return nil, fmt.Errorf("invalid GeoJSON LineString y-coordinate type: %T", point[1])
+			}
+			shape = append(shape, model.SimplePoint{X: x, Y: y})
 		}
 		shapes = append(shapes, shape)
 		return shapes, nil
 	}
 	if geom.Type == model.GEOJSON_GEOMETRY_MULTILINESTRING || geom.Type == model.GEOJSON_GEOMETRY_POLYGON {
 		// coordinates are nested in shapes
-		for _, s := range geom.Coordinates {
-			shape := []model.SimplePoint{}
-			s, ok := s.([]any)
+		for i, s := range geom.Coordinates {
+			simpleShape := []model.SimplePoint{}
+			shape, ok := s.([]any)
 			if !ok {
-				return nil, fmt.Errorf("invalid GeoJSON %s: %+v", geom.Type, geom)
+				return nil, fmt.Errorf("invalid GeoJSON shape type: %T", geom.Coordinates[i])
 			}
-			for _, point := range s {
-				point, ok := point.([]float64)
+			for j, p := range shape {
+				point, ok := p.([]any)
 				if !ok {
-					return nil, fmt.Errorf("invalid GeoJSON %s: %+v", geom.Type, geom)
+					return nil, fmt.Errorf("invalid GeoJSON point type: %T", shape[j])
 				}
-				shape = append(shape, model.SimplePoint{X: point[0], Y: point[1]})
+				x, ok := point[0].(float64)
+				if !ok {
+					return nil, fmt.Errorf("invalid GeoJSON x-coordinate type: %T", point[0])
+				}
+				y, ok := point[1].(float64)
+				if !ok {
+					return nil, fmt.Errorf("invalid GeoJSON y-coordinate type: %T", point[1])
+				}
+				simpleShape = append(simpleShape, model.SimplePoint{X: x, Y: y})
 			}
-			shapes = append(shapes, shape)
+			shapes = append(shapes, simpleShape)
 		}
 		return shapes, nil
 	}
-	return nil, nil
+	if geom.Type == model.GEOJSON_GEOMETRY_MULTIPOLYGON {
+		// coordinates are nested in an array of polygons
+		for i, p := range geom.Coordinates {
+			polygon, ok := p.([]any)
+			if !ok {
+				return nil, fmt.Errorf("invalid GeoJSON Multi polygon type: %T", geom.Coordinates[i])
+			}
+			for j, s := range polygon {
+				simpleShape := []model.SimplePoint{}
+				shape, ok := s.([]any)
+				if !ok {
+					return nil, fmt.Errorf("invalid GeoJSON Multi shape type: %T", polygon[j])
+				}
+				for k, p := range shape {
+					point, ok := p.([]any)
+					if !ok {
+						return nil, fmt.Errorf("invalid GeoJSON Multi point type: %T", shape[k])
+					}
+					x, ok := point[0].(float64)
+					if !ok {
+						return nil, fmt.Errorf("invalid GeoJSON Multi x-coordinate type: %T", point[0])
+					}
+					y, ok := point[1].(float64)
+					if !ok {
+						return nil, fmt.Errorf("invalid GeoJSON Multi y-coordinate type: %T", point[1])
+					}
+					simpleShape = append(simpleShape, model.SimplePoint{X: x, Y: y})
+				}
+				shapes = append(shapes, simpleShape)
+			}
+		}
+		return shapes, nil
+	}
+	return nil, fmt.Errorf("unsupported GeoJSON Type: %s", geom.Type)
 }
 
 // cutGeometry cuts the given geometry based on its type

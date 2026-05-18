@@ -258,9 +258,7 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 			}
 		} else {
 			switch k {
-			case FILTER_POLYGON:
-			case FILTER_POLYGON_GEOJSON:
-			case FILTER_BBOX:
+			case FILTER_POLYGON, FILTER_POLYGON_GEOJSON, FILTER_BBOX:
 				polygonQ, err := getPolygonQuery(v)
 				if err != nil {
 					return nil, err

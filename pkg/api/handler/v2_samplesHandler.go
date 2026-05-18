@@ -249,8 +249,14 @@ func (h *Handler) GetSamplesClustered_v2(c echo.Context) error {
 
 // parseFilters parses filter values from the incoming request
 func parseFilters(c echo.Context) (map[string]string, error) {
-	skip := []string{"zoomlevel", "limit", "offset"}
+	skip := []string{"zoomlevel", "limit", "offset", QP_POLYGON_GEOJSON}
 	filters := map[string]string{}
+	// if GeoJSON is supplied: set geojson polygon as polygon filter and skip parsing parameter "polygon"
+	geojson := c.QueryParam(QP_POLYGON_GEOJSON)
+	if geojson != "" {
+		filters[QP_POLY] = geojson
+		skip = append(skip, QP_POLY)
+	}
 	for k, v := range c.QueryParams() {
 		if slices.Contains(skip, k) {
 			continue
