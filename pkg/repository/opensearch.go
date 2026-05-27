@@ -277,7 +277,6 @@ func buildQuery(filters map[string]string) (*osquery.BoolQuery, error) {
 
 // getPolygonQuery returns a osquery.Mappable for the polygon to add to the opensearch query
 func getPolygonQuery(v string) (osquery.Mappable, error) {
-	should := []osquery.Mappable{}
 	// try to parse polygon as geoJSON first
 	polygonGeoJSON := model.GeoJSONFeature{}
 	err := json.Unmarshal([]byte(v), &polygonGeoJSON)
@@ -295,8 +294,7 @@ func getPolygonQuery(v string) (osquery.Mappable, error) {
 	if err != nil {
 		return nil, err
 	}
-	should = append(should, osquery.CustomQuery(map[string]any{"geo_shape": map[string]any{FIELD_GEOPOINT: map[string]any{"shape": wrappedPoly.Geometry, "relation": "INTERSECTS"}}}))
-	return osquery.Bool().MinimumShouldMatch(1).Should(should...), nil
+	return osquery.CustomQuery(map[string]any{"geo_shape": map[string]any{FIELD_GEOPOINT: map[string]any{"shape": wrappedPoly.Geometry, "relation": "INTERSECTS"}}}), nil
 }
 
 // getChemistryQuery returns a list of osquery.Mappables for each chemistry filter to add to the opensearch query
@@ -410,7 +408,7 @@ func getNested(key string) string {
 		return "rockTypes"
 	case "rockclass":
 		return "rockClasses"
-	case "citationID", "title", "publisher", "publicationYear", "citationLink", "journal", "volume", "issue", "firstPage", "lastPage", "bookTitle", "editors", "externalIdentifier":
+	case "citationID", "title", "publisher", "publicationYear", "citationLink", "journal", "volume", "issue", "firstPage", "lastPage", "bookTitle", "editors", "doi":
 		return "references"
 	case "personID", "firstName", "lastName", "order":
 		return "references.authors"
